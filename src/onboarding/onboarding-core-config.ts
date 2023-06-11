@@ -266,7 +266,13 @@ class OnboardingCoreConfig extends LitElement {
         </div>
 
       <div class="footer">
-        <mwc-button @click=${this._save} .disabled=${this._working}>
+        <mwc-button raised @click=${this._save} .disabled=${
+      this._working ||
+      !this._countryValue ||
+      !this._languageValue ||
+      !this._unitSystemValue ||
+      !this._timeZoneValue
+    }>
           ${this.onboardingLocalize(
             "ui.panel.page-onboarding.core-config.finish"
           )}
