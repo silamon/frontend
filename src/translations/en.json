@@ -2351,7 +2351,22 @@
                   "label": "Time Pattern",
                   "hours": "Hours",
                   "minutes": "Minutes",
-                  "seconds": "Seconds"
+                  "seconds": "Seconds",
+                  "invalid_time_pattern": "Invalid Time Pattern",
+                  "friendly_description": {
+                    "full": "Trigger {seconds} {minutes} {hours}",
+                    "on": "on",
+                    "of": "of",
+                    "every_second": "every second",
+                    "every_interval_seconds": "every {number} seconds",
+                    "the_xth_second": "the {number} second",
+                    "every_minute": "every minute",
+                    "every_interval_minutes": "every {number} minutes",
+                    "the_xth_minute": "the {number} minute",
+                    "every_hour": "every hour",
+                    "every_interval_hours": "every {number} hours",
+                    "the_xth_hour": "the {number} hour"
+                  }
                 },
                 "webhook": {
                   "copy_url": "Copy URL to Clipboard",

@@ -24,6 +24,71 @@ import { EntityRegistryEntry } from "./entity_registry";
 import "../resources/intl-polyfill";
 import { FrontendLocaleData } from "./translation";
 
+const triggerBaseTranslationKey =
+  "ui.panel.config.automation.editor.triggers.type";
+
+const describeTimePatternTriggerPart = (
+  hass: HomeAssistant,
+  given_value: string | number | undefined,
+  part: string,
+  min: number,
+  max: number,
+  previousPart: boolean
+) => {
+  // gives the friendly description for either seconds, minutes or hours
+  let result: string = "";
+  if (given_value !== undefined) {
+    const value_all = given_value === "*";
+    const value_interval =
+      typeof given_value === "string" && given_value.startsWith("/");
+    const value = value_all
+      ? 0
+      : typeof given_value === "number"
+      ? given_value
+      : value_interval
+      ? parseInt(given_value.substring(1))
+      : parseInt(given_value);
+
+    if (
+      isNaN(value) ||
+      value > max ||
+      value < min ||
+      (value_interval && value === 0)
+    ) {
+      throw `
+        ${hass.localize(
+          `${triggerBaseTranslationKey}.time_pattern.invalid_time_pattern`
+        )}
+        ${hass.localize(`${triggerBaseTranslationKey}.time_pattern.${part}s`)}`;
+    }
+
+    if (value_all) {
+      result = hass.localize(
+        `${triggerBaseTranslationKey}.time_pattern.friendly_description.every_${part}`
+      );
+    } else if (value_interval) {
+      result = hass.localize(
+        `${triggerBaseTranslationKey}.time_pattern.friendly_description.every_interval_${part}s`,
+        "number",
+        value
+      );
+    } else {
+      if (previousPart) {
+        result += `${hass.localize(
+          `${triggerBaseTranslationKey}.time_pattern.friendly_description.on`
+        )} `;
+      }
+      result += hass.localize(
+        `${triggerBaseTranslationKey}.time_pattern.friendly_description.the_xth_${part}`,
+        "number",
+        value.toString() + ordinalSuffix(value)
+      );
+    }
+  }
+
+  return `${result}`;
+};
+
 const describeDuration = (forTime: number | string | ForDict) => {
   let duration: string | null;
   if (typeof forTime === "number") {
@@ -384,113 +449,58 @@ export const describeTrigger = (
   // Time Pattern Trigger
   if (
     trigger.platform === "time_pattern" &&
-    (trigger.seconds !== undefined ||
-      trigger.minutes !== undefined ||
-      trigger.hours !== undefined)
+    (trigger.seconds || trigger.minutes || trigger.hours)
   ) {
-    let result = "Trigger ";
-    if (trigger.seconds !== undefined) {
-      const seconds_all = trigger.seconds === "*";
-      const seconds_interval =
-        typeof trigger.seconds === "string" && trigger.seconds.startsWith("/");
-      const seconds = seconds_all
-        ? 0
-        : typeof trigger.seconds === "number"
-        ? trigger.seconds
-        : seconds_interval
-        ? parseInt(trigger.seconds.substring(1))
-        : parseInt(trigger.seconds);
+    try {
+      let secondsPart = describeTimePatternTriggerPart(
+        hass,
+        trigger.seconds,
+        "second",
+        0,
+        59,
+        trigger.seconds !== undefined
+      );
 
-      if (
-        isNaN(seconds) ||
-        seconds > 59 ||
-        seconds < 0 ||
-        (seconds_interval && seconds === 0)
-      ) {
-        return "Invalid Time Pattern Seconds";
+      let minutesPart = describeTimePatternTriggerPart(
+        hass,
+        trigger.minutes,
+        "minute",
+        0,
+        59,
+        trigger.seconds === undefined
+      );
+      if (trigger.seconds && trigger.minutes) {
+        minutesPart = ` ${hass.localize(
+          `${triggerBaseTranslationKey}.time_pattern.friendly_description.of`
+        )} ${minutesPart}`;
       }
 
-      if (seconds_all) {
-        result += "every second of ";
-      } else if (seconds_interval) {
-        result += `every ${seconds} seconds of `;
-      } else {
-        result += `on the ${seconds}${ordinalSuffix(seconds)} second of `;
+      let hoursPart = describeTimePatternTriggerPart(
+        hass,
+        trigger.hours,
+        "hour",
+        0,
+        23,
+        trigger.seconds === undefined && trigger.minutes === undefined
+      );
+      if ((trigger.seconds || trigger.minutes) && trigger.hours) {
+        hoursPart = ` ${hass.localize(
+          `${triggerBaseTranslationKey}.time_pattern.friendly_description.of`
+        )} ${hoursPart}`;
       }
+
+      return hass.localize(
+        `${triggerBaseTranslationKey}.time_pattern.friendly_description.full`,
+        "seconds",
+        secondsPart,
+        "minutes",
+        minutesPart,
+        "hours",
+        hoursPart
+      );
+    } catch (error: any) {
+      return error;
     }
-    if (trigger.minutes !== undefined) {
-      const minutes_all = trigger.minutes === "*";
-      const minutes_interval =
-        typeof trigger.minutes === "string" && trigger.minutes.startsWith("/");
-      const minutes = minutes_all
-        ? 0
-        : typeof trigger.minutes === "number"
-        ? trigger.minutes
-        : minutes_interval
-        ? parseInt(trigger.minutes.substring(1))
-        : parseInt(trigger.minutes);
-
-      if (
-        isNaN(minutes) ||
-        minutes > 59 ||
-        minutes < 0 ||
-        (minutes_interval && minutes === 0)
-      ) {
-        return "Invalid Time Pattern Minutes";
-      }
-
-      if (minutes_all) {
-        result += "every minute of ";
-      } else if (minutes_interval) {
-        result += `every ${minutes} minutes of `;
-      } else {
-        result += `${
-          trigger.seconds !== undefined ? "" : "on"
-        } the ${minutes}${ordinalSuffix(minutes)} minute of `;
-      }
-    } else if (trigger.seconds !== undefined) {
-      if (trigger.hours !== undefined) {
-        result += `the 0${ordinalSuffix(0)} minute of `;
-      } else {
-        result += "every minute of ";
-      }
-    }
-    if (trigger.hours !== undefined) {
-      const hours_all = trigger.hours === "*";
-      const hours_interval =
-        typeof trigger.hours === "string" && trigger.hours.startsWith("/");
-      const hours = hours_all
-        ? 0
-        : typeof trigger.hours === "number"
-        ? trigger.hours
-        : hours_interval
-        ? parseInt(trigger.hours.substring(1))
-        : parseInt(trigger.hours);
-
-      if (
-        isNaN(hours) ||
-        hours > 23 ||
-        hours < 0 ||
-        (hours_interval && hours === 0)
-      ) {
-        return "Invalid Time Pattern Hours";
-      }
-
-      if (hours_all) {
-        result += "every hour";
-      } else if (hours_interval) {
-        result += `every ${hours} hours`;
-      } else {
-        result += `${
-          trigger.seconds !== undefined || trigger.minutes !== undefined
-            ? ""
-            : "on"
-        } the ${hours}${ordinalSuffix(hours)} hour`;
-      }
-    } else {
-      result += "every hour";
-    }
-    return result;
   }
 
   // Zone Trigger
