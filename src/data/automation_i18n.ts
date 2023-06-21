@@ -86,7 +86,7 @@ export const describeTrigger = (
     return trigger.alias;
   }
 
-  const disjunctionFormatter = new Intl.ListFormat("en", {
+  const disjunctionFormatter = new Intl.ListFormat(hass.language, {
     style: "long",
     type: "disjunction",
   });
@@ -121,59 +121,67 @@ export const describeTrigger = (
 
   // Numeric State Trigger
   if (trigger.platform === "numeric_state" && trigger.entity_id) {
-    let base = "When";
     const stateObj = hass.states[trigger.entity_id];
     const entity = stateObj ? computeStateName(stateObj) : trigger.entity_id;
 
+    let attribute: string | undefined;
     if (trigger.attribute) {
-      base += ` ${computeAttributeNameDisplay(
+      attribute = computeAttributeNameDisplay(
         hass.localize,
         stateObj,
         hass.entities,
         trigger.attribute
-      )} from`;
+      );
     }
 
-    base += ` ${entity} is`;
-
-    if (trigger.above !== undefined) {
-      base += ` above ${trigger.above}`;
+    let above: number | undefined;
+    if (trigger.above) {
+      above = trigger.above;
     }
 
-    if (trigger.below !== undefined && trigger.above !== undefined) {
-      base += " and";
+    let below: number | undefined;
+    if (trigger.below) {
+      below = trigger.below;
     }
 
-    if (trigger.below !== undefined) {
-      base += ` below ${trigger.below}`;
-    }
-
+    let forDuration: string | null | undefined;
     if (trigger.for) {
-      const duration = describeDuration(trigger.for);
-      if (duration) {
-        base += ` for ${duration}`;
-      }
+      forDuration = describeDuration(trigger.for);
     }
 
-    return base;
+    return hass.localize(
+      `${triggerTranslationBaseKey}.numberic_state.description.full`,
+      {
+        hasAttribute: attribute !== undefined,
+        attribute: attribute,
+        entity: entity,
+        hasAbove: above !== undefined,
+        above: above,
+        hasBelow: below !== undefined,
+        below: below,
+        hasAboveAndBelow: above !== undefined && below !== undefined,
+        hasForDuration: forDuration !== undefined && forDuration !== null,
+        forDuration: forDuration,
+      }
+    );
   }
 
   // State Trigger
   if (trigger.platform === "state") {
-    let base = "When";
     const entities: string[] = [];
     const states = hass.states;
 
+    let attribute: string | undefined;
     if (trigger.attribute) {
       const stateObj = Array.isArray(trigger.entity_id)
         ? hass.states[trigger.entity_id[0]]
         : hass.states[trigger.entity_id];
-      base += ` ${computeAttributeNameDisplay(
+      attribute = computeAttributeNameDisplay(
         hass.localize,
         stateObj,
         hass.entities,
         trigger.attribute
-      )} of`;
+      );
     }
 
     if (Array.isArray(trigger.entity_id)) {
@@ -190,25 +198,15 @@ export const describeTrigger = (
       );
     }
 
-    if (entities.length === 0) {
-      // no entity_id or empty array
-      entities.push("something");
-    }
-
-    base += ` ${entities} changes`;
-
     const stateObj =
       hass.states[
         Array.isArray(trigger.entity_id)
           ? trigger.entity_id[0]
           : trigger.entity_id
       ];
+    let fromString: string | undefined;
     if (trigger.from !== undefined) {
-      if (trigger.from === null) {
-        if (!trigger.attribute) {
-          base += " from any state";
-        }
-      } else if (Array.isArray(trigger.from)) {
+      if (Array.isArray(trigger.from)) {
         const from: string[] = [];
         for (const state of trigger.from.values()) {
           from.push(
@@ -233,68 +231,38 @@ export const describeTrigger = (
           );
         }
         if (from.length !== 0) {
-          const fromString = disjunctionFormatter.format(from);
-          base += ` from ${fromString}`;
+          fromString = disjunctionFormatter.format(from);
         }
       } else {
-        base += ` from ${
-          trigger.attribute
-            ? computeAttributeValueDisplay(
-                hass.localize,
-                stateObj,
-                hass.locale,
-                hass.config,
-                hass.entities,
-                trigger.attribute,
-                trigger.from
-              ).toString()
-            : computeStateDisplay(
-                hass.localize,
-                stateObj,
-                hass.locale,
-                hass.config,
-                hass.entities,
-                trigger.from.toString()
-              ).toString()
-        }`;
+        fromString = trigger.attribute
+          ? computeAttributeValueDisplay(
+              hass.localize,
+              stateObj,
+              hass.locale,
+              hass.config,
+              hass.entities,
+              trigger.attribute,
+              trigger.from
+            ).toString()
+          : computeStateDisplay(
+              hass.localize,
+              stateObj,
+              hass.locale,
+              hass.config,
+              hass.entities,
+              trigger.from.toString()
+            ).toString();
       }
     }
 
+    let toString: string | undefined;
     if (trigger.to !== undefined) {
-      if (trigger.to === null) {
-        if (!trigger.attribute) {
-          base += " to any state";
-        }
-      } else if (Array.isArray(trigger.to)) {
-        const to: string[] = [];
-        for (const state of trigger.to.values()) {
-          to.push(
-            trigger.attribute
-              ? computeAttributeValueDisplay(
-                  hass.localize,
-                  stateObj,
-                  hass.locale,
-                  hass.config,
-                  hass.entities,
-                  trigger.attribute,
-                  state
-                ).toString()
-              : computeStateDisplay(
-                  hass.localize,
-                  stateObj,
-                  hass.locale,
-                  hass.config,
-                  hass.entities,
-                  state
-                ).toString()
-          );
-        }
-        if (to.length !== 0) {
-          const toString = disjunctionFormatter.format(to);
-          base += ` to ${toString}`;
-        }
-      } else {
-        base += ` to ${
+      const toValues: string[] = Array.isArray(trigger.to)
+        ? Array.from(trigger.to.values())
+        : [trigger.to.toString()];
+      const to: string[] = [];
+      for (const state of toValues) {
+        to.push(
           trigger.attribute
             ? computeAttributeValueDisplay(
                 hass.localize,
@@ -303,7 +271,7 @@ export const describeTrigger = (
                 hass.config,
                 hass.entities,
                 trigger.attribute,
-                trigger.to
+                state
               ).toString()
             : computeStateDisplay(
                 hass.localize,
@@ -311,28 +279,34 @@ export const describeTrigger = (
                 hass.locale,
                 hass.config,
                 hass.entities,
-                trigger.to.toString()
+                state
               )
-        }`;
+        );
+      }
+      if (to.length !== 0) {
+        toString = disjunctionFormatter.format(to);
       }
     }
 
-    if (
-      !trigger.attribute &&
-      trigger.from === undefined &&
-      trigger.to === undefined
-    ) {
-      base += " state or any attributes";
-    }
-
+    let forDuration: string | null | undefined;
     if (trigger.for) {
-      const duration = describeDuration(trigger.for);
-      if (duration) {
-        base += ` for ${duration}`;
-      }
+      forDuration = describeDuration(trigger.for);
     }
 
-    return base;
+    return hass.localize(
+      `${triggerTranslationBaseKey}.numeric_state.description.full`,
+      {
+        hasAttribute: attribute !== undefined,
+        attribute: attribute,
+        entity: disjunctionFormatter.format(entities),
+        hasFrom: fromString !== undefined,
+        from: fromString,
+        hasTo: toString !== undefined,
+        to: toString,
+        hasForDuration: forDuration !== undefined && forDuration !== null,
+        forDuration: forDuration,
+      }
+    );
   }
 
   // Sun Trigger
@@ -383,109 +357,81 @@ export const describeTrigger = (
       trigger.minutes !== undefined ||
       trigger.hours !== undefined)
   ) {
-    let result = "Trigger ";
-    if (trigger.seconds !== undefined) {
-      const seconds_all = trigger.seconds === "*";
-      const seconds_interval =
-        typeof trigger.seconds === "string" && trigger.seconds.startsWith("/");
-      const seconds = seconds_all
-        ? 0
-        : typeof trigger.seconds === "number"
-        ? trigger.seconds
-        : seconds_interval
-        ? parseInt(trigger.seconds.substring(1))
-        : parseInt(trigger.seconds);
+    const describeTimePatternTriggerPart = (
+      given_value: string | number | undefined,
+      min: number,
+      max: number
+    ) => {
+      // gives the friendly description for either seconds, minutes or hours
+      let result = "";
+      let resultType: "all" | "every_interval" | "number_value" | undefined;
+      if (given_value !== undefined) {
+        const value_all = given_value === "*";
+        const value_interval =
+          typeof given_value === "string" && given_value.startsWith("/");
+        const value = value_all
+          ? 0
+          : typeof given_value === "number"
+          ? given_value
+          : value_interval
+          ? parseInt(given_value.substring(1))
+          : parseInt(given_value);
 
-      if (
-        isNaN(seconds) ||
-        seconds > 59 ||
-        seconds < 0 ||
-        (seconds_interval && seconds === 0)
-      ) {
-        return "Invalid Time Pattern Seconds";
+        if (
+          isNaN(value) ||
+          value > max ||
+          value < min ||
+          (value_interval && value === 0)
+        ) {
+          throw new Error(`
+              ${hass.localize(
+                `${triggerTranslationBaseKey}.time_pattern.invalid_time_pattern`
+              )}`);
+        }
+
+        if (value_all) {
+          resultType = "all";
+        } else if (value_interval) {
+          resultType = "every_interval";
+          result = value.toString();
+        } else {
+          resultType = "number_value";
+          result = value.toString() + ordinalSuffix(value);
+        }
       }
 
-      if (seconds_all) {
-        result += "every second of ";
-      } else if (seconds_interval) {
-        result += `every ${seconds} seconds of `;
-      } else {
-        result += `on the ${seconds}${ordinalSuffix(seconds)} second of `;
-      }
+      return [result, resultType];
+    };
+
+    try {
+      const secondsPart = describeTimePatternTriggerPart(
+        trigger.seconds,
+        0,
+        59
+      );
+
+      const minutesPart = describeTimePatternTriggerPart(
+        trigger.minutes,
+        0,
+        59
+      );
+
+      const hoursPart = describeTimePatternTriggerPart(trigger.hours, 0, 23);
+
+      return hass.localize(
+        `${triggerTranslationBaseKey}.time_pattern.description.full`,
+        {
+          secondsType: secondsPart[1],
+          seconds: secondsPart[0],
+          hoursType: hoursPart[1],
+          hours: hoursPart[0],
+          minutesType: minutesPart[1],
+          minutes: minutesPart[0],
+        }
+      );
+    } catch (error: any) {
+      return error;
     }
-    if (trigger.minutes !== undefined) {
-      const minutes_all = trigger.minutes === "*";
-      const minutes_interval =
-        typeof trigger.minutes === "string" && trigger.minutes.startsWith("/");
-      const minutes = minutes_all
-        ? 0
-        : typeof trigger.minutes === "number"
-        ? trigger.minutes
-        : minutes_interval
-        ? parseInt(trigger.minutes.substring(1))
-        : parseInt(trigger.minutes);
-
-      if (
-        isNaN(minutes) ||
-        minutes > 59 ||
-        minutes < 0 ||
-        (minutes_interval && minutes === 0)
-      ) {
-        return "Invalid Time Pattern Minutes";
-      }
-
-      if (minutes_all) {
-        result += "every minute of ";
-      } else if (minutes_interval) {
-        result += `every ${minutes} minutes of `;
-      } else {
-        result += `${
-          trigger.seconds !== undefined ? "" : "on"
-        } the ${minutes}${ordinalSuffix(minutes)} minute of `;
-      }
-    } else if (trigger.seconds !== undefined) {
-      if (trigger.hours !== undefined) {
-        result += `the 0${ordinalSuffix(0)} minute of `;
-      } else {
-        result += "every minute of ";
-      }
-    }
-    if (trigger.hours !== undefined) {
-      const hours_all = trigger.hours === "*";
-      const hours_interval =
-        typeof trigger.hours === "string" && trigger.hours.startsWith("/");
-      const hours = hours_all
-        ? 0
-        : typeof trigger.hours === "number"
-        ? trigger.hours
-        : hours_interval
-        ? parseInt(trigger.hours.substring(1))
-        : parseInt(trigger.hours);
-
-      if (
-        isNaN(hours) ||
-        hours > 23 ||
-        hours < 0 ||
-        (hours_interval && hours === 0)
-      ) {
-        return "Invalid Time Pattern Hours";
-      }
-
-      if (hours_all) {
-        result += "every hour";
-      } else if (hours_interval) {
-        result += `every ${hours} hours`;
-      } else {
-        result += `${
-          trigger.seconds !== undefined || trigger.minutes !== undefined
-            ? ""
-            : "on"
-        } the ${hours}${ordinalSuffix(hours)} hour`;
-      }
-    } else {
-      result += "every hour";
-    }
-    return result;
   }
 
   // Zone Trigger

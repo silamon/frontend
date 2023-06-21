@@ -2311,7 +2311,10 @@
                   "from": "From (optional)",
                   "for": "For",
                   "to": "To (optional)",
-                  "any_state_ignore_attributes": "Any state (ignoring attribute changes)"
+                  "any_state_ignore_attributes": "Any state (ignoring attribute changes)",
+                  "description": {
+                    "full": "When {hasAttribute, select, \n true {{attribute} of} \n other {}\n } {hasEntity, select, \n true {{entity}} \n other {something}\n } changes {hasFrom, select, \n true { from {from}} \n other {from any state}\n }{hasTo, select, \n true { to {to}} \n other {to any state}\n }{hasNoAttributeNoFromNoTo, select, \n true { state or any attributes} \n other {}\n }{hasForDuration, select, \n true { for {forDuration}} \n other {}\n }"
+                  }
                 },
                 "homeassistant": {
                   "label": "Home Assistant",
@@ -2339,7 +2342,10 @@
                   "mode_below": "Below mode",
                   "value_template": "Value template",
                   "type_value": "Fixed number",
-                  "type_input": "Numeric value of another entity"
+                  "type_input": "Numeric value of another entity",
+                  "description": {
+                    "full": "When {hasAttribute, select, \n true {{attribute} from} \n other {}\n } {entity} is {hasAbove, select, \n true { above {above}} \n other {}\n }{hasAboveAndBelow, select, \n true { and} \n other {}\n }{hasBelow, select, \n true { below {below}} \n other {}\n }{hasForDuration, select, \n true { for {forDuration}} \n other {}\n }"
+                  }
                 },
                 "sun": {
                   "label": "Sun",
@@ -2380,7 +2386,11 @@
                   "label": "Time Pattern",
                   "hours": "Hours",
                   "minutes": "Minutes",
-                  "seconds": "Seconds"
+                  "seconds": "Seconds",
+                  "invalid_time_pattern": "Invalid Time Pattern",
+                  "description": {
+                    "full": "Trigger {secondsType, select, \n all {every second of } \n every_interval {every {seconds} seconds of } \n number_value {on the {seconds}{secondsOrdinal} second of } \n other {}\n }{minutesType, select, \n all {every minute of } \n every_interval {every {minutes} minutes of } \n number_value {on the {minutes}{minutesOrdinal} minute of } \n other {}\n }{hoursType, select, \n all {every hour} \n every_interval {every {hours} hours} \n number_value {on the {hours}{hoursOrdinal} hour of } \n other {}\n } {hasDuration, select, \n true { for {duration}} \n other {every hour}\n }"
+                  }
                 },
                 "webhook": {
                   "copy_url": "Copy URL to Clipboard",
@@ -2739,7 +2749,6 @@
             },
             "discover_blueprint_tip": "[%key:ui::panel::config::automation::dialog_new::discover_blueprint_tip%]"
           },
-
           "editor": {
             "alias": "Name",
             "icon": "Icon",
