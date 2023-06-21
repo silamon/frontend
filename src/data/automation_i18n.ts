@@ -150,7 +150,7 @@ export const describeTrigger = (
     }
 
     return hass.localize(
-      `${triggerTranslationBaseKey}.numberic_state.description.full`,
+      `${triggerTranslationBaseKey}.numeric_state.description.full`,
       {
         hasAttribute: attribute !== undefined,
         attribute: attribute,
@@ -294,10 +294,11 @@ export const describeTrigger = (
     }
 
     return hass.localize(
-      `${triggerTranslationBaseKey}.numeric_state.description.full`,
+      `${triggerTranslationBaseKey}.state.description.full`,
       {
         hasAttribute: attribute !== undefined,
         attribute: attribute,
+        hasEntity: entities.length !== 0,
         entity: disjunctionFormatter.format(entities),
         hasFrom: fromString !== undefined,
         from: fromString,
@@ -305,6 +306,10 @@ export const describeTrigger = (
         to: toString,
         hasForDuration: forDuration !== undefined && forDuration !== null,
         forDuration: forDuration,
+        hasNoAttributeNoFromNoTo:
+          attribute === undefined &&
+          fromString === undefined &&
+          toString === undefined,
       }
     );
   }
@@ -383,10 +388,11 @@ export const describeTrigger = (
           value < min ||
           (value_interval && value === 0)
         ) {
-          throw new Error(`
-              ${hass.localize(
-                `${triggerTranslationBaseKey}.time_pattern.invalid_time_pattern`
-              )}`);
+          throw new Error(
+            hass.localize(
+              `${triggerTranslationBaseKey}.time_pattern.invalid_time_pattern`
+            )
+          );
         }
 
         if (value_all) {
@@ -403,35 +409,50 @@ export const describeTrigger = (
       return [result, resultType];
     };
 
+    let secondsPart: (string | undefined)[];
     try {
-      const secondsPart = describeTimePatternTriggerPart(
-        trigger.seconds,
-        0,
-        59
-      );
-
-      const minutesPart = describeTimePatternTriggerPart(
-        trigger.minutes,
-        0,
-        59
-      );
-
-      const hoursPart = describeTimePatternTriggerPart(trigger.hours, 0, 23);
-
-      return hass.localize(
-        `${triggerTranslationBaseKey}.time_pattern.description.full`,
-        {
-          secondsType: secondsPart[1],
-          seconds: secondsPart[0],
-          hoursType: hoursPart[1],
-          hours: hoursPart[0],
-          minutesType: minutesPart[1],
-          minutes: minutesPart[0],
-        }
-      );
+      secondsPart = describeTimePatternTriggerPart(trigger.seconds, 0, 59);
     } catch (error: any) {
-      return error;
+      return (
+        error.message +
+        " " +
+        hass.localize(`${triggerTranslationBaseKey}.time_pattern.seconds`)
+      );
     }
+
+    let minutesPart: (string | undefined)[];
+    try {
+      minutesPart = describeTimePatternTriggerPart(trigger.minutes, 0, 59);
+    } catch (error: any) {
+      return (
+        error.message +
+        " " +
+        hass.localize(`${triggerTranslationBaseKey}.time_pattern.minutes`)
+      );
+    }
+
+    let hoursPart: (string | undefined)[];
+    try {
+      hoursPart = describeTimePatternTriggerPart(trigger.hours, 0, 23);
+    } catch (error: any) {
+      return (
+        error.message +
+        " " +
+        hass.localize(`${triggerTranslationBaseKey}.time_pattern.hours`)
+      );
+    }
+
+    return hass.localize(
+      `${triggerTranslationBaseKey}.time_pattern.description.full`,
+      {
+        secondsType: secondsPart[1],
+        seconds: secondsPart[0],
+        hoursType: hoursPart[1],
+        hours: hoursPart[0],
+        minutesType: minutesPart[1],
+        minutes: minutesPart[0],
+      }
+    );
   }
 
   // Zone Trigger
