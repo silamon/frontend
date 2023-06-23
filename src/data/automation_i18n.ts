@@ -206,52 +206,34 @@ export const describeTrigger = (
       ];
     let fromString: string | undefined;
     if (trigger.from !== undefined) {
-      if (Array.isArray(trigger.from)) {
-        const from: string[] = [];
-        for (const state of trigger.from.values()) {
-          from.push(
-            trigger.attribute
-              ? computeAttributeValueDisplay(
-                  hass.localize,
-                  stateObj,
-                  hass.locale,
-                  hass.config,
-                  hass.entities,
-                  trigger.attribute,
-                  state
-                ).toString()
-              : computeStateDisplay(
-                  hass.localize,
-                  stateObj,
-                  hass.locale,
-                  hass.config,
-                  hass.entities,
-                  state
-                )
-          );
-        }
-        if (from.length !== 0) {
-          fromString = disjunctionFormatter.format(from);
-        }
-      } else {
-        fromString = trigger.attribute
-          ? computeAttributeValueDisplay(
-              hass.localize,
-              stateObj,
-              hass.locale,
-              hass.config,
-              hass.entities,
-              trigger.attribute,
-              trigger.from
-            ).toString()
-          : computeStateDisplay(
-              hass.localize,
-              stateObj,
-              hass.locale,
-              hass.config,
-              hass.entities,
-              trigger.from.toString()
-            ).toString();
+      const fromValues: string[] = Array.isArray(trigger.from)
+        ? Array.from(trigger.from.values())
+        : [trigger.from.toString()];
+      const from: string[] = [];
+      for (const state of fromValues) {
+        from.push(
+          trigger.attribute
+            ? computeAttributeValueDisplay(
+                hass.localize,
+                stateObj,
+                hass.locale,
+                hass.config,
+                hass.entities,
+                trigger.attribute,
+                state
+              ).toString()
+            : computeStateDisplay(
+                hass.localize,
+                stateObj,
+                hass.locale,
+                hass.config,
+                hass.entities,
+                state
+              )
+        );
+      }
+      if (from.length !== 0) {
+        fromString = disjunctionFormatter.format(from);
       }
     }
 
@@ -293,16 +275,27 @@ export const describeTrigger = (
       forDuration = describeDuration(trigger.for);
     }
 
+    let hasAttribute = attribute !== undefined;
     return hass.localize(
       `${triggerTranslationBaseKey}.state.description.full`,
       {
-        hasAttribute: attribute !== undefined,
+        hasAttribute: hasAttribute,
         attribute: attribute,
         hasEntity: entities.length !== 0,
         entity: disjunctionFormatter.format(entities),
-        hasFrom: fromString !== undefined,
+        hasFrom:
+          fromString !== undefined
+            ? true
+            : !hasAttribute && toString === null
+            ? "no_attribute"
+            : false,
         from: fromString,
-        hasTo: toString !== undefined,
+        hasTo:
+          toString !== undefined
+            ? true
+            : !hasAttribute && fromString === null
+            ? "no_attribute"
+            : false,
         to: toString,
         hasForDuration: forDuration !== undefined && forDuration !== null,
         forDuration: forDuration,
@@ -490,11 +483,12 @@ export const describeTrigger = (
       );
     }
 
-    const entitiesString = disjunctionFormatter.format(entities);
-    const zonesString = disjunctionFormatter.format(zones);
-    return `When ${entitiesString} ${trigger.event}s ${zonesString} ${
-      zones.length > 1 ? "zones" : "zone"
-    }`;
+    return hass.localize(`${triggerTranslationBaseKey}.zone.description.full`, {
+      entity: disjunctionFormatter.format(entities),
+      event: trigger.event.toString(),
+      zone: disjunctionFormatter.format(zones),
+      numberOfZones: zones.length,
+    });
   }
 
   // Geo Location Trigger
@@ -525,11 +519,12 @@ export const describeTrigger = (
       );
     }
 
-    const sourcesString = disjunctionFormatter.format(sources);
-    const zonesString = disjunctionFormatter.format(zones);
-    return `When ${sourcesString} ${trigger.event}s ${zonesString} ${
-      zones.length > 1 ? "zones" : "zone"
-    }`;
+    return hass.localize(`${triggerTranslationBaseKey}.geo.description.full`, {
+      entity: disjunctionFormatter.format(sources),
+      event: trigger.event.toString(),
+      zone: disjunctionFormatter.format(zones),
+      numberOfZones: zones.length,
+    });
   }
 
   // MQTT Trigger

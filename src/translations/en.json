@@ -2303,7 +2303,10 @@
                   "zone": "Zone",
                   "event": "Event",
                   "enter": "Enter",
-                  "leave": "Leave"
+                  "leave": "Leave",
+                  "description": {
+                    "full": "When {entity} {event, select, \n enter {enters}\n leave {leaves} other {} \n} {zone} {numberOfZones, plural,\n one {zone}\n other {zones}\n}"
+                  }
                 },
                 "state": {
                   "label": "State",
@@ -2313,7 +2316,7 @@
                   "to": "To (optional)",
                   "any_state_ignore_attributes": "Any state (ignoring attribute changes)",
                   "description": {
-                    "full": "When {hasAttribute, select, \n true {{attribute} of} \n other {}\n } {hasEntity, select, \n true {{entity}} \n other {something}\n } changes {hasFrom, select, \n true { from {from}} \n other {from any state}\n }{hasTo, select, \n true { to {to}} \n other { to any state}\n }{hasNoAttributeNoFromNoTo, select, \n true { state or any attributes} \n other {}\n }{hasForDuration, select, \n true { for {forDuration}} \n other {}\n }"
+                    "full": "When {hasAttribute, select, \n true {{attribute} of} \n other {}\n } {hasEntity, select, \n true {{entity}} \n other {something}\n } changes{hasFrom, select, \n true { from { from}} \n no_attribute { from any state} \n other {}\n }{hasTo, select, \n true { to { to}} \n no_attribute { to any state} \n other {}\n }{hasNoAttributeNoFromNoTo, select, \n true { state or any attributes} \n other {}\n }{hasForDuration, select, \n true { for {forDuration}} \n other {}\n }"
                   }
                 },
                 "homeassistant": {
@@ -2409,7 +2412,10 @@
                   "zone": "[%key:ui::panel::config::automation::editor::triggers::type::zone::label%]",
                   "event": "[%key:ui::panel::config::automation::editor::triggers::type::homeassistant::event%]",
                   "enter": "Enter",
-                  "leave": "Leave"
+                  "leave": "Leave",
+                  "description": {
+                    "full": "When {entity} {event, select, \n enter {enters}\n leave {leaves} other {} \n} {zone} {numberOfZones, plural,\n one {zone} \n other {zones}\n}"
+                  }
                 }
               }
             },
