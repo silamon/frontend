@@ -2376,6 +2376,9 @@
                     "removed": "removed",
                     "current": "current",
                     "updated": "updated"
+                  },
+                  "description": {
+                    "full": "When a persistent notification is updated"
                   }
                 },
                 "sun": {
