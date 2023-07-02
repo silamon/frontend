@@ -305,6 +305,38 @@ const tryDescribeTrigger = (
     }
 
     let hasAttribute = attribute !== undefined;
+    let fromAndTo:
+      | "only_from"
+      | "only_from_no_attribute"
+      | "only_to"
+      | "only_to_no_attribute"
+      | "from_and_to"
+      | "no_attribute"
+      | "other" = "other";
+    if (fromString !== undefined && toString !== undefined) {
+      fromAndTo = "from_and_to";
+    } else if (fromString !== undefined) {
+      if (!hasAttribute && toString === null) {
+        fromAndTo = "only_from";
+      } else {
+        fromAndTo = "only_from_no_attribute";
+      }
+    } else if (toString !== undefined) {
+      if (!hasAttribute && fromString === null) {
+        fromAndTo = "only_to";
+      } else {
+        fromAndTo = "only_to_no_attribute";
+      }
+    } else if (
+      attribute === undefined &&
+      fromString === undefined &&
+      toString === undefined
+    ) {
+      if (!hasAttribute) {
+        fromAndTo = "no_attribute";
+      }
+      fromAndTo = "other";
+    }
     return hass.localize(
       `${triggerTranslationBaseKey}.state.description.full`,
       {
@@ -312,26 +344,11 @@ const tryDescribeTrigger = (
         attribute: attribute,
         hasEntity: entities.length !== 0,
         entity: formatListWithOrs(hass.locale, entities),
-        hasFrom:
-          fromString !== undefined
-            ? true
-            : !hasAttribute && toString === null
-            ? "no_attribute"
-            : false,
+        fromAndTo: fromAndTo,
         from: fromString,
-        hasTo:
-          toString !== undefined
-            ? true
-            : !hasAttribute && fromString === null
-            ? "no_attribute"
-            : false,
         to: toString,
         hasDuration: duration !== undefined && duration !== null,
         duration: duration,
-        hasNoAttributeNoFromNoTo:
-          attribute === undefined &&
-          fromString === undefined &&
-          toString === undefined,
       }
     );
   }

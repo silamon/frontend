@@ -2333,7 +2333,7 @@
                   "to": "To (optional)",
                   "any_state_ignore_attributes": "Any state (ignoring attribute changes)",
                   "description": {
-                    "full": "When {hasAttribute, select, \n true {{attribute} of} \n other {}\n } {hasEntity, select, \n true {{entity}} \n other {something}\n } changes{hasFrom, select, \n true { from { from}} \n no_attribute { from any state} \n other {}\n }{hasTo, select, \n true { to { to}} \n no_attribute { to any state} \n other {}\n }{hasNoAttributeNoFromNoTo, select, \n true { state or any attributes} \n other {}\n }{hasDuration, select, \n true { for {duration}} \n other {}\n }"
+                    "full": "When {hasAttribute, select, \n true {{attribute} of} \n other {}\n } {hasEntity, select, \n true {{entity}} \n other {something}\n } changes{fromAndTo, select, \n only_from { from {from}} \n only_from_no_attribute { from any state} \n only_to { to {to}} \n only_to_no_attribute { to any state} \n no_attribute {state or any attributes} \n other {state}\n }{hasDuration, select, \n true { for {duration}} \n other {}\n }"
                   }
                 },
                 "homeassistant": {
@@ -2364,7 +2364,7 @@
                   "type_value": "Fixed number",
                   "type_input": "Numeric value of another entity",
                   "description": {
-                    "full": "When {hasAttribute, select, \n true {{attribute} from} \n other {}\n } {entity} is {aboveAndBelow, select, \n only_above { above {above}} \n above_and_below { above {above} and below {below} \n only_below { below {below}} \n other {}\n }{hasDuration, select, \n true { for {duration}} \n other {}\n }"
+                    "full": "When {hasAttribute, select, \n true {{attribute} from} \n other {}\n } {entity} is {aboveAndBelow, select, \n only_above { only_above {above}} \n above_and_below { above {above} and below {below} \n only_below { below {below}} \n other {}\n }{hasDuration, select, \n true { for {duration}} \n other {}\n }"
                   }
                 },
                 "persistent_notification": {
