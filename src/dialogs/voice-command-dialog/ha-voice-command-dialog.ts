@@ -18,7 +18,7 @@ import {
   TemplateResult,
 } from "lit";
 import { customElement, property, query, state } from "lit/decorators";
-import { LocalStorage } from "../../common/decorators/local-storage";
+import { storage } from "../../common/decorators/storage";
 import { fireEvent } from "../../common/dom/fire_event";
 import { stopPropagation } from "../../common/dom/stop_propagation";
 import "../../components/ha-button";
@@ -35,7 +35,6 @@ import {
   listAssistPipelines,
   runAssistPipeline,
 } from "../../data/assist_pipeline";
-import { AgentInfo, getAgentInfo } from "../../data/conversation";
 import { haStyleDialog } from "../../resources/styles";
 import type { HomeAssistant } from "../../types";
 import { AudioRecorder } from "../../util/audio-recorder";
@@ -57,11 +56,14 @@ export class HaVoiceCommandDialog extends LitElement {
 
   @state() private _opened = false;
 
-  @LocalStorage("AssistPipelineId", true, false) private _pipelineId?: string;
+  @storage({
+    key: "AssistPipelineId",
+    state: true,
+    subscribe: false,
+  })
+  private _pipelineId?: string;
 
   @state() private _pipeline?: AssistPipeline;
-
-  @state() private _agentInfo?: AgentInfo;
 
   @state() private _showSendButton = false;
 
@@ -110,7 +112,6 @@ export class HaVoiceCommandDialog extends LitElement {
     this._opened = false;
     this._pipeline = undefined;
     this._pipelines = undefined;
-    this._agentInfo = undefined;
     this._conversation = undefined;
     this._conversationId = null;
     this._audioRecorder?.close();
@@ -260,17 +261,6 @@ export class HaVoiceCommandDialog extends LitElement {
                   `}
             </span>
           </ha-textfield>
-          ${this._agentInfo && this._agentInfo.attribution
-            ? html`
-                <a
-                  href=${this._agentInfo.attribution.url}
-                  class="attribution"
-                  target="_blank"
-                  rel="noreferrer"
-                  >${this._agentInfo.attribution.name}</a
-                >
-              `
-            : ""}
         </div>
       </ha-dialog>
     `;
@@ -293,12 +283,7 @@ export class HaVoiceCommandDialog extends LitElement {
       if (e.code === "not_found") {
         this._pipelineId = undefined;
       }
-      return;
     }
-    this._agentInfo = await getAgentInfo(
-      this.hass,
-      this._pipeline.conversation_engine
-    );
   }
 
   private async _loadPipelines() {
@@ -722,12 +707,6 @@ export class HaVoiceCommandDialog extends LitElement {
         .side-by-side > * {
           flex: 1 0;
           padding: 4px;
-        }
-        .attribution {
-          display: block;
-          color: var(--secondary-text-color);
-          padding-top: 4px;
-          margin-bottom: -8px;
         }
         .messages {
           display: block;

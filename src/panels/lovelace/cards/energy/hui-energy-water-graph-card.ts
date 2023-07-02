@@ -217,6 +217,10 @@ export class HuiEnergyWaterGraphCard
         plugins: {
           tooltip: {
             position: "nearest",
+            filter: (val) => val.formattedValue !== "0",
+            itemSort: function (a, b) {
+              return b.datasetIndex - a.datasetIndex;
+            },
             callbacks: {
               title: (datasets) => {
                 if (dayDifference > 0) {
@@ -236,6 +240,24 @@ export class HuiEnergyWaterGraphCard
                   context.parsed.y,
                   locale
                 )} ${unit}`,
+              footer: (contexts) => {
+                if (contexts.length < 2) {
+                  return [];
+                }
+                let total = 0;
+                for (const context of contexts) {
+                  total += (context.dataset.data[context.dataIndex] as any).y;
+                }
+                if (total === 0) {
+                  return [];
+                }
+                return [
+                  this.hass.localize(
+                    "ui.panel.lovelace.cards.energy.energy_water_graph.total_consumed",
+                    { num: formatNumber(total, locale), unit }
+                  ),
+                ];
+              },
             },
           },
           filler: {

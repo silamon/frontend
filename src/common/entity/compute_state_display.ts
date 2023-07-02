@@ -50,7 +50,7 @@ export const computeStateDisplay = (
   entities: HomeAssistant["entities"],
   state?: string
 ): string => {
-  const entity = entities[stateObj.entity_id] as
+  const entity = entities?.[stateObj.entity_id] as
     | EntityRegistryDisplayEntry
     | undefined;
 
@@ -169,12 +169,6 @@ export const computeStateDisplayFromEntityAttributes = (
     }
   }
 
-  if (domain === "humidifier") {
-    if (state === "on" && attributes.humidity) {
-      return `${attributes.humidity} %`;
-    }
-  }
-
   // `counter` `number` and `input_number` domains do not have a unit of measurement but should still use `formatNumber`
   if (
     domain === "counter" ||
@@ -191,7 +185,9 @@ export const computeStateDisplayFromEntityAttributes = (
 
   // state is a timestamp
   if (
-    ["button", "input_button", "scene", "stt", "tts"].includes(domain) ||
+    ["button", "image", "input_button", "scene", "stt", "tts"].includes(
+      domain
+    ) ||
     (domain === "sensor" && attributes.device_class === "timestamp")
   ) {
     try {

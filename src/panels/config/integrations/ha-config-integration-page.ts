@@ -543,8 +543,7 @@ class HaConfigIntegrationPage extends SubscribeMixin(LitElement) {
       ];
       if (item.reason) {
         this.hass.loadBackendTranslation("config", item.domain);
-        stateTextExtra = html`:
-        ${this.hass.localize(
+        stateTextExtra = html`${this.hass.localize(
           `component.${item.domain}.config.error.${item.reason}`
         ) || item.reason}`;
       } else {
@@ -898,10 +897,14 @@ class HaConfigIntegrationPage extends SubscribeMixin(LitElement) {
     if (!this.domain || !isComponentLoaded(this.hass, "diagnostics")) {
       return;
     }
-    this._diagnosticHandler = await fetchDiagnosticHandler(
-      this.hass,
-      this.domain
-    );
+    try {
+      this._diagnosticHandler = await fetchDiagnosticHandler(
+        this.hass,
+        this.domain
+      );
+    } catch (err: any) {
+      // No issue, as diagnostics are not required
+    }
   }
 
   private async _handleEnableDebugLogging() {

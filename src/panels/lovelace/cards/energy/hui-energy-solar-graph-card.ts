@@ -213,6 +213,10 @@ export class HuiEnergySolarGraphCard
         plugins: {
           tooltip: {
             position: "nearest",
+            filter: (val) => val.formattedValue !== "0",
+            itemSort: function (a, b) {
+              return b.datasetIndex - a.datasetIndex;
+            },
             callbacks: {
               title: (datasets) => {
                 if (dayDifference > 0) {
@@ -232,6 +236,27 @@ export class HuiEnergySolarGraphCard
                   context.parsed.y,
                   locale
                 )} kWh`,
+              footer: (contexts) => {
+                const production_contexts = contexts.filter(
+                  (c) => c.dataset?.stack === "solar"
+                );
+                if (production_contexts.length < 2) {
+                  return [];
+                }
+                let total = 0;
+                for (const context of production_contexts) {
+                  total += (context.dataset.data[context.dataIndex] as any).y;
+                }
+                if (total === 0) {
+                  return [];
+                }
+                return [
+                  this.hass.localize(
+                    "ui.panel.lovelace.cards.energy.energy_solar_graph.total_produced",
+                    { num: formatNumber(total, locale) }
+                  ),
+                ];
+              },
             },
           },
           filler: {

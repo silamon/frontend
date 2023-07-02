@@ -12,6 +12,7 @@ import {
 } from "../common/entity/compute_attribute_display";
 import { computeStateDisplay } from "../common/entity/compute_state_display";
 import { computeStateName } from "../common/entity/compute_state_name";
+import "../resources/intl-polyfill";
 import type { HomeAssistant } from "../types";
 import { Condition, ForDict, Trigger } from "./automation";
 import {
@@ -21,7 +22,6 @@ import {
   localizeDeviceAutomationTrigger,
 } from "./device_automation";
 import { EntityRegistryEntry } from "./entity_registry";
-import "../resources/intl-polyfill";
 import { FrontendLocaleData } from "./translation";
 
 const triggerTranslationBaseKey =
@@ -77,6 +77,26 @@ const ordinalSuffix = (n: number) => {
 };
 
 export const describeTrigger = (
+  trigger: Trigger,
+  hass: HomeAssistant,
+  entityRegistry: EntityRegistryEntry[],
+  ignoreAlias = false
+) => {
+  try {
+    return tryDescribeTrigger(trigger, hass, entityRegistry, ignoreAlias);
+  } catch (error: any) {
+    // eslint-disable-next-line no-console
+    console.error(error);
+
+    let msg = "Error in describing trigger";
+    if (error.message) {
+      msg += ": " + error.message;
+    }
+    return msg;
+  }
+};
+
+const tryDescribeTrigger = (
   trigger: Trigger,
   hass: HomeAssistant,
   entityRegistry: EntityRegistryEntry[],
@@ -552,6 +572,30 @@ export const describeTrigger = (
     );
   }
 
+  // Conversation Trigger
+  if (trigger.platform === "conversation") {
+    if (!trigger.command) {
+      return hass.localize(
+        `${triggerTranslationBaseKey}.conversation.description.empty`
+      );
+    }
+
+    return hass.localize(
+      `${triggerTranslationBaseKey}.conversation.description.full`,
+      {
+        sentence: disjunctionFormatter.format(
+          ensureArray(trigger.command).map((cmd) => `'${cmd}'`)
+        ),
+      }
+    );
+  }
+
+  // Persistent Notification Trigger
+  if (trigger.platform === "persistent_notification") {
+    return "When a persistent notification is updated";
+  }
+
+  // Device Trigger
   if (trigger.platform === "device") {
     if (!trigger.device_id) {
       return "Device trigger";
@@ -577,6 +621,26 @@ export const describeTrigger = (
 };
 
 export const describeCondition = (
+  condition: Condition,
+  hass: HomeAssistant,
+  entityRegistry: EntityRegistryEntry[],
+  ignoreAlias = false
+) => {
+  try {
+    return tryDescribeCondition(condition, hass, entityRegistry, ignoreAlias);
+  } catch (error: any) {
+    // eslint-disable-next-line no-console
+    console.error(error);
+
+    let msg = "Error in describing condition";
+    if (error.message) {
+      msg += ": " + error.message;
+    }
+    return msg;
+  }
+};
+
+const tryDescribeCondition = (
   condition: Condition,
   hass: HomeAssistant,
   entityRegistry: EntityRegistryEntry[],
