@@ -163,9 +163,9 @@ const tryDescribeTrigger = (
       below = trigger.below;
     }
 
-    let forDuration: string | null | undefined;
+    let duration: string | null | undefined;
     if (trigger.for) {
-      forDuration = describeDuration(trigger.for);
+      duration = describeDuration(trigger.for);
     }
 
     return hass.localize(
@@ -179,8 +179,8 @@ const tryDescribeTrigger = (
         hasBelow: below !== undefined,
         below: below,
         hasAboveAndBelow: above !== undefined && below !== undefined,
-        hasForDuration: forDuration !== undefined && forDuration !== null,
-        forDuration: forDuration,
+        hasDuration: duration !== undefined && duration !== null,
+        duration: duration,
       }
     );
   }
@@ -289,9 +289,9 @@ const tryDescribeTrigger = (
       }
     }
 
-    let forDuration: string | null | undefined;
+    let duration: string | null | undefined;
     if (trigger.for) {
-      forDuration = describeDuration(trigger.for);
+      duration = describeDuration(trigger.for);
     }
 
     let hasAttribute = attribute !== undefined;
@@ -316,8 +316,8 @@ const tryDescribeTrigger = (
             ? "no_attribute"
             : false,
         to: toString,
-        hasForDuration: forDuration !== undefined && forDuration !== null,
-        forDuration: forDuration,
+        hasDuration: duration !== undefined && duration !== null,
+        duration: duration,
         hasNoAttributeNoFromNoTo:
           attribute === undefined &&
           fromString === undefined &&

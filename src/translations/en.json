@@ -2333,7 +2333,7 @@
                   "to": "To (optional)",
                   "any_state_ignore_attributes": "Any state (ignoring attribute changes)",
                   "description": {
-                    "full": "When {hasAttribute, select, \n true {{attribute} of} \n other {}\n } {hasEntity, select, \n true {{entity}} \n other {something}\n } changes{hasFrom, select, \n true { from { from}} \n no_attribute { from any state} \n other {}\n }{hasTo, select, \n true { to { to}} \n no_attribute { to any state} \n other {}\n }{hasNoAttributeNoFromNoTo, select, \n true { state or any attributes} \n other {}\n }{hasForDuration, select, \n true { for {forDuration}} \n other {}\n }"
+                    "full": "When {hasAttribute, select, \n true {{attribute} of} \n other {}\n } {hasEntity, select, \n true {{entity}} \n other {something}\n } changes{hasFrom, select, \n true { from { from}} \n no_attribute { from any state} \n other {}\n }{hasTo, select, \n true { to { to}} \n no_attribute { to any state} \n other {}\n }{hasNoAttributeNoFromNoTo, select, \n true { state or any attributes} \n other {}\n }{hasDuration, select, \n true { for {duration}} \n other {}\n }"
                   }
                 },
                 "homeassistant": {
@@ -2364,7 +2364,7 @@
                   "type_value": "Fixed number",
                   "type_input": "Numeric value of another entity",
                   "description": {
-                    "full": "When {hasAttribute, select, \n true {{attribute} from} \n other {}\n } {entity} is {hasAbove, select, \n true { above {above}} \n other {}\n }{hasAboveAndBelow, select, \n true { and} \n other {}\n }{hasBelow, select, \n true { below {below}} \n other {}\n }{hasForDuration, select, \n true { for {forDuration}} \n other {}\n }"
+                    "full": "When {hasAttribute, select, \n true {{attribute} from} \n other {}\n } {entity} is {hasAbove, select, \n true { above {above}} \n other {}\n }{hasAboveAndBelow, select, \n true { and} \n other {}\n }{hasBelow, select, \n true { below {below}} \n other {}\n }{hasDuration, select, \n true { for {duration}} \n other {}\n }"
                   }
                 },
                 "persistent_notification": {
