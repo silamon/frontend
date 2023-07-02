@@ -168,17 +168,27 @@ const tryDescribeTrigger = (
       duration = describeDuration(trigger.for);
     }
 
+    let aboveAndBelow:
+      | "only_above"
+      | "only_below"
+      | "above_and_below"
+      | "other" = "other";
+    if (above !== undefined && below !== undefined) {
+      aboveAndBelow = "above_and_below";
+    } else if (above !== undefined) {
+      aboveAndBelow = "only_above";
+    } else if (below !== undefined) {
+      aboveAndBelow = "only_below";
+    }
     return hass.localize(
       `${triggerTranslationBaseKey}.numeric_state.description.full`,
       {
         hasAttribute: attribute !== undefined,
         attribute: attribute,
         entity: entity,
-        hasAbove: above !== undefined,
+        aboveAndBelow: aboveAndBelow,
         above: above,
-        hasBelow: below !== undefined,
         below: below,
-        hasAboveAndBelow: above !== undefined && below !== undefined,
         hasDuration: duration !== undefined && duration !== null,
         duration: duration,
       }
