@@ -2364,7 +2364,7 @@
                   "type_value": "Fixed number",
                   "type_input": "Numeric value of another entity",
                   "description": {
-                    "full": "When {hasAttribute, select, \n true {{attribute} from} \n other {}\n } {entity} is {aboveAndBelow, select, \n only_above { only_above {above}} \n above_and_below { above {above} and below {below} \n only_below { below {below}} \n other {}\n }{hasDuration, select, \n true { for {duration}} \n other {}\n }"
+                    "full": "When {hasAttribute, select, \n true {{attribute} from} \n other {}\n } {entity} is {aboveAndBelow, select, \n only_above { only_above {above}} \n above_and_below { above {above} and below {below}} \n only_below { below {below}} \n other {}\n }{hasDuration, select, \n true { for {duration}} \n other {}\n }"
                   }
                 },
                 "persistent_notification": {

@@ -316,13 +316,13 @@ const tryDescribeTrigger = (
     if (fromString !== undefined && toString !== undefined) {
       fromAndTo = "from_and_to";
     } else if (fromString !== undefined) {
-      if (!hasAttribute && toString === null) {
+      if (!hasAttribute && toString === undefined) {
         fromAndTo = "only_from";
       } else {
         fromAndTo = "only_from_no_attribute";
       }
     } else if (toString !== undefined) {
-      if (!hasAttribute && fromString === null) {
+      if (!hasAttribute && fromString === undefined) {
         fromAndTo = "only_to";
       } else {
         fromAndTo = "only_to_no_attribute";
