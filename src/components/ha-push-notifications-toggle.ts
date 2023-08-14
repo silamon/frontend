@@ -1,10 +1,11 @@
-import { html } from "@polymer/polymer/lib/utils/html-tag";
-/* eslint-plugin-disable lit */
-import { PolymerElement } from "@polymer/polymer/polymer-element";
 import { getAppKey } from "../data/notify_html5";
 import { showPromptDialog } from "../dialogs/generic/show-dialog-box";
-import { EventsMixin } from "../mixins/events-mixin";
 import "./ha-switch";
+import { LitElement, TemplateResult, html } from "lit";
+import { HomeAssistant } from "../types";
+import { customElement, property } from "lit/decorators";
+import { fireEvent } from "../common/dom/fire_event";
+import { HaSwitch } from "./ha-switch";
 
 export const pushSupported =
   "serviceWorker" in navigator &&
@@ -13,37 +14,25 @@ export const pushSupported =
     document.location.hostname === "localhost" ||
     document.location.hostname === "127.0.0.1");
 
-/*
- * @appliesMixin EventsMixin
- */
-class HaPushNotificationsToggle extends EventsMixin(PolymerElement) {
-  static get template() {
+@customElement("ha-push-notifications-toggle")
+class HaPushNotificationsToggle extends LitElement {
+  @property({ attribute: false }) public hass!: HomeAssistant;
+
+  @property() public disabled: boolean = false;
+
+  @property() public pushChecked: boolean =
+    "Notification" in window && Notification.permission === "granted";
+
+  @property() public loading: boolean = true;
+
+  protected render(): TemplateResult {
     return html`
       <ha-switch
-        disabled="[[_compDisabled(disabled, loading)]]"
-        checked="{{pushChecked}}"
-        on-change="handlePushChange"
+        .disabled=${this._compDisabled(this.disabled, this.loading)}
+        .checked=${this.pushChecked}
+        @change=${this.handlePushChange}
       ></ha-switch>
     `;
-  }
-
-  static get properties() {
-    return {
-      hass: { type: Object, value: null },
-      disabled: {
-        type: Boolean,
-        value: false,
-      },
-      pushChecked: {
-        type: Boolean,
-        value:
-          "Notification" in window && Notification.permission === "granted",
-      },
-      loading: {
-        type: Boolean,
-        value: true,
-      },
-    };
   }
 
   async connectedCallback() {
@@ -65,12 +54,13 @@ class HaPushNotificationsToggle extends EventsMixin(PolymerElement) {
     }
   }
 
-  handlePushChange(event) {
+  private handlePushChange(ev: Event) {
     // Somehow this is triggered on Safari on page load causing
     // it to get into a loop and crash the page.
     if (!pushSupported) return;
 
-    if (event.target.checked) {
+    const pushnotifications = (ev.target as HaSwitch).checked;
+    if (pushnotifications) {
       this.subscribePushNotifications();
     } else {
       this.unsubscribePushNotifications();
@@ -123,7 +113,7 @@ class HaPushNotificationsToggle extends EventsMixin(PolymerElement) {
         browser: browserName,
         name,
       });
-    } catch (err) {
+    } catch (err: any) {
       const message = err.message || "Notification registration failed.";
       if (sub) {
         await sub.unsubscribe();
@@ -132,7 +122,7 @@ class HaPushNotificationsToggle extends EventsMixin(PolymerElement) {
       // eslint-disable-next-line
       console.error(err);
 
-      this.fire("hass-notification", { message });
+      fireEvent(this, "hass-notification", { message });
       this.pushChecked = false;
     }
   }
@@ -147,24 +137,25 @@ class HaPushNotificationsToggle extends EventsMixin(PolymerElement) {
 
       await this.hass.callApi("DELETE", "notify.html5", { subscription: sub });
       await sub.unsubscribe();
-    } catch (err) {
+    } catch (err: any) {
       const message =
         err.message || "Failed unsubscribing for push notifications.";
 
       // eslint-disable-next-line
       console.error("Error in unsub push", err);
 
-      this.fire("hass-notification", { message });
+      fireEvent(this, "hass-notification", { message });
       this.pushChecked = true;
     }
   }
 
-  _compDisabled(disabled, loading) {
+  private _compDisabled(disabled: boolean, loading: boolean) {
     return disabled || loading;
   }
 }
 
-customElements.define(
-  "ha-push-notifications-toggle",
-  HaPushNotificationsToggle
-);
+declare global {
+  interface HTMLElementTagNameMap {
+    "ha-push-notifications-toggle": HaPushNotificationsToggle;
+  }
+}
