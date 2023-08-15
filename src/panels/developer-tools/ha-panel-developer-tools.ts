@@ -21,8 +21,21 @@ class PanelDeveloperTools extends LitElement {
     this.hass.loadBackendTranslation("title");
   }
 
+  private _getPages(): { key: string; title: string }[] {
+    return [
+      { key: "yaml", title: "yaml" },
+      { key: "state", title: "states" },
+      { key: "service", title: "services" },
+      { key: "template", title: "templates" },
+      { key: "event", title: "events" },
+      { key: "statistic", title: "statistics" },
+      { key: "assist", title: "assist" },
+    ];
+  }
+
   protected render(): TemplateResult {
-    const page = this._page;
+    const pages = this._getPages();
+
     return html`
       <div class="header">
         <div class="toolbar">
@@ -35,38 +48,22 @@ class PanelDeveloperTools extends LitElement {
             ${this.hass.localize("panel.developer_tools")}
           </div>
         </div>
-        <paper-tabs
-          scrollable
-          attr-for-selected="page-name"
-          .selected=${page}
-          @selected-changed=${this.handlePageSelected}
+
+        <mwc-tab-bar
+          .activeIndex=${pages.map((page) => page.key).indexOf(this._page)}
+          @MDCTabBar:activated=${this.handlePageSelected}
         >
-          <paper-tab page-name="yaml">
-            ${this.hass.localize("ui.panel.developer-tools.tabs.yaml.title")}
-          </paper-tab>
-          <paper-tab page-name="state">
-            ${this.hass.localize("ui.panel.developer-tools.tabs.states.title")}
-          </paper-tab>
-          <paper-tab page-name="service">
-            ${this.hass.localize(
-              "ui.panel.developer-tools.tabs.services.title"
-            )}
-          </paper-tab>
-          <paper-tab page-name="template">
-            ${this.hass.localize(
-              "ui.panel.developer-tools.tabs.templates.title"
-            )}
-          </paper-tab>
-          <paper-tab page-name="event">
-            ${this.hass.localize("ui.panel.developer-tools.tabs.events.title")}
-          </paper-tab>
-          <paper-tab page-name="statistics">
-            ${this.hass.localize(
-              "ui.panel.developer-tools.tabs.statistics.title"
-            )}
-          </paper-tab>
-          <paper-tab page-name="assist">Assist</paper-tab>
-        </paper-tabs>
+          ${pages.map(
+            (page) => html`
+              <mwc-tab
+                page-name=${page.key}
+                .label=${this.hass.localize(
+                  `ui.panel.developer-tools.tabs.${page.title}.title`
+                )}
+              ></mwc-tab>
+            `
+          )}
+        </mwc-tab-bar>
       </div>
       <developer-tools-router
         .route=${this.route}
@@ -76,8 +73,8 @@ class PanelDeveloperTools extends LitElement {
     `;
   }
 
-  private handlePageSelected(ev) {
-    const newPage = ev.detail.value;
+  private handlePageSelected(ev: CustomEvent) {
+    const newPage = this._getPages()[ev.detail.index].key;
     if (newPage !== this._page) {
       navigate(`/developer-tools/${newPage}`);
     } else {
@@ -86,7 +83,7 @@ class PanelDeveloperTools extends LitElement {
   }
 
   private get _page() {
-    return this.route.path.substr(1);
+    return this.route.path.substring(1);
   }
 
   static get styles(): CSSResultGroup {
