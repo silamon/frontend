@@ -46,23 +46,22 @@ const TRANSLATION_FRAGMENTS = Object.keys(
   ).ui.panel
 );
 
-function recursiveFlatten(prefix, data) {
-  let output = {};
-  Object.keys(data).forEach((key) => {
-    if (typeof data[key] === "object") {
-      output = {
-        ...output,
-        ...recursiveFlatten(prefix + key + ".", data[key]),
-      };
-    } else {
-      output[prefix + key] = data[key];
-    }
-  });
-  return output;
-}
-
 function flatten(data) {
-  return recursiveFlatten("", data);
+  var result = {};
+  function recurse(cur, prop) {
+    if (Object(cur) !== cur) {
+      result[prop] = cur;
+    } else {
+      var isEmpty = true;
+      for (var p in cur) {
+        isEmpty = false;
+        recurse(cur[p], prop ? prop + "." + p : p);
+      }
+      if (isEmpty) result[prop] = {};
+    }
+  }
+  recurse(data, "");
+  return result;
 }
 
 function emptyFilter(data) {
