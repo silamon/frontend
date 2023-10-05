@@ -127,16 +127,17 @@ export class HaSelectSelector extends LitElement {
           ? html`<ha-chip-set>
               ${value.map(
                 (item, idx) => html`
-                  <ha-chip hasTrailingIcon>
-                    ${options.find((option) => option.value === item)?.label ||
-                    item}
+                  <ha-input-chip
+                    .idx=${idx}
+                    @remove=${this._removeItem}
+                    .label=${options.find((option) => option.value === item)
+                      ?.label || item}
+                  >
                     <ha-svg-icon
                       slot="trailing-icon"
                       .path=${mdiClose}
-                      .idx=${idx}
-                      @click=${this._removeItem}
                     ></ha-svg-icon>
-                  </ha-chip>
+                  </ha-input-chip>
                 `
               )}
             </ha-chip-set>`

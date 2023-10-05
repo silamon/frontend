@@ -31,7 +31,7 @@ export class HuiButtonsBase extends LitElement {
               : "";
 
           return html`
-            <ha-chip
+            <ha-assist-chip
               @action=${this._handleAction}
               .actionHandler=${actionHandler({
                 hasHold: hasAction(entityConf.hold_action),
@@ -55,9 +55,9 @@ export class HuiButtonsBase extends LitElement {
                       slot="icon"
                     ></state-badge>
                   `
-                : ""}
+                : nothing}
               ${name}
-            </ha-chip>
+            </ha-assist-chip>
           `;
         })}
       </div>

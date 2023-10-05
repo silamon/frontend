@@ -77,17 +77,17 @@ export abstract class HaDeviceAutomationCard<
         <ha-chip-set>
           ${automations.map(
             (automation, idx) => html`
-              <ha-chip
+              <ha-assist-chip
                 .index=${idx}
                 @click=${this._handleAutomationClicked}
                 class=${automation.metadata?.secondary ? "secondary" : ""}
-              >
-                ${this._localizeDeviceAutomation(
+                .label=${this._localizeDeviceAutomation(
                   this.hass,
                   this.entityReg!,
                   automation
                 )}
-              </ha-chip>
+              >
+              </ha-assist-chip>
             `
           )}
         </ha-chip-set>

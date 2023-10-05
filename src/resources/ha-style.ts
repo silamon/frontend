@@ -46,7 +46,7 @@ documentContainer.innerHTML = `<custom-style>
       --primary-background-color: #fafafa;
       --secondary-background-color: #e5e5e5; /* behind the cards on state */
       --clear-background-color: #ffffff;
-      
+
       /* for header */
       --header-height: 56px;
 
@@ -416,6 +416,44 @@ documentContainer.innerHTML = `<custom-style>
         font-weight: 500;
         line-height: 20px;
       };
+
+      --md-sys-color-background: #fbf8ff;
+      --md-sys-color-on-background: #1a1b25;
+      --md-sys-color-surface: #fbf8ff;
+      --md-sys-color-surface-dim: #dad8e6;
+      --md-sys-color-surface-bright: #fbf8ff;
+      --md-sys-color-surface-container-lowest: #ffffff;
+      --md-sys-color-surface-container-low: #f4f2ff;
+      --md-sys-color-surface-container: #eeecfa;
+      --md-sys-color-surface-container-high: #e9e7f5;
+      --md-sys-color-surface-container-highest: #e3e1ef;
+      --md-sys-color-on-surface: #1a1b25;
+      --md-sys-color-surface-variant: #e2e0f6;
+      --md-sys-color-on-surface-variant: #454556;
+      --md-sys-color-inverse-surface: #2f303a;
+      --md-sys-color-inverse-on-surface: #f1effd;
+      --md-sys-color-outline: #757688;
+      --md-sys-color-outline-variant: #c5c5d9;
+      --md-sys-color-shadow: #000000;
+      --md-sys-color-scrim: #000000;
+      --md-sys-color-surface-tint: #3543f3;
+      --md-sys-color-primary: #0e1ddd;
+      --md-sys-color-on-primary: #ffffff;
+      --md-sys-color-primary-container: #4452ff;
+      --md-sys-color-on-primary-container: #ffffff;
+      --md-sys-color-inverse-primary: #bec2ff;
+      --md-sys-color-secondary: #5057a5;
+      --md-sys-color-on-secondary: #ffffff;
+      --md-sys-color-secondary-container: #afb5ff;
+      --md-sys-color-on-secondary-container: #1d2371;
+      --md-sys-color-tertiary: #7c008f;
+      --md-sys-color-on-tertiary: #ffffff;
+      --md-sys-color-tertiary-container: #ac2ec0;
+      --md-sys-color-on-tertiary-container: #ffffff;
+      --md-sys-color-error: #ba1a1a;
+      --md-sys-color-on-error: #ffffff;
+      --md-sys-color-error-container: #ffdad6;
+      --md-sys-color-on-error-container: #410002;
 
       ${Object.entries(derivedStyles)
         .map(([key, value]) => `--${key}: ${value};`)

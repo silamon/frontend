@@ -32,6 +32,8 @@ import "../../../components/ha-fab";
 import "../../../components/ha-icon-button";
 import "../../../components/ha-icon-overflow-menu";
 import "../../../components/ha-svg-icon";
+import "../../../components/ha-chip-set";
+import "../../../components/ha-chip";
 import {
   AutomationEntity,
   deleteAutomation,
@@ -202,11 +204,14 @@ class HaAutomationPicker extends LitElement {
             template: (automation) =>
               automation.disabled
                 ? html`
-                    <ha-chip>
-                      ${this.hass.localize(
-                        "ui.panel.config.automation.picker.disabled"
-                      )}
-                    </ha-chip>
+                    <ha-chip-set>
+                      <ha-assist-chip
+                        .label=${this.hass.localize(
+                          "ui.panel.config.automation.picker.disabled"
+                        )}
+                      >
+                      </ha-assist-chip>
+                    </ha-chip-set>
                   `
                 : "",
           };

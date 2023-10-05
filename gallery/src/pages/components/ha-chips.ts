@@ -29,31 +29,42 @@ export class DemoHaChips extends LitElement {
     return html`
       <ha-card header="ha-chip demo">
         <div class="card-content">
-          ${chips.map(
-            (chip) => html`
-              <ha-chip .hasIcon=${chip.icon !== undefined}>
-                ${chip.icon
-                  ? html`<ha-svg-icon slot="icon" .path=${chip.icon}>
-                    </ha-svg-icon>`
-                  : ""}
-                ${chip.content}
-              </ha-chip>
-            `
-          )}
-        </div>
-      </ha-card>
-      <ha-card header="ha-chip-set demo">
-        <div class="card-content">
+          Assist Chips:
           <ha-chip-set>
             ${chips.map(
               (chip) => html`
-                <ha-chip .hasIcon=${chip.icon !== undefined}>
+                <ha-assist-chip label=${chip.content}>
                   ${chip.icon
                     ? html`<ha-svg-icon slot="icon" .path=${chip.icon}>
                       </ha-svg-icon>`
                     : ""}
-                  ${chip.content}
-                </ha-chip>
+                </ha-assist-chip>
+              `
+            )}
+          </ha-chip-set>
+          Filter Chips:
+          <ha-chip-set>
+            ${chips.map(
+              (chip) => html`
+                <ha-filter-chip label=${chip.content}>
+                  ${chip.icon
+                    ? html`<ha-svg-icon slot="icon" .path=${chip.icon}>
+                      </ha-svg-icon>`
+                    : ""}
+                </ha-filter-chip>
+              `
+            )}
+          </ha-chip-set>
+          Input Chips:
+          <ha-chip-set>
+            ${chips.map(
+              (chip) => html`
+                <ha-input-chip label=${chip.content}>
+                  ${chip.icon
+                    ? html`<ha-svg-icon slot="icon" .path=${chip.icon}>
+                      </ha-svg-icon>`
+                    : ""}
+                </ha-input-chip>
               `
             )}
           </ha-chip-set>

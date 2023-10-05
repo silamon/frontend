@@ -21,7 +21,14 @@ import {
   mdiPound,
   mdiShield,
 } from "@mdi/js";
-import { CSSResultGroup, LitElement, TemplateResult, css, html } from "lit";
+import {
+  CSSResultGroup,
+  LitElement,
+  TemplateResult,
+  css,
+  html,
+  nothing,
+} from "lit";
 import { customElement, property, state } from "lit/decorators";
 import { classMap } from "lit/directives/class-map";
 import memoizeOne from "memoize-one";
@@ -234,28 +241,26 @@ class HassioAddonInfo extends LitElement {
 
           <ha-chip-set class="capabilities">
             ${this.addon.stage !== "stable"
-              ? html` <ha-chip
-                  hasIcon
+              ? html`<ha-assist-chip
                   class=${classMap({
                     yellow: this.addon.stage === "experimental",
                     red: this.addon.stage === "deprecated",
                   })}
                   @click=${this._showMoreInfo}
                   id="stage"
+                  .label=${this.supervisor.localize(
+                    `addon.dashboard.capability.stages.${this.addon.stage}`
+                  )}
                 >
                   <ha-svg-icon
                     slot="icon"
                     .path=${STAGE_ICON[this.addon.stage]}
                   >
                   </ha-svg-icon>
-                  ${this.supervisor.localize(
-                    `addon.dashboard.capability.stages.${this.addon.stage}`
-                  )}
-                </ha-chip>`
+                </ha-assist-chip>`
               : ""}
 
-            <ha-chip
-              hasIcon
+            <ha-assist-chip
               class=${classMap({
                 green: Number(this.addon.rating) >= 6,
                 yellow: [3, 4, 5].includes(Number(this.addon.rating)),
@@ -263,140 +268,153 @@ class HassioAddonInfo extends LitElement {
               })}
               @click=${this._showMoreInfo}
               id="rating"
+              .label=${this.supervisor.localize(
+                "addon.dashboard.capability.label.rating"
+              )}
             >
               <ha-svg-icon slot="icon" .path=${RATING_ICON[this.addon.rating]}>
               </ha-svg-icon>
-
-              ${this.supervisor.localize(
-                "addon.dashboard.capability.label.rating"
-              )}
-            </ha-chip>
+            </ha-assist-chip>
             ${this.addon.host_network
               ? html`
-                  <ha-chip
-                    hasIcon
+                  <ha-assist-chip
                     @click=${this._showMoreInfo}
                     id="host_network"
-                  >
-                    <ha-svg-icon slot="icon" .path=${mdiNetwork}> </ha-svg-icon>
-                    ${this.supervisor.localize(
+                    .label=${this.supervisor.localize(
                       "addon.dashboard.capability.label.host"
                     )}
-                  </ha-chip>
+                  >
+                    <ha-svg-icon slot="icon" .path=${mdiNetwork}> </ha-svg-icon>
+                  </ha-assist-chip>
                 `
               : ""}
             ${this.addon.full_access
               ? html`
-                  <ha-chip
-                    hasIcon
+                  <ha-assist-chip
                     @click=${this._showMoreInfo}
                     id="full_access"
-                  >
-                    <ha-svg-icon slot="icon" .path=${mdiChip}></ha-svg-icon>
-                    ${this.supervisor.localize(
+                    .label=${this.supervisor.localize(
                       "addon.dashboard.capability.label.hardware"
                     )}
-                  </ha-chip>
+                  >
+                    <ha-svg-icon slot="icon" .path=${mdiChip}></ha-svg-icon>
+                  </ha-assist-chip>
                 `
               : ""}
             ${this.addon.homeassistant_api
               ? html`
-                  <ha-chip
-                    hasIcon
+                  <ha-assist-chip
                     @click=${this._showMoreInfo}
                     id="homeassistant_api"
+                    .label=${this.supervisor.localize(
+                      "addon.dashboard.capability.label.core"
+                    )}
                   >
                     <ha-svg-icon
                       slot="icon"
                       .path=${mdiHomeAssistant}
                     ></ha-svg-icon>
-                    ${this.supervisor.localize(
-                      "addon.dashboard.capability.label.core"
-                    )}
-                  </ha-chip>
+                  </ha-assist-chip>
                 `
-              : ""}
+              : nothing}
             ${this._computeHassioApi
               ? html`
-                  <ha-chip hasIcon @click=${this._showMoreInfo} id="hassio_api">
+                  <ha-assist-chip
+                    @click=${this._showMoreInfo}
+                    id="hassio_api"
+                    .label=${this.supervisor.localize(
+                      `addon.dashboard.capability.role.${this.addon.hassio_role}`
+                    ) || this.addon.hassio_role}
+                  >
                     <ha-svg-icon
                       slot="icon"
                       .path=${mdiHomeAssistant}
                     ></ha-svg-icon>
-                    ${this.supervisor.localize(
-                      `addon.dashboard.capability.role.${this.addon.hassio_role}`
-                    ) || this.addon.hassio_role}
-                  </ha-chip>
+                  </ha-assist-chip>
                 `
-              : ""}
+              : nothing}
             ${this.addon.docker_api
               ? html`
-                  <ha-chip hasIcon @click=${this._showMoreInfo} id="docker_api">
-                    <ha-svg-icon slot="icon" .path=${mdiDocker}></ha-svg-icon>
-                    ${this.supervisor.localize(
+                  <ha-assist-chip
+                    @click=${this._showMoreInfo}
+                    id="docker_api"
+                    .label=${this.supervisor.localize(
                       "addon.dashboard.capability.label.docker"
                     )}
-                  </ha-chip>
+                  >
+                    <ha-svg-icon slot="icon" .path=${mdiDocker}></ha-svg-icon>
+                  </ha-assist-chip>
                 `
-              : ""}
+              : nothing}
             ${this.addon.host_pid
               ? html`
-                  <ha-chip hasIcon @click=${this._showMoreInfo} id="host_pid">
-                    <ha-svg-icon slot="icon" .path=${mdiPound}></ha-svg-icon>
-                    ${this.supervisor.localize(
+                  <ha-assist-chip
+                    @click=${this._showMoreInfo}
+                    id="host_pid"
+                    .label=${this.supervisor.localize(
                       "addon.dashboard.capability.label.host_pid"
                     )}
-                  </ha-chip>
+                  >
+                    <ha-svg-icon slot="icon" .path=${mdiPound}></ha-svg-icon>
+                  </ha-assist-chip>
                 `
-              : ""}
+              : nothing}
             ${this.addon.apparmor !== "default"
               ? html`
-                  <ha-chip
-                    hasIcon
+                  <ha-assist-chip
                     @click=${this._showMoreInfo}
                     class=${this._computeApparmorClassName}
                     id="apparmor"
-                  >
-                    <ha-svg-icon slot="icon" .path=${mdiShield}></ha-svg-icon>
-                    ${this.supervisor.localize(
+                    .label=${this.supervisor.localize(
                       "addon.dashboard.capability.label.apparmor"
                     )}
-                  </ha-chip>
+                  >
+                    <ha-svg-icon slot="icon" .path=${mdiShield}></ha-svg-icon>
+                  </ha-assist-chip>
                 `
-              : ""}
+              : nothing}
             ${this.addon.auth_api
               ? html`
-                  <ha-chip hasIcon @click=${this._showMoreInfo} id="auth_api">
-                    <ha-svg-icon slot="icon" .path=${mdiKey}></ha-svg-icon>
-                    ${this.supervisor.localize(
+                  <ha-assist-chip
+                    @click=${this._showMoreInfo}
+                    id="auth_api"
+                    .label=${this.supervisor.localize(
                       "addon.dashboard.capability.label.auth"
                     )}
-                  </ha-chip>
+                  >
+                    <ha-svg-icon slot="icon" .path=${mdiKey}></ha-svg-icon>
+                  </ha-assist-chip>
                 `
-              : ""}
+              : nothing}
             ${this.addon.ingress
               ? html`
-                  <ha-chip hasIcon @click=${this._showMoreInfo} id="ingress">
+                  <ha-assist-chip
+                    @click=${this._showMoreInfo}
+                    id="ingress"
+                    .label=${this.supervisor.localize(
+                      "addon.dashboard.capability.label.ingress"
+                    )}
+                  >
                     <ha-svg-icon
                       slot="icon"
                       .path=${mdiCursorDefaultClickOutline}
                     ></ha-svg-icon>
-                    ${this.supervisor.localize(
-                      "addon.dashboard.capability.label.ingress"
-                    )}
-                  </ha-chip>
+                  </ha-assist-chip>
                 `
-              : ""}
+              : nothing}
             ${this.addon.signed
               ? html`
-                  <ha-chip hasIcon @click=${this._showMoreInfo} id="signed">
-                    <ha-svg-icon slot="icon" .path=${mdiLinkLock}></ha-svg-icon>
-                    ${this.supervisor.localize(
+                  <ha-assist-chip
+                    @click=${this._showMoreInfo}
+                    id="signed"
+                    .label=${this.supervisor.localize(
                       "addon.dashboard.capability.label.signed"
                     )}
-                  </ha-chip>
+                  >
+                    <ha-svg-icon slot="icon" .path=${mdiLinkLock}></ha-svg-icon>
+                  </ha-assist-chip>
                 `
-              : ""}
+              : nothing}
           </ha-chip-set>
 
           <div class="description light-color">

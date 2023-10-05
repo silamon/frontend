@@ -74,15 +74,14 @@ class DialogUserDetail extends LitElement {
             ${user.username}
           </div>
           ${badges.length === 0
-            ? ""
+            ? nothing
             : html`
                 <ha-chip-set>
                   ${badges.map(
                     ([icon, label]) => html`
-                      <ha-chip hasIcon>
+                      <ha-assist-chip .label=${label}>
                         <ha-svg-icon slot="icon" .path=${icon}></ha-svg-icon>
-                        ${label}
-                      </ha-chip>
+                      </ha-assist-chip>
                     `
                   )}
                 </ha-chip-set>

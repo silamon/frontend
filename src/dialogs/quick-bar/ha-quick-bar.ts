@@ -328,10 +328,9 @@ export class QuickBar extends LitElement {
         class="command-item"
         hasMeta
       >
-        <span>
-          <ha-chip
+        <ha-chip-set>
+          <ha-assist-chip
             .label=${item.categoryText}
-            hasIcon
             class="command-category ${item.categoryKey}"
           >
             ${item.iconPath
@@ -339,10 +338,9 @@ export class QuickBar extends LitElement {
                   .path=${item.iconPath}
                   slot="icon"
                 ></ha-svg-icon>`
-              : ""}
-            ${item.categoryText}</ha-chip
-          >
-        </span>
+              : nothing}
+          </ha-assist-chip>
+        </ha-chip-set>
 
         <span class="command-text">${item.primaryText}</span>
       </ha-list-item>

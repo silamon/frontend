@@ -190,8 +190,8 @@ class HuiAlarmPanelCard extends LitElement implements LovelaceCard {
           ${this._config.name ||
           stateObj.attributes.friendly_name ||
           stateLabel}
-          <ha-chip
-            hasIcon
+          <ha-assist-chip
+            elevated
             style=${styleMap({
               "--alarm-state-color": stateColorCss(stateObj),
             })}
@@ -201,7 +201,7 @@ class HuiAlarmPanelCard extends LitElement implements LovelaceCard {
             <ha-svg-icon slot="icon" .path=${alarmPanelIcon(stateObj.state)}>
             </ha-svg-icon>
             ${stateLabel}
-          </ha-chip>
+          </ha-assist-chip>
         </h1>
         <div id="armActions" class="actions">
           ${(stateObj.state === "disarmed"
