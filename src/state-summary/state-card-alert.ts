@@ -78,3 +78,9 @@ export class StateCardAlert extends LitElement {
     ];
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "state-card-alert": StateCardAlert;
+  }
+}
