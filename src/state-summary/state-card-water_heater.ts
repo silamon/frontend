@@ -7,7 +7,7 @@ import { haStyle } from "../resources/styles";
 import { HomeAssistant } from "../types";
 
 @customElement("state-card-water_heater")
-export class StateCardWaterHeater extends LitElement {
+class StateCardWaterHeater extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
   @property({ attribute: false }) public stateObj!: HassEntity;

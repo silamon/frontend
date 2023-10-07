@@ -1,12 +1,14 @@
 import "@material/mwc-button";
 import type { HassEntity } from "home-assistant-js-websocket";
-import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
+import { css, CSSResultGroup, html, LitElement } from "lit";
 import { customElement, property } from "lit/decorators";
 import "../components/entity/state-info";
 import { activateScene } from "../data/scene";
+import { HomeAssistant } from "../types";
+import { haStyle } from "../resources/styles";
 
 @customElement("state-card-scene")
-export class StateCardScene extends LitElement {
+class StateCardScene extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
   @property({ attribute: false }) public stateObj!: HassEntity;
@@ -16,13 +18,13 @@ export class StateCardScene extends LitElement {
   protected render() {
     return html`
       <div class="horizontal justified layout">
-      <state-info
-      .hass=${this.hass}
+        <state-info
+          .hass=${this.hass}
           .stateObj=${this.stateObj}
           .inDialog=${this.inDialog}
-    ></state-info>
+        ></state-info>
         <mwc-button @click=${this._activateScene}
-          >${this.hass.localize('ui.card.scene.activate')}</mwc-button
+          >${this.hass.localize("ui.card.scene.activate")}</mwc-button
         >
       </div>
     `;
@@ -37,11 +39,12 @@ export class StateCardScene extends LitElement {
     return [
       haStyle,
       css`
-      mwc-button {
-        top: 3px;
-        height: 37px;
-        margin-right: -0.57em;
-      }      `,
+        mwc-button {
+          top: 3px;
+          height: 37px;
+          margin-right: -0.57em;
+        }
+      `,
     ];
   }
 }

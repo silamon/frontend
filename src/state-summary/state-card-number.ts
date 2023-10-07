@@ -1,9 +1,18 @@
 import type { HassEntity } from "home-assistant-js-websocket";
-import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
-import { customElement, property } from "lit/decorators";
+import {
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  nothing,
+  PropertyValues,
+} from "lit";
+import { customElement, property, state } from "lit/decorators";
 import "../components/entity/state-info";
 import "../components/ha-slider";
 import "../components/ha-textfield";
+import { HomeAssistant } from "../types";
+import { haStyle } from "../resources/styles";
 
 @customElement("state-card-number")
 class StateCardNumber extends LitElement {
@@ -13,18 +22,34 @@ class StateCardNumber extends LitElement {
 
   @property({ type: Boolean }) public inDialog = false;
 
-  static get template() {
+  @state() private min: number = 0;
+
+  @state() private max: number = 100;
+
+  @state() private maxlength: number = 3;
+
+  @state() private value: number;
+
+  @state() private step: number;
+
+  @state() private mode: string;
+
+  private hiddenslider: boolean = true;
+
+  private hiddenbox: boolean = true;
+
+  protected render() {
     return html`
-        <div class="horizontal justified layout" id="number_card">
-      <state-info
-      .hass=${this.hass}
-      .stateObj=${this.stateObj}
-      .inDialog=${this.inDialog}
-    ></state-info>
+      <div class="horizontal justified layout" id="number_card">
+        <state-info
+          .hass=${this.hass}
+          .stateObj=${this.stateObj}
+          .inDialog=${this.inDialog}
+        ></state-info>
         <ha-slider
           .min=${this.min}
           .max=${this.max}
-          .value=${value}
+          .value=${this.value}
           .step=${this.step}
           .hidden=${this.hiddenslider}
           pin
@@ -40,7 +65,7 @@ class StateCardNumber extends LitElement {
           .step=${this.step}
           .min=${this.min}
           .max=${this.max}
-          .value=${value}
+          .value=${this.value}
           type="number"
           @input=${this.onInput}
           @change=${this.selectedValueChanged}
@@ -48,18 +73,25 @@ class StateCardNumber extends LitElement {
           .hidden=${this.hiddenbox}
         >
         </ha-textfield>
-        <div class="state" hidden="[[hiddenbox]]">
-          [[stateObj.attributes.unit_of_measurement]]
-        </div>
-        <div
-          id="sliderstate"
-          class="state sliderstate"
-          hidden="[[hiddenslider]]"
-        >
-          [[value]] [[stateObj.attributes.unit_of_measurement]]
-        </div>
+        ${this.hiddenbox
+          ? html`<div class="state">
+              ${this.stateObj.attributes.unit_of_measurement}
+            </div>`
+          : nothing}
+        ${this.hiddenslider
+          ? html` <div id="sliderstate" class="state sliderstate">
+              ${this.value} ${this.stateObj.attributes.unit_of_measurement}
+            </div>`
+          : nothing}
       </div>
     `;
+  }
+
+  protected willUpdate(changedProp: PropertyValues): void {
+    super.willUpdate(changedProp);
+    if (changedProp.has("stateObj")) {
+      this.stateObjectChanged(this.stateObj);
+    }
   }
 
   ready() {
@@ -74,43 +106,6 @@ class StateCardNumber extends LitElement {
     } else {
       this.addEventListener("iron-resize", () => this.hiddenState());
     }
-  }
-
-  static get properties() {
-    return {
-      hass: Object,
-      hiddenbox: {
-        type: Boolean,
-        value: true,
-      },
-      hiddenslider: {
-        type: Boolean,
-        value: true,
-      },
-      inDialog: {
-        type: Boolean,
-        value: false,
-      },
-      stateObj: {
-        type: Object,
-        observer: "stateObjectChanged",
-      },
-      min: {
-        type: Number,
-        value: 0,
-      },
-      max: {
-        type: Number,
-        value: 100,
-      },
-      maxlength: {
-        type: Number,
-        value: 3,
-      },
-      step: Number,
-      value: Number,
-      mode: String,
-    };
   }
 
   hiddenState() {
@@ -130,19 +125,19 @@ class StateCardNumber extends LitElement {
     const step = Number(newVal.attributes.step);
     const range = (max - min) / step;
 
-      this.min = min;
-      this.max = max;
-      this.step = step;
-      this.value = Number(newVal.state);
-      this.mode = String(newVal.attributes.mode);
-      this.maxlength = String(newVal.attributes.max).length;
-      this.hiddenbox =
-        newVal.attributes.mode === "slider" ||
-        (newVal.attributes.mode === "auto" && range <= 256);
-        this.hiddenslider =
-        newVal.attributes.mode === "box" ||
-        (newVal.attributes.mode === "auto" && range > 256);
-  
+    this.min = min;
+    this.max = max;
+    this.step = step;
+    this.value = Number(newVal.state);
+    this.mode = String(newVal.attributes.mode);
+    this.maxlength = String(newVal.attributes.max).length;
+    this.hiddenbox =
+      newVal.attributes.mode === "slider" ||
+      (newVal.attributes.mode === "auto" && range <= 256);
+    this.hiddenslider =
+      newVal.attributes.mode === "box" ||
+      (newVal.attributes.mode === "auto" && range > 256);
+
     if (this.mode === "slider" && prevMode !== "slider") {
       this.hiddenState();
     }
@@ -170,27 +165,28 @@ class StateCardNumber extends LitElement {
     return [
       haStyle,
       css`
-      ha-slider {
-        margin-left: auto;
-      }
-      .state {
-        @apply --paper-font-body1;
-        color: var(--primary-text-color);
+        ha-slider {
+          margin-left: auto;
+        }
+        .state {
+          @apply --paper-font-body1;
+          color: var(--primary-text-color);
 
-        display: flex;
-        align-items: center;
-        justify-content: end;
-      }
-      .sliderstate {
-        min-width: 45px;
-      }
-      [hidden] {
-        display: none !important;
-      }
-      ha-textfield {
-        text-align: right;
-        margin-left: auto;
-      }    `,
+          display: flex;
+          align-items: center;
+          justify-content: end;
+        }
+        .sliderstate {
+          min-width: 45px;
+        }
+        [hidden] {
+          display: none !important;
+        }
+        ha-textfield {
+          text-align: right;
+          margin-left: auto;
+        }
+      `,
     ];
   }
 }
@@ -200,4 +196,3 @@ declare global {
     "state-card-number": StateCardNumber;
   }
 }
-

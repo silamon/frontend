@@ -1,3 +1,7 @@
+import { LitElement, PropertyValues } from "lit";
+import { HassEntity } from "home-assistant-js-websocket";
+import { customElement, property } from "lit/decorators";
+import { HomeAssistant } from "../types";
 import dynamicContentUpdater from "../common/dom/dynamic_content_updater";
 import { stateCardType } from "../common/entity/state_card_type";
 import "./state-card-alert";
@@ -33,12 +37,13 @@ class StateCardContent extends LitElement {
 
   @property({ type: Boolean }) public inDialog = false;
 
-  static get observers() {
-    return ["inputChanged(hass, inDialog, stateObj)"];
+  protected willUpdate(changedProp: PropertyValues): void {
+    super.willUpdate(changedProp);
+    this.inputChanged(this.hass, this.inDialog, this.stateObj);
   }
 
-  inputChanged(hass, inDialog, stateObj) {
-    let stateCard;
+  inputChanged(hass: HomeAssistant, inDialog: boolean, stateObj: HassEntity) {
+    let stateCard: string;
     if (!stateObj || !hass) return;
     if (stateObj.attributes && "custom_ui_state_card" in stateObj.attributes) {
       stateCard = stateObj.attributes.custom_ui_state_card;
@@ -58,4 +63,3 @@ declare global {
     "state-card-content": StateCardContent;
   }
 }
-
