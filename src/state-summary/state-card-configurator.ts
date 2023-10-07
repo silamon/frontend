@@ -1,5 +1,4 @@
 import "@material/mwc-button";
-import { computeStateDisplay } from "../common/entity/compute_state_display";
 import { HassEntity } from "home-assistant-js-websocket";
 import "../components/entity/state-info";
 import { customElement, property } from "lit/decorators";
@@ -11,6 +10,7 @@ import {
   html,
   nothing,
 } from "lit";
+import { computeStateDisplay } from "../common/entity/compute_state_display";
 import { HomeAssistant } from "../types";
 import { haStyle } from "../resources/styles";
 
@@ -28,26 +28,20 @@ class StateCardConfigurator extends LitElement {
       <div class="horizontal justified layout">
         <state-info
           .hass=${this.hass}
-          .state-obj=${this.stateObj}
-          .in-dialog="${this.inDialog}
+          .stateObj=${this.stateObj}
+          .inDialog=${this.inDialog}
         ></state-info>
-        ${
-          this.inDialog
-            ? html`<mwc-button
-                >${this._localizeState(this.stateObj)}</mwc-button
-              >`
-            : nothing
-        }
+        ${this.inDialog
+          ? html`<mwc-button>${this._localizeState(this.stateObj)}</mwc-button>`
+          : nothing}
       </div>
-      ${
-        this.stateObj.attributes.description_image
-          ? html`<img
-              hidden=""
-              alt=""
-              .src=${this.stateObj.attributes.description_image}
-            />`
-          : nothing
-      }
+      ${this.stateObj.attributes.description_image
+        ? html`<img
+            hidden=""
+            alt=""
+            .src=${this.stateObj.attributes.description_image}
+          />`
+        : nothing}
     `;
   }
 

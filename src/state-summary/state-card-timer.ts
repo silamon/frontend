@@ -30,8 +30,8 @@ class StateCardTimer extends LitElement {
       <div class="horizontal justified layout">
         <state-info
           .hass=${this.hass}
-          .state-obj=${this.stateObj}
-          .in-dialog=${this.inDialog}
+          .stateObj=${this.stateObj}
+          .inDialog=${this.inDialog}
         ></state-info>
         <div class="state">
           ${this._displayState(this.timeRemaining, this.stateObj)}

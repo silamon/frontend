@@ -8,6 +8,7 @@ import {
   TemplateResult,
 } from "lit";
 import { customElement, property } from "lit/decorators";
+import memoizeOne from "memoize-one";
 import { computeStateDisplay } from "../common/entity/compute_state_display";
 import "../components/entity/state-info";
 import HassMediaPlayerEntity from "../util/hass-media-player-model";
@@ -22,9 +23,14 @@ class StateCardMediaPlayer extends LitElement {
 
   @property({ type: Boolean }) public inDialog = false;
 
-  @property({ attribute: false }) public playerObj!: HassMediaPlayerEntity;
+  private _computePlayerObj = memoizeOne(
+    (hass: HomeAssistant, stateObj: HassEntity) => {
+      return new HassMediaPlayerEntity(hass, stateObj);
+    }
+  );
 
   protected render(): TemplateResult {
+    const _playerObj = this._computePlayerObj(this.hass, this.stateObj);
     return html`
       <div class="horizontal justified layout">
         <state-info
@@ -33,24 +39,13 @@ class StateCardMediaPlayer extends LitElement {
           .inDialog=${this.inDialog}
         ></state-info>
         <div class="state">
-          <div class="main-text" take-height=${!this.playerObj.secondaryTitle}>
-            ${this.computePrimaryText(this.hass.localize, this.playerObj)}
+          <div class="main-text" take-height=${!_playerObj.secondaryTitle}>
+            ${this.computePrimaryText(this.hass.localize, _playerObj)}
           </div>
-          <div class="secondary-text">${this.playerObj.secondaryTitle}</div>
+          <div class="secondary-text">${_playerObj.secondaryTitle}</div>
         </div>
       </div>
     `;
-  }
-
-  protected willUpdate(changedProp: PropertyValues): void {
-    super.willUpdate(changedProp);
-    if (changedProp.has("playerObj")) {
-      this.playerObj = this.computePlayerObj(this.hass, this.stateObj);
-    }
-  }
-
-  computePlayerObj(hass, stateObj) {
-    return new HassMediaPlayerEntity(hass, stateObj);
   }
 
   computePrimaryText(localize, playerObj) {

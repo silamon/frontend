@@ -24,8 +24,8 @@ class StateCardToggle extends LitElement {
         >
         </state-info>
         <ha-entity-toggle
-          .state-obj=${this.stateObj}
           .hass=${this.hass}
+          .stateObj=${this.stateObj}
         ></ha-entity-toggle>
       </div>
     `;

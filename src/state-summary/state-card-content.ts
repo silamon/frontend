@@ -1,4 +1,4 @@
-import { LitElement, PropertyValues } from "lit";
+import { PropertyValues, ReactiveElement } from "lit";
 import { HassEntity } from "home-assistant-js-websocket";
 import { customElement, property } from "lit/decorators";
 import { HomeAssistant } from "../types";
@@ -30,19 +30,40 @@ import "./state-card-vacuum";
 import "./state-card-water_heater";
 
 @customElement("state-card-content")
-class StateCardContent extends LitElement {
+class StateCardContent extends ReactiveElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
   @property({ attribute: false }) public stateObj!: HassEntity;
 
   @property({ type: Boolean }) public inDialog = false;
 
-  protected willUpdate(changedProp: PropertyValues): void {
-    super.willUpdate(changedProp);
-    this.inputChanged(this.hass, this.inDialog, this.stateObj);
+  private _detachedChild?: ChildNode;
+
+  protected createRenderRoot() {
+    return this;
   }
 
-  inputChanged(hass: HomeAssistant, inDialog: boolean, stateObj: HassEntity) {
+  // This is not a lit element, but an updating element, so we implement update
+  protected update(changedProps: PropertyValues): void {
+    super.update(changedProps);
+    const stateObj = this.stateObj;
+    const inDialog = this.inDialog;
+    const hass = this.hass;
+
+    if (!stateObj || !hass) {
+      if (this.lastChild) {
+        this._detachedChild = this.lastChild;
+        // Detach child to prevent it from doing work.
+        this.removeChild(this.lastChild);
+      }
+      return;
+    }
+
+    if (this._detachedChild) {
+      this.appendChild(this._detachedChild);
+      this._detachedChild = undefined;
+    }
+
     let stateCard: string;
     if (!stateObj || !hass) return;
     if (stateObj.attributes && "custom_ui_state_card" in stateObj.attributes) {
@@ -50,6 +71,14 @@ class StateCardContent extends LitElement {
     } else {
       stateCard = "state-card-" + stateCardType(hass, stateObj);
     }
+
+    if (!stateCard) {
+      if (this.lastChild) {
+        this.removeChild(this.lastChild);
+      }
+      return;
+    }
+
     dynamicContentUpdater(this, stateCard.toUpperCase(), {
       hass: hass,
       stateObj: stateObj,

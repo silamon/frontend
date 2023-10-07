@@ -26,7 +26,7 @@ class StateCardHumidifier extends LitElement {
         </state-info>
         <ha-humidifier-state
           .hass=${this.hass}
-          .state-obj=${this.stateObj}
+          .stateObj=${this.stateObj}
         ></ha-humidifier-state>
       </div>
     `;
