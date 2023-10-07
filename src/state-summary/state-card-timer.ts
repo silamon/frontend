@@ -1,56 +1,30 @@
-import "@polymer/iron-flex-layout/iron-flex-layout-classes";
-import { html } from "@polymer/polymer/lib/utils/html-tag";
-/* eslint-plugin-disable lit */
-import { PolymerElement } from "@polymer/polymer/polymer-element";
+import type { HassEntity } from "home-assistant-js-websocket";
+import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
+import { customElement, property } from "lit/decorators";
 import "../components/entity/state-info";
 import { computeDisplayTimer, timerTimeRemaining } from "../data/timer";
 
-class StateCardTimer extends PolymerElement {
-  static get template() {
+@customElement("state-card-timer")
+export class StateCardTimer extends LitElement {
+  @property({ attribute: false }) public hass!: HomeAssistant;
+
+  @property({ attribute: false }) public stateObj!: HassEntity;
+
+  @property({ type: Boolean }) public inDialog = false;
+
+  @property() public timeRemaining?: Number;  
+
+  protected render(): TemplateResult {
     return html`
-      <style include="iron-flex iron-flex-alignment"></style>
-      <style>
-        .state {
-          @apply --paper-font-body1;
-          color: var(--primary-text-color);
-
-          margin-left: 16px;
-          text-align: right;
-          line-height: 40px;
-          white-space: nowrap;
-        }
-      </style>
-
       <div class="horizontal justified layout">
-        ${this.stateInfoTemplate}
-        <div class="state">[[_displayState(timeRemaining, stateObj)]]</div>
+      <state-info
+        .hass=${this.hass}
+        .state-obj=${this.stateObj}
+        .in-dialog=${this.inDialog}
+      ></state-info>
+        <div class="state">${this._displayState(timeRemaining, stateObj)}</div>
       </div>
     `;
-  }
-
-  static get stateInfoTemplate() {
-    return html`
-      <state-info
-        hass="[[hass]]"
-        state-obj="[[stateObj]]"
-        in-dialog="[[inDialog]]"
-      ></state-info>
-    `;
-  }
-
-  static get properties() {
-    return {
-      hass: Object,
-      stateObj: {
-        type: Object,
-        observer: "stateObjChanged",
-      },
-      timeRemaining: Number,
-      inDialog: {
-        type: Boolean,
-        value: false,
-      },
-    };
   }
 
   connectedCallback() {
@@ -63,8 +37,11 @@ class StateCardTimer extends PolymerElement {
     this.clearInterval();
   }
 
-  stateObjChanged(stateObj) {
-    this.startInterval(stateObj);
+  protected willUpdate(changedProp: PropertyValues): void {
+    super.willUpdate(changedProp);
+    if (changedProp.has("stateObj")) {
+      this.startInterval(stateObj);
+    }
   }
 
   clearInterval() {
@@ -93,5 +70,27 @@ class StateCardTimer extends PolymerElement {
   _displayState(timeRemaining, stateObj) {
     return computeDisplayTimer(this.hass, stateObj, timeRemaining);
   }
+
+  static get styles(): CSSResultGroup {
+    return [
+      haStyle,
+      css`
+      .state {
+        @apply --paper-font-body1;
+        color: var(--primary-text-color);
+
+        margin-left: 16px;
+        text-align: right;
+        line-height: 40px;
+        white-space: nowrap;
+      }
+      `,
+    ];
+  }
 }
-customElements.define("state-card-timer", StateCardTimer);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "state-card-timer": StateCardTimer;
+  }
+}

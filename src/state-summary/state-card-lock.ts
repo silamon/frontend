@@ -1,34 +1,32 @@
 import "@material/mwc-button";
-import "@polymer/iron-flex-layout/iron-flex-layout-classes";
-import { html } from "@polymer/polymer/lib/utils/html-tag";
-/* eslint-plugin-disable lit */
-import { PolymerElement } from "@polymer/polymer/polymer-element";
+import type { HassEntity } from "home-assistant-js-websocket";
+import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
+import { customElement, property } from "lit/decorators";
 import { supportsFeature } from "../common/entity/supports-feature";
 import "../components/entity/state-info";
 import LocalizeMixin from "../mixins/localize-mixin";
 import { LockEntityFeature } from "../data/lock";
 
-/*
- * @appliesMixin LocalizeMixin
- */
-class StateCardLock extends LocalizeMixin(PolymerElement) {
-  static get template() {
-    return html`
-      <style include="iron-flex iron-flex-alignment"></style>
-      <style>
-        mwc-button {
-          top: 3px;
-          height: 37px;
-          margin-right: -0.57em;
-        }
-        [hidden] {
-          display: none !important;
-        }
-      </style>
+class StateCardLock extends LitElement {
+  @property({ attribute: false }) public hass!: HomeAssistant;
 
+  @property({ attribute: false }) public stateObj!: HassEntity;
+
+  @property({ type: Boolean }) public inDialog = false;
+
+  @property() public isLocked: Boolean;
+  
+  @property() public supportsOpen: Boolean;
+
+  protected render() {
+    return html`
       <div class="horizontal justified layout">
-        ${this.stateInfoTemplate}
-        <mwc-button
+      <state-info
+      .hass=${this.hass}
+          .stateObj=${this.stateObj}
+          .inDialog=${this.inDialog}
+    ></state-info>
+    <mwc-button
           on-click="_callService"
           data-service="open"
           hidden$="[[!supportsOpen]]"
@@ -50,30 +48,11 @@ class StateCardLock extends LocalizeMixin(PolymerElement) {
     `;
   }
 
-  static get stateInfoTemplate() {
-    return html`
-      <state-info
-        hass="[[hass]]"
-        state-obj="[[stateObj]]"
-        in-dialog="[[inDialog]]"
-      ></state-info>
-    `;
-  }
-
-  static get properties() {
-    return {
-      hass: Object,
-      stateObj: {
-        type: Object,
-        observer: "_stateObjChanged",
-      },
-      inDialog: {
-        type: Boolean,
-        value: false,
-      },
-      isLocked: Boolean,
-      supportsOpen: Boolean,
-    };
+  protected willUpdate(changedProp: PropertyValues): void {
+    super.willUpdate(changedProp);
+    if (changedProp.has("stateObj")) {
+      this._stateObjChanged(this.stateObj);
+    }
   }
 
   _stateObjChanged(newVal) {
@@ -91,5 +70,25 @@ class StateCardLock extends LocalizeMixin(PolymerElement) {
     };
     this.hass.callService("lock", service, data);
   }
+
+  static get styles(): CSSResultGroup {
+    return [
+      haStyle,
+      css`
+      mwc-button {
+        top: 3px;
+        height: 37px;
+        margin-right: -0.57em;
+      }
+      [hidden] {
+        display: none !important;
+      }     `,
+    ];
+  }
 }
-customElements.define("state-card-lock", StateCardLock);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "state-card-lock": StateCardLock;
+  }
+}

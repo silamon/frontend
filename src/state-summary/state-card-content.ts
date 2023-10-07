@@ -1,5 +1,3 @@
-/* eslint-plugin-disable lit */
-import { PolymerElement } from "@polymer/polymer/polymer-element";
 import dynamicContentUpdater from "../common/dom/dynamic_content_updater";
 import { stateCardType } from "../common/entity/state_card_type";
 import "./state-card-alert";
@@ -27,17 +25,13 @@ import "./state-card-toggle";
 import "./state-card-vacuum";
 import "./state-card-water_heater";
 
-class StateCardContent extends PolymerElement {
-  static get properties() {
-    return {
-      hass: Object,
-      stateObj: Object,
-      inDialog: {
-        type: Boolean,
-        value: false,
-      },
-    };
-  }
+@customElement("state-card-content")
+class StateCardContent extends LitElement {
+  @property({ attribute: false }) public hass!: HomeAssistant;
+
+  @property({ attribute: false }) public stateObj!: HassEntity;
+
+  @property({ type: Boolean }) public inDialog = false;
 
   static get observers() {
     return ["inputChanged(hass, inDialog, stateObj)"];
@@ -58,4 +52,10 @@ class StateCardContent extends PolymerElement {
     });
   }
 }
-customElements.define("state-card-content", StateCardContent);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "state-card-content": StateCardContent;
+  }
+}
+

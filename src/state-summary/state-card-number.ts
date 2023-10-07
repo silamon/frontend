@@ -1,55 +1,35 @@
-import "@polymer/iron-flex-layout/iron-flex-layout-classes";
-import { IronResizableBehavior } from "@polymer/iron-resizable-behavior/iron-resizable-behavior";
-import { mixinBehaviors } from "@polymer/polymer/lib/legacy/class";
-import { html } from "@polymer/polymer/lib/utils/html-tag";
-/* eslint-plugin-disable lit */
-import { PolymerElement } from "@polymer/polymer/polymer-element";
+import type { HassEntity } from "home-assistant-js-websocket";
+import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
+import { customElement, property } from "lit/decorators";
 import "../components/entity/state-info";
 import "../components/ha-slider";
 import "../components/ha-textfield";
 
-class StateCardNumber extends mixinBehaviors(
-  [IronResizableBehavior],
-  PolymerElement
-) {
+@customElement("state-card-number")
+class StateCardNumber extends LitElement {
+  @property({ attribute: false }) public hass!: HomeAssistant;
+
+  @property({ attribute: false }) public stateObj!: HassEntity;
+
+  @property({ type: Boolean }) public inDialog = false;
+
   static get template() {
     return html`
-      <style include="iron-flex iron-flex-alignment"></style>
-      <style>
-        ha-slider {
-          margin-left: auto;
-        }
-        .state {
-          @apply --paper-font-body1;
-          color: var(--primary-text-color);
-
-          display: flex;
-          align-items: center;
-          justify-content: end;
-        }
-        .sliderstate {
-          min-width: 45px;
-        }
-        [hidden] {
-          display: none !important;
-        }
-        ha-textfield {
-          text-align: right;
-          margin-left: auto;
-        }
-      </style>
-
-      <div class="horizontal justified layout" id="number_card">
-        ${this.stateInfoTemplate}
+        <div class="horizontal justified layout" id="number_card">
+      <state-info
+      .hass=${this.hass}
+      .stateObj=${this.stateObj}
+      .inDialog=${this.inDialog}
+    ></state-info>
         <ha-slider
-          min="[[min]]"
-          max="[[max]]"
-          value="{{value}}"
-          step="[[step]]"
-          hidden="[[hiddenslider]]"
+          .min=${this.min}
+          .max=${this.max}
+          .value=${value}
+          .step=${this.step}
+          .hidden=${this.hiddenslider}
           pin
-          on-change="selectedValueChanged"
-          on-click="stopPropagation"
+          @change=${this.selectedValueChanged}
+          @click=${this.stopPropagation}
           id="slider"
           ignore-bar-touch=""
         >
@@ -57,15 +37,15 @@ class StateCardNumber extends mixinBehaviors(
         <ha-textfield
           auto-validate=""
           pattern="[0-9]+([\\.][0-9]+)?"
-          step="[[step]]"
-          min="[[min]]"
-          max="[[max]]"
-          value="[[value]]"
+          .step=${this.step}
+          .min=${this.min}
+          .max=${this.max}
+          .value=${value}
           type="number"
-          on-input="onInput"
-          on-change="selectedValueChanged"
-          on-click="stopPropagation"
-          hidden="[[hiddenbox]]"
+          @input=${this.onInput}
+          @change=${this.selectedValueChanged}
+          @click=${this.stopPropagation}
+          .hidden=${this.hiddenbox}
         >
         </ha-textfield>
         <div class="state" hidden="[[hiddenbox]]">
@@ -79,16 +59,6 @@ class StateCardNumber extends mixinBehaviors(
           [[value]] [[stateObj.attributes.unit_of_measurement]]
         </div>
       </div>
-    `;
-  }
-
-  static get stateInfoTemplate() {
-    return html`
-      <state-info
-        hass="[[hass]]"
-        state-obj="[[stateObj]]"
-        in-dialog="[[inDialog]]"
-      ></state-info>
     `;
   }
 
@@ -160,20 +130,19 @@ class StateCardNumber extends mixinBehaviors(
     const step = Number(newVal.attributes.step);
     const range = (max - min) / step;
 
-    this.setProperties({
-      min: min,
-      max: max,
-      step: step,
-      value: Number(newVal.state),
-      mode: String(newVal.attributes.mode),
-      maxlength: String(newVal.attributes.max).length,
-      hiddenbox:
+      this.min = min;
+      this.max = max;
+      this.step = step;
+      this.value = Number(newVal.state);
+      this.mode = String(newVal.attributes.mode);
+      this.maxlength = String(newVal.attributes.max).length;
+      this.hiddenbox =
         newVal.attributes.mode === "slider" ||
-        (newVal.attributes.mode === "auto" && range <= 256),
-      hiddenslider:
+        (newVal.attributes.mode === "auto" && range <= 256);
+        this.hiddenslider =
         newVal.attributes.mode === "box" ||
-        (newVal.attributes.mode === "auto" && range > 256),
-    });
+        (newVal.attributes.mode === "auto" && range > 256);
+  
     if (this.mode === "slider" && prevMode !== "slider") {
       this.hiddenState();
     }
@@ -196,6 +165,39 @@ class StateCardNumber extends mixinBehaviors(
   stopPropagation(ev) {
     ev.stopPropagation();
   }
+
+  static get styles(): CSSResultGroup {
+    return [
+      haStyle,
+      css`
+      ha-slider {
+        margin-left: auto;
+      }
+      .state {
+        @apply --paper-font-body1;
+        color: var(--primary-text-color);
+
+        display: flex;
+        align-items: center;
+        justify-content: end;
+      }
+      .sliderstate {
+        min-width: 45px;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      ha-textfield {
+        text-align: right;
+        margin-left: auto;
+      }    `,
+    ];
+  }
 }
 
-customElements.define("state-card-number", StateCardNumber);
+declare global {
+  interface HTMLElementTagNameMap {
+    "state-card-number": StateCardNumber;
+  }
+}
+
