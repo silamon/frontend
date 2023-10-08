@@ -41,12 +41,12 @@ class StateCardLock extends LitElement {
               >${this.hass.localize("ui.card.lock.open")}</mwc-button
             >`
           : nothing}
-        ${!this._isLocked
+        ${this._isLocked
           ? html` <mwc-button @click=${this._callService} data-service="unlock"
               >${this.hass.localize("ui.card.lock.unlock")}</mwc-button
             >`
           : nothing}
-        ${this._isLocked
+        ${!this._isLocked
           ? html`<mwc-button @click=${this._callService} data-service="lock"
               >${this.hass.localize("ui.card.lock.lock")}</mwc-button
             >`
