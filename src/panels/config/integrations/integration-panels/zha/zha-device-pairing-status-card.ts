@@ -1,4 +1,3 @@
-import "@polymer/paper-input/paper-input";
 import { css, CSSResultGroup, html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators";
 import { classMap } from "lit/directives/class-map";
