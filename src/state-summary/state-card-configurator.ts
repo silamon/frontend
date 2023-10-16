@@ -45,7 +45,7 @@ class StateCardConfigurator extends LitElement {
     `;
   }
 
-  _localizeState(stateObj) {
+  private _localizeState(stateObj) {
     return computeStateDisplay(
       this.hass.localize,
       stateObj,
