@@ -260,7 +260,6 @@ export class HcMain extends HassElement {
           {
             strategy: {
               type: "energy",
-              show_date_selection: true,
             },
           },
         ],
@@ -324,8 +323,7 @@ export class HcMain extends HassElement {
         {
           type: DEFAULT_STRATEGY,
         },
-        this.hass!,
-        { narrow: false }
+        this.hass!
       )
     );
   }
