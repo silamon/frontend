@@ -2748,6 +2748,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@material/mwc-snackbar@npm:0.27.0":
+  version: 0.27.0
+  resolution: "@material/mwc-snackbar@npm:0.27.0"
+  dependencies:
+    "@material/mwc-base": ^0.27.0
+    "@material/snackbar": =14.0.0-canary.53b3cad2f.0
+    lit: ^2.0.0
+    tslib: ^2.0.1
+  checksum: d678896263f7ce783f3a5df8395038f3d1f74d4d2d1ceb7379b42c4664ce7ab4fe183115805680cb0d5f3acbf013998dc36d8a6103760f9a874af1dd09c82b04
+  languageName: node
+  linkType: hard
+
 "@material/mwc-switch@npm:0.27.0":
   version: 0.27.0
   resolution: "@material/mwc-switch@npm:0.27.0"
@@ -2971,6 +2983,27 @@ __metadata:
     "@material/theme": 14.0.0-canary.53b3cad2f.0
     tslib: ^2.1.0
   checksum: 6ad9b020c09e9ba402441d7b648f9c250e88f0243a6154d587c889b2d2312d1a13532bb0c7a1dc487193faa33ba8a5e4185cc6e156b8d5421bc71839be0306ad
+  languageName: node
+  linkType: hard
+
+"@material/snackbar@npm:=14.0.0-canary.53b3cad2f.0":
+  version: 14.0.0-canary.53b3cad2f.0
+  resolution: "@material/snackbar@npm:14.0.0-canary.53b3cad2f.0"
+  dependencies:
+    "@material/animation": 14.0.0-canary.53b3cad2f.0
+    "@material/base": 14.0.0-canary.53b3cad2f.0
+    "@material/button": 14.0.0-canary.53b3cad2f.0
+    "@material/dom": 14.0.0-canary.53b3cad2f.0
+    "@material/elevation": 14.0.0-canary.53b3cad2f.0
+    "@material/feature-targeting": 14.0.0-canary.53b3cad2f.0
+    "@material/icon-button": 14.0.0-canary.53b3cad2f.0
+    "@material/ripple": 14.0.0-canary.53b3cad2f.0
+    "@material/rtl": 14.0.0-canary.53b3cad2f.0
+    "@material/shape": 14.0.0-canary.53b3cad2f.0
+    "@material/theme": 14.0.0-canary.53b3cad2f.0
+    "@material/typography": 14.0.0-canary.53b3cad2f.0
+    tslib: ^2.1.0
+  checksum: 761e5ac3e6240b18b6331c3fa7abc60c9f00a63786901d67c2bef5e8d50bea4e44facb5d2d5f434a374a16b0301bdf4410f42e680fa703a69731e9cd5b5e661c
   languageName: node
   linkType: hard
 
@@ -3476,15 +3509,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polymer/iron-fit-behavior@npm:^3.0.0-pre.26":
-  version: 3.1.0
-  resolution: "@polymer/iron-fit-behavior@npm:3.1.0"
-  dependencies:
-    "@polymer/polymer": ^3.0.0
-  checksum: 1153f13c5dd6cfb3132336d6d68e55537ca9a4aaae8ceee412800daa242ba580ff640407baa5d3da563a18579fca36b5f44460770151c279958c468b2bfceee0
-  languageName: node
-  linkType: hard
-
 "@polymer/iron-flex-layout@npm:3.0.1, @polymer/iron-flex-layout@npm:^3.0.0-pre.26":
   version: 3.0.1
   resolution: "@polymer/iron-flex-layout@npm:3.0.1"
@@ -3553,18 +3577,6 @@ __metadata:
   dependencies:
     "@polymer/polymer": ^3.0.0
   checksum: 0bd49f27f0e0f7241083b0e6e1e262b96a2371ba4d8cf70174b320f12245c219973702f6ba5144453ab4754f28667854000bcbe0772817ab9bbaeecdb472e47e
-  languageName: node
-  linkType: hard
-
-"@polymer/iron-overlay-behavior@npm:^3.0.0-pre.27":
-  version: 3.0.3
-  resolution: "@polymer/iron-overlay-behavior@npm:3.0.3"
-  dependencies:
-    "@polymer/iron-a11y-keys-behavior": ^3.0.0-pre.26
-    "@polymer/iron-fit-behavior": ^3.0.0-pre.26
-    "@polymer/iron-resizable-behavior": ^3.0.0-pre.26
-    "@polymer/polymer": ^3.0.0
-  checksum: 26b0834f689116ab87629cb59e83af062ff64aaf2238ecbe0954503a08bb35d0b945289aa053f9ca7d7d5bff43c41007ea49133c52ba8e099b9fc974dc150a8b
   languageName: node
   linkType: hard
 
@@ -3695,18 +3707,6 @@ __metadata:
     "@polymer/paper-styles": ^3.0.0-pre.26
     "@polymer/polymer": ^3.0.0
   checksum: 64dbafc39b3b23239db497f7e0db82c57dfcf1c0653b9f64da61f9a7b7b92b0fff10a74a2d145102fb008c895c56093bc37ee0ad529350117090c5e0966a1546
-  languageName: node
-  linkType: hard
-
-"@polymer/paper-toast@npm:3.0.1":
-  version: 3.0.1
-  resolution: "@polymer/paper-toast@npm:3.0.1"
-  dependencies:
-    "@polymer/iron-a11y-announcer": ^3.0.0-pre.26
-    "@polymer/iron-fit-behavior": ^3.0.0-pre.26
-    "@polymer/iron-overlay-behavior": ^3.0.0-pre.27
-    "@polymer/polymer": ^3.0.0
-  checksum: 74c91d6fbdfd328bbf915840f559ab40c65174ff56baf5cc4ad5ff66a549509cd07ceb324687db0b6409ae1bc780e6106fc4b917d36d1e1b8b75a1dd417b1cbc
   languageName: node
   linkType: hard
 
@@ -9646,6 +9646,7 @@ __metadata:
     "@material/mwc-radio": 0.27.0
     "@material/mwc-ripple": 0.27.0
     "@material/mwc-select": 0.27.0
+    "@material/mwc-snackbar": 0.27.0
     "@material/mwc-switch": 0.27.0
     "@material/mwc-tab": 0.27.0
     "@material/mwc-tab-bar": 0.27.0
@@ -9668,7 +9669,6 @@ __metadata:
     "@polymer/paper-item": 3.0.1
     "@polymer/paper-listbox": 3.0.1
     "@polymer/paper-tabs": 3.1.0
-    "@polymer/paper-toast": 3.0.1
     "@polymer/polymer": 3.5.1
     "@rollup/plugin-babel": 6.0.4
     "@rollup/plugin-commonjs": 25.0.7

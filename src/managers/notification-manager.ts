@@ -1,6 +1,14 @@
 import "@material/mwc-button";
-import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
+import {
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  nothing,
+  TemplateResult,
+} from "lit";
 import { property, state, query } from "lit/decorators";
+import { mdiClose } from "@mdi/js";
 import { computeRTL } from "../common/util/compute_rtl";
 import "../components/ha-toast";
 import type { HaToast } from "../components/ha-toast";
@@ -21,64 +29,66 @@ export interface ToastActionParams {
 class NotificationManager extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @state() private _action?: ToastActionParams;
-
-  @state() private _noCancelOnOutsideClick = false;
+  @state() private _parameters?: ShowToastParams;
 
   @query("ha-toast") private _toast!: HaToast;
 
-  public async showDialog({
-    message,
-    action,
-    duration,
-    dismissable,
-  }: ShowToastParams) {
+  public async showDialog(parameters: ShowToastParams) {
     let toast = this._toast;
     // Can happen on initial load
     if (!toast) {
       await this.updateComplete;
       toast = this._toast;
     }
-    toast.setAttribute("dir", computeRTL(this.hass) ? "rtl" : "ltr");
-    this._action = action || undefined;
-    this._noCancelOnOutsideClick =
-      dismissable === undefined ? false : !dismissable;
-    toast.hide();
-    toast.show({
-      text: message,
-      duration: duration === undefined ? 3000 : duration,
-    });
+    toast.close("dismiss");
+    this._parameters = parameters;
+    toast.show();
   }
 
   protected render(): TemplateResult {
+    const timeoutMs =
+      this._parameters?.duration === undefined ||
+      (this._parameters?.duration <= 4000 && this._parameters?.duration !== -1)
+        ? 4000
+        : this._parameters?.duration;
     return html`
-      <ha-toast .noCancelOnOutsideClick=${this._noCancelOnOutsideClick}>
-        ${this._action
+      <ha-toast
+        leading
+        dir=${computeRTL(this.hass) ? "rtl" : "ltr"}
+        .timeOutMs=${timeoutMs}
+        .labelText=${this._parameters?.message}
+      >
+        ${this._parameters?.action
           ? html`
               <mwc-button
-                .label=${this._action.text}
+                slot="action"
+                .label=${this._parameters?.action.text}
                 @click=${this.buttonClicked}
               ></mwc-button>
             `
-          : ""}
+          : nothing}
+        ${this._parameters?.dismissable
+          ? html`<ha-icon-button
+              .label=${this.hass.localize("ui.common.close")}
+              .path=${mdiClose}
+              dialogAction="close"
+              slot="dismiss"
+            ></ha-icon-button>`
+          : nothing}
       </ha-toast>
     `;
   }
 
   private buttonClicked() {
-    this._toast.hide();
-    if (this._action) {
-      this._action.action();
+    this._toast.close("action");
+    if (this._parameters?.action) {
+      this._parameters?.action.action();
     }
   }
 
   static get styles(): CSSResultGroup {
     return css`
       ha-toast {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 8px 12px;
       }
       mwc-button {
         color: var(--primary-color);
