@@ -2229,21 +2229,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@material/circular-progress@npm:=14.0.0-canary.53b3cad2f.0":
-  version: 14.0.0-canary.53b3cad2f.0
-  resolution: "@material/circular-progress@npm:14.0.0-canary.53b3cad2f.0"
-  dependencies:
-    "@material/animation": 14.0.0-canary.53b3cad2f.0
-    "@material/base": 14.0.0-canary.53b3cad2f.0
-    "@material/feature-targeting": 14.0.0-canary.53b3cad2f.0
-    "@material/progress-indicator": 14.0.0-canary.53b3cad2f.0
-    "@material/rtl": 14.0.0-canary.53b3cad2f.0
-    "@material/theme": 14.0.0-canary.53b3cad2f.0
-    tslib: ^2.1.0
-  checksum: f1acad861ec7e9433de10f417718560fd441fa2ea5b6ce1f3483454ffb9837f42bfdd09f849fae03f03bf6f07a3c902ee88bf2619b0772db237ede105c93e1be
-  languageName: node
-  linkType: hard
-
 "@material/data-table@npm:=14.0.0-canary.53b3cad2f.0":
   version: 14.0.0-canary.53b3cad2f.0
   resolution: "@material/data-table@npm:14.0.0-canary.53b3cad2f.0"
@@ -2530,19 +2515,6 @@ __metadata:
     lit: ^2.0.0
     tslib: ^2.0.1
   checksum: ba53a6ea8ca7d8729f1e3abd5d5ba52573e73e84725c57fe1033d278f4413d41a78fb352603afafac71c8fe5b352b80698887869052c5b971c10bb2b20ba8b3a
-  languageName: node
-  linkType: hard
-
-"@material/mwc-circular-progress@npm:0.27.0":
-  version: 0.27.0
-  resolution: "@material/mwc-circular-progress@npm:0.27.0"
-  dependencies:
-    "@material/circular-progress": =14.0.0-canary.53b3cad2f.0
-    "@material/mwc-base": ^0.27.0
-    "@material/theme": =14.0.0-canary.53b3cad2f.0
-    lit: ^2.0.0
-    tslib: ^2.0.1
-  checksum: 947606ba8e3c50a873d7470c465510fcaa7722ac4b512144f754ee03783f54a35d262d2693865ed7851795109f0dd15f928c3647e97dad42fe286977630ba217
   languageName: node
   linkType: hard
 
@@ -9633,7 +9605,6 @@ __metadata:
     "@material/data-table": =14.0.0-canary.53b3cad2f.0
     "@material/mwc-button": 0.27.0
     "@material/mwc-checkbox": 0.27.0
-    "@material/mwc-circular-progress": 0.27.0
     "@material/mwc-dialog": 0.27.0
     "@material/mwc-drawer": 0.27.0
     "@material/mwc-fab": 0.27.0

@@ -54,8 +54,8 @@ class MediaUploadButton extends LitElement {
           ? html`
               <ha-circular-progress
                 size="tiny"
-                active
-                alt=""
+                indeterminate
+                alt="Uploading"
                 slot="icon"
               ></ha-circular-progress>
             `

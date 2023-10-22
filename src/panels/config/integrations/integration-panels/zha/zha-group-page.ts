@@ -170,8 +170,8 @@ export class ZHAGroupPage extends LitElement {
                     class="button"
                   >
                     <ha-circular-progress
-                      ?active=${this._processingRemove}
-                      alt=${this.hass.localize(
+                      indeterminate=${this._processingRemove}
+                      aria-label=${this.hass.localize(
                         "ui.panel.config.zha.groups.removing_members"
                       )}
                     ></ha-circular-progress>
