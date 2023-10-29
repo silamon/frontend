@@ -4,13 +4,11 @@ import {
   mdiCheck,
   mdiContentDuplicate,
   mdiContentSave,
-  mdiDebugStepOver,
   mdiDelete,
   mdiDotsVertical,
   mdiInformationOutline,
   mdiPlay,
   mdiPlayCircleOutline,
-  mdiRenameBox,
   mdiRobotConfused,
   mdiStopCircleOutline,
   mdiTransitConnection,
@@ -27,6 +25,7 @@ import {
 } from "lit";
 import { property, query, state } from "lit/decorators";
 import { classMap } from "lit/directives/class-map";
+import memoizeOne from "memoize-one";
 import { fireEvent } from "../../../common/dom/fire_event";
 import { navigate } from "../../../common/navigate";
 import { copyToClipboard } from "../../../common/util/copy-clipboard";
@@ -62,10 +61,15 @@ import { haStyle } from "../../../resources/styles";
 import { Entries, HomeAssistant, Route } from "../../../types";
 import { showToast } from "../../../util/toast";
 import "../ha-config-section";
-import { showAutomationModeDialog } from "./automation-mode-dialog/show-dialog-automation-mode";
-import { showAutomationRenameDialog } from "./automation-rename-dialog/show-dialog-automation-rename";
 import "./blueprint-automation-editor";
 import "./manual-automation-editor";
+import { MODES, MODES_MAX, isMaxMode } from "../../../data/script";
+import {
+  HaFormDataContainer,
+  SchemaUnion,
+} from "../../../components/ha-form/types";
+import { documentationUrl } from "../../../util/documentation-url";
+import { slugify } from "../../../common/string/slugify";
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -100,6 +104,8 @@ export class HaAutomationEditor extends KeyboardShortcutMixin(LitElement) {
 
   @state() private _config?: AutomationConfig;
 
+  @state() private _idError = false;
+
   @state() private _dirty = false;
 
   @state() private _errors?: string;
@@ -121,10 +127,89 @@ export class HaAutomationEditor extends KeyboardShortcutMixin(LitElement) {
 
   private _configSubscriptionsId = 1;
 
+  private _schema = memoizeOne(
+    (
+      hasID: boolean,
+      useBluePrint?: boolean,
+      currentMode?: (typeof MODES)[number]
+    ) =>
+      [
+        {
+          name: "alias",
+          selector: {
+            text: {
+              type: "text",
+            },
+          },
+        },
+        ...(!hasID
+          ? ([
+              {
+                name: "id",
+                selector: {
+                  text: {
+                    prefix: "automation.",
+                  },
+                },
+              },
+            ] as const)
+          : []),
+        ...(!useBluePrint
+          ? ([
+              {
+                name: "mode",
+                selector: {
+                  select: {
+                    mode: "dropdown",
+                    options: MODES.map((mode) => ({
+                      label: this.hass.localize(
+                        `ui.panel.config.script.editor.modes.${mode}`
+                      ),
+                      value: mode,
+                    })),
+                  },
+                },
+              },
+            ] as const)
+          : []),
+        ...(currentMode && isMaxMode(currentMode)
+          ? ([
+              {
+                name: "max",
+                required: true,
+                selector: {
+                  number: { mode: "box", min: 1, max: Infinity },
+                },
+              },
+            ] as const)
+          : []),
+      ] as const
+  );
+
   protected render(): TemplateResult {
+    if (!this._config) {
+      return html`<p></p>`;
+    }
+
     const stateObj = this._entityId
       ? this.hass.states[this._entityId]
       : undefined;
+
+    const useBlueprint = "use_blueprint" in this._config;
+
+    const schema = this._schema(
+      !!this.automationId,
+      useBlueprint,
+      this._config.mode
+    );
+
+    const data = {
+      ...(!this._config.mode && !useBlueprint && { mode: MODES[0] }),
+      max: this._config.mode && isMaxMode(this._config.mode) ? 10 : undefined,
+      ...this._config,
+      id: this._entityId,
+    };
+
     return html`
       <hass-subpage
         .hass=${this.hass}
@@ -187,33 +272,6 @@ export class HaAutomationEditor extends KeyboardShortcutMixin(LitElement) {
                   ></ha-svg-icon>
                 </mwc-list-item>
               </a>`
-            : ""}
-
-          <mwc-list-item
-            graphic="icon"
-            @click=${this._promptAutomationAlias}
-            .disabled=${!this.automationId || this._mode === "yaml"}
-          >
-            ${this.hass.localize("ui.panel.config.automation.editor.rename")}
-            <ha-svg-icon slot="graphic" .path=${mdiRenameBox}></ha-svg-icon>
-          </mwc-list-item>
-
-          ${this._config && !("use_blueprint" in this._config)
-            ? html`
-                <mwc-list-item
-                  graphic="icon"
-                  @click=${this._promptAutomationMode}
-                  .disabled=${this._readOnly || this._mode === "yaml"}
-                >
-                  ${this.hass.localize(
-                    "ui.panel.config.automation.editor.change_mode"
-                  )}
-                  <ha-svg-icon
-                    slot="graphic"
-                    .path=${mdiDebugStepOver}
-                  ></ha-svg-icon>
-                </mwc-list-item>
-              `
             : ""}
 
           <mwc-list-item
@@ -316,31 +374,47 @@ export class HaAutomationEditor extends KeyboardShortcutMixin(LitElement) {
                     </ha-alert>`
                   : ""}
                 ${this._mode === "gui"
-                  ? "use_blueprint" in this._config
-                    ? html`
-                        <blueprint-automation-editor
-                          .hass=${this.hass}
-                          .narrow=${this.narrow}
-                          .isWide=${this.isWide}
-                          .stateObj=${stateObj}
-                          .config=${this._config}
-                          .disabled=${Boolean(this._readOnly)}
-                          @value-changed=${this._valueChanged}
-                          @duplicate=${this._duplicate}
-                        ></blueprint-automation-editor>
-                      `
-                    : html`
-                        <manual-automation-editor
-                          .hass=${this.hass}
-                          .narrow=${this.narrow}
-                          .isWide=${this.isWide}
-                          .stateObj=${stateObj}
-                          .config=${this._config}
-                          .disabled=${Boolean(this._readOnly)}
-                          @value-changed=${this._valueChanged}
-                          @duplicate=${this._duplicate}
-                        ></manual-automation-editor>
-                      `
+                  ? html`<div class="config-container">
+                        <ha-card outlined>
+                          <div class="card-content">
+                            <ha-form
+                              .schema=${schema}
+                              .data=${data}
+                              .hass=${this.hass}
+                              .disabled=${this._readOnly}
+                              .computeLabel=${this._computeLabelCallback}
+                              .computeHelper=${this._computeHelperCallback}
+                              @value-changed=${this._valueChanged}
+                            ></ha-form>
+                          </div>
+                        </ha-card>
+                      </div>
+
+                      ${useBlueprint
+                        ? html`
+                            <blueprint-automation-editor
+                              .hass=${this.hass}
+                              .narrow=${this.narrow}
+                              .isWide=${this.isWide}
+                              .stateObj=${stateObj}
+                              .config=${this._config}
+                              .disabled=${Boolean(this._readOnly)}
+                              @value-changed=${this._valueChanged}
+                              @duplicate=${this._duplicate}
+                            ></blueprint-automation-editor>
+                          `
+                        : html`
+                            <manual-automation-editor
+                              .hass=${this.hass}
+                              .narrow=${this.narrow}
+                              .isWide=${this.isWide}
+                              .stateObj=${stateObj}
+                              .config=${this._config}
+                              .disabled=${Boolean(this._readOnly)}
+                              @value-changed=${this._valueChanged}
+                              @duplicate=${this._duplicate}
+                            ></manual-automation-editor>
+                          `}`
                   : this._mode === "yaml"
                   ? html`
                       ${this._readOnly
@@ -468,11 +542,90 @@ export class HaAutomationEditor extends KeyboardShortcutMixin(LitElement) {
     }
   }
 
-  private _setEntityId() {
-    const automation = this.automations.find(
-      (entity: AutomationEntity) => entity.attributes.id === this.automationId
-    );
-    this._entityId = automation?.entity_id;
+  private _computeLabelCallback = (
+    schema: SchemaUnion<ReturnType<typeof this._schema>>,
+    data: HaFormDataContainer
+  ): string => {
+    switch (schema.name) {
+      case "mode":
+        return this.hass.localize("ui.panel.config.script.editor.modes.label");
+      case "max":
+        // Mode must be one of max modes per schema definition above
+        return this.hass.localize(
+          `ui.panel.config.script.editor.max.${
+            data.mode as (typeof MODES_MAX)[number]
+          }`
+        );
+      default:
+        return this.hass.localize(
+          `ui.panel.config.script.editor.${schema.name}`
+        );
+    }
+  };
+
+  private _computeHelperCallback = (
+    schema: SchemaUnion<ReturnType<typeof this._schema>>
+  ): string | undefined | TemplateResult => {
+    if (schema.name === "mode") {
+      return html`
+        <a
+          style="color: var(--secondary-text-color)"
+          href=${documentationUrl(
+            this.hass,
+            "/integrations/script/#script-modes"
+          )}
+          target="_blank"
+          rel="noreferrer"
+          >${this.hass.localize(
+            "ui.panel.config.script.editor.modes.learn_more"
+          )}</a
+        >
+      `;
+    }
+    return undefined;
+  };
+
+  private updateEntityId(
+    newId: string | undefined,
+    newAlias: string | undefined
+  ) {
+    const currentAlias = this._config?.alias ?? "";
+    const currentEntityId = this._entityId ?? "";
+
+    if (newId !== this._entityId) {
+      this._setEntityId(newId || undefined);
+      return;
+    }
+
+    const currentComputedEntity = this._computeEntityIdFromAlias(currentAlias);
+
+    if (currentComputedEntity === currentEntityId || !this._entityId) {
+      const newComputedId = newAlias
+        ? this._computeEntityIdFromAlias(newAlias)
+        : undefined;
+
+      this._setEntityId(newComputedId);
+    }
+  }
+
+  private _computeEntityIdFromAlias(alias: string) {
+    const aliasSlugify = slugify(alias);
+    let id = aliasSlugify;
+    let i = 2;
+    while (this.hass.states[`automation.${id}`]) {
+      id = `${aliasSlugify}_${i}`;
+      i++;
+    }
+    return id;
+  }
+
+  private _setEntityId(id?: string) {
+    this._entityId = id;
+    if (this.hass.states[`script.${this._entityId}`]) {
+      this._idError = true;
+    } else {
+      this._idError = false;
+    }
   }
 
   private async _checkValidation() {
@@ -556,9 +709,43 @@ export class HaAutomationEditor extends KeyboardShortcutMixin(LitElement) {
     if (this._readOnly) {
       return;
     }
-    this._config = ev.detail.value;
-    this._dirty = true;
     this._errors = undefined;
+    const values = ev.detail.value as any;
+
+    let changed = false;
+    const newValues: AutomationConfig = {
+      alias: values.alias ?? "",
+      // icon: values.icon,
+      mode: values.mode,
+      max: isMaxMode(values.mode) ? values.max : undefined,
+      trigger: values.trigger,
+      condition: values.condition,
+      action: values.action,
+    };
+
+    if (!this.automationId) {
+      this.updateEntityId(values.id, values.alias);
+    }
+
+    for (const key of Object.keys(newValues)) {
+      const value = newValues[key];
+
+      if (value === this._config![key]) {
+        continue;
+      }
+      if (value === undefined) {
+        const newConfig = { ...this._config! };
+        delete newConfig![key];
+        this._config = newConfig;
+      } else {
+        this._config = { ...this._config!, [key]: value };
+      }
+      changed = true;
+    }
+
+    if (changed) {
+      this._dirty = true;
+    }
   }
 
   private _showInfo() {
@@ -697,41 +884,23 @@ export class HaAutomationEditor extends KeyboardShortcutMixin(LitElement) {
     this._mode = "yaml";
   }
 
-  private async _promptAutomationAlias(): Promise<void> {
-    return new Promise((resolve) => {
-      showAutomationRenameDialog(this, {
-        config: this._config!,
-        updateAutomation: (config) => {
-          this._config = config;
-          this._dirty = true;
-          this.requestUpdate();
-          resolve();
-        },
-        onClose: () => resolve(),
-      });
-    });
-  }
-
-  private async _promptAutomationMode(): Promise<void> {
-    return new Promise((resolve) => {
-      showAutomationModeDialog(this, {
-        config: this._config!,
-        updateAutomation: (config) => {
-          this._config = config;
-          this._dirty = true;
-          this.requestUpdate();
-          resolve();
-        },
-        onClose: () => resolve(),
-      });
-    });
-  }
-
   private async _saveAutomation(): Promise<void> {
-    const id = this.automationId || String(Date.now());
-    if (!this.automationId) {
-      await this._promptAutomationAlias();
+    if (this._idError) {
+      showToast(this, {
+        message: this.hass.localize(
+          "ui.panel.config.script.editor.id_already_exists_save_error"
+        ),
+        dismissable: false,
+        duration: 0,
+        action: {
+          action: () => {},
+          text: this.hass.localize("ui.dialogs.generic.ok"),
+        },
+      });
+      return;
     }
+
+    const id = this.automationId || String(Date.now());
 
     this._validationErrors = undefined;
     try {
@@ -829,6 +998,15 @@ export class HaAutomationEditor extends KeyboardShortcutMixin(LitElement) {
           margin: 0 auto;
           max-width: 1040px;
           padding: 28px 20px 0;
+        }
+        .config-container {
+          margin: 0 auto;
+          max-width: 1040px;
+          padding: 28px 20px 0;
+        }
+        .config-container ha-alert {
+          margin-bottom: 16px;
+          display: block;
         }
       `,
     ];
