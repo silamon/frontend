@@ -23,6 +23,7 @@ export type Selector =
   | ConversationAgentSelector
   | ConfigEntrySelector
   | ConstantSelector
+  | CountrySelector
   | DateSelector
   | DateTimeSelector
   | DeviceSelector
@@ -48,14 +49,17 @@ export type Selector =
   | TemplateSelector
   | ThemeSelector
   | TimeSelector
+  | TriggerSelector
   | TTSSelector
   | TTSVoiceSelector
   | UiActionSelector
   | UiColorSelector;
 
 export interface ActionSelector {
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  action: {} | null;
+  action: {
+    reorder_mode?: boolean;
+    nested?: boolean;
+  } | null;
 }
 
 export interface AddonSelector {
@@ -98,8 +102,10 @@ export interface ColorTempSelector {
 }
 
 export interface ConditionSelector {
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  condition: {} | null;
+  condition: {
+    reorder_mode?: boolean;
+    nested?: boolean;
+  } | null;
 }
 
 export interface ConversationAgentSelector {
@@ -117,6 +123,13 @@ export interface ConstantSelector {
     value: string | number | boolean;
     label?: string;
     translation_key?: string;
+  } | null;
+}
+
+export interface CountrySelector {
+  country: {
+    countries: string[];
+    no_sort?: boolean;
   } | null;
 }
 
@@ -297,6 +310,7 @@ export interface SelectSelector {
     options: readonly string[] | readonly SelectOption[];
     translation_key?: string;
     sort?: boolean;
+    reorder?: boolean;
   } | null;
 }
 
@@ -360,6 +374,13 @@ export interface TimeSelector {
   time: {} | null;
 }
 
+export interface TriggerSelector {
+  trigger: {
+    reorder_mode?: boolean;
+    nested?: boolean;
+  } | null;
+}
+
 export interface TTSSelector {
   tts: { language?: string } | null;
 }
@@ -371,6 +392,7 @@ export interface TTSVoiceSelector {
 export interface UiActionSelector {
   ui_action: {
     actions?: UiAction[];
+    default_action?: UiAction;
   } | null;
 }
 

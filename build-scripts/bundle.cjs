@@ -8,7 +8,7 @@ module.exports.sourceMapURL = () => {
   const ref = env.version().endsWith("dev")
     ? process.env.GITHUB_SHA || "dev"
     : env.version();
-  return `https://raw.githubusercontent.com/home-assistant/frontend/${ref}`;
+  return `https://raw.githubusercontent.com/home-assistant/frontend/${ref}/`;
 };
 
 // Files from NPM Packages that should not be imported
@@ -98,8 +98,9 @@ module.exports.babelOptions = ({ latestBuild, isProdBuild, isTestBuild }) => ({
       "@babel/preset-env",
       {
         useBuiltIns: latestBuild ? false : "entry",
-        corejs: latestBuild ? false : { version: "3.32", proposals: true },
+        corejs: latestBuild ? false : { version: "3.33", proposals: true },
         bugfixes: true,
+        shippedProposals: true,
       },
     ],
     "@babel/preset-typescript",
@@ -148,7 +149,7 @@ module.exports.babelOptions = ({ latestBuild, isProdBuild, isTestBuild }) => ({
   sourceMaps: !isTestBuild,
 });
 
-const nameSuffix = (latestBuild) => (latestBuild ? "-latest" : "-es5");
+const nameSuffix = (latestBuild) => (latestBuild ? "-modern" : "-legacy");
 
 const outputPath = (outputRoot, latestBuild) =>
   path.resolve(outputRoot, latestBuild ? "frontend_latest" : "frontend_es5");
@@ -182,7 +183,7 @@ const publicPath = (latestBuild, root = "") =>
 module.exports.config = {
   app({ isProdBuild, latestBuild, isStatsBuild, isTestBuild, isWDS }) {
     return {
-      name: "app" + nameSuffix(latestBuild),
+      name: "frontend" + nameSuffix(latestBuild),
       entry: {
         service_worker: "./src/entrypoints/service_worker.ts",
         app: "./src/entrypoints/app.ts",

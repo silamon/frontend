@@ -12,13 +12,14 @@ import {
   PropertyValues,
   TemplateResult,
 } from "lit";
-import { customElement, property, state } from "lit/decorators";
+import { customElement, property, state, query } from "lit/decorators";
 import memoizeOne from "memoize-one";
 import { getGraphColorByIndex } from "../../common/color/colors";
 import { isComponentLoaded } from "../../common/config/is_component_loaded";
 import {
   formatNumber,
   numberFormatToLocale,
+  getNumberFormatOptions,
 } from "../../common/number/format_number";
 import {
   getDisplayUnit,
@@ -31,6 +32,7 @@ import {
 } from "../../data/recorder";
 import type { HomeAssistant } from "../../types";
 import "./ha-chart-base";
+import type { ChartResizeOptions, HaChartBase } from "./ha-chart-base";
 
 export const supportedStatTypeMap: Record<StatisticType, StatisticType> = {
   mean: "mean",
@@ -42,7 +44,7 @@ export const supportedStatTypeMap: Record<StatisticType, StatisticType> = {
 };
 
 @customElement("statistics-chart")
-class StatisticsChart extends LitElement {
+export class StatisticsChart extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
   @property({ attribute: false }) public statisticsData?: Statistics;
@@ -71,18 +73,33 @@ class StatisticsChart extends LitElement {
 
   @property({ type: Boolean }) public isLoadingData = false;
 
+  @property() public period?: string;
+
   @state() private _chartData: ChartData = { datasets: [] };
+
+  @state() private _statisticIds: string[] = [];
 
   @state() private _chartOptions?: ChartOptions;
 
+  @query("ha-chart-base") private _chart?: HaChartBase;
+
   private _computedStyle?: CSSStyleDeclaration;
+
+  public resize = (options?: ChartResizeOptions): void => {
+    this._chart?.resize(options);
+  };
 
   protected shouldUpdate(changedProps: PropertyValues): boolean {
     return changedProps.size > 1 || !changedProps.has("hass");
   }
 
   public willUpdate(changedProps: PropertyValues) {
-    if (!this.hasUpdated || changedProps.has("unit")) {
+    if (
+      !this.hasUpdated ||
+      changedProps.has("unit") ||
+      changedProps.has("period") ||
+      changedProps.has("chartType")
+    ) {
       this._createOptions();
     }
     if (
@@ -150,6 +167,7 @@ class StatisticsChart extends LitElement {
             },
           },
           ticks: {
+            source: this.chartType === "bar" ? "data" : undefined,
             maxRotation: 0,
             sampleSize: 5,
             autoSkipPadding: 20,
@@ -163,6 +181,12 @@ class StatisticsChart extends LitElement {
           },
           time: {
             tooltipFormat: "datetime",
+            unit:
+              this.chartType === "bar" &&
+              this.period &&
+              ["hour", "day", "week", "month"].includes(this.period)
+                ? this.period
+                : undefined,
           },
         },
         y: {
@@ -182,7 +206,11 @@ class StatisticsChart extends LitElement {
             label: (context) =>
               `${context.dataset.label}: ${formatNumber(
                 context.parsed.y,
-                this.hass.locale
+                this.hass.locale,
+                getNumberFormatOptions(
+                  undefined,
+                  this.hass.entities[this._statisticIds[context.datasetIndex]]
+                )
               )} ${
                 // @ts-ignore
                 context.dataset.unit || ""
@@ -241,6 +269,7 @@ class StatisticsChart extends LitElement {
     let colorIndex = 0;
     const statisticsData = Object.entries(this.statisticsData);
     const totalDataSets: ChartDataset<"line">[] = [];
+    const statisticIds: string[] = [];
     let endTime: Date;
 
     if (statisticsData.length === 0) {
@@ -379,6 +408,7 @@ class StatisticsChart extends LitElement {
             unit: meta?.unit_of_measurement,
             band,
           });
+          statisticIds.push(statistic_id);
         }
       });
 
@@ -404,11 +434,7 @@ class StatisticsChart extends LitElement {
           } else {
             val = stat[type];
           }
-          dataValues.push(
-            val !== null && val !== undefined
-              ? Math.round(val * 100) / 100
-              : null
-          );
+          dataValues.push(val ?? null);
         });
         pushData(startDate, new Date(stat.end), dataValues);
       });
@@ -424,6 +450,7 @@ class StatisticsChart extends LitElement {
     this._chartData = {
       datasets: totalDataSets,
     };
+    this._statisticIds = statisticIds;
   }
 
   static get styles(): CSSResultGroup {

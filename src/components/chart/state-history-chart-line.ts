@@ -1,23 +1,28 @@
 import type { ChartData, ChartDataset, ChartOptions } from "chart.js";
 import { html, LitElement, PropertyValues } from "lit";
-import { property, state } from "lit/decorators";
+import { property, query, state } from "lit/decorators";
 import { getGraphColorByIndex } from "../../common/color/colors";
 import { fireEvent } from "../../common/dom/fire_event";
 import { computeRTL } from "../../common/util/compute_rtl";
 import {
   formatNumber,
   numberFormatToLocale,
+  getNumberFormatOptions,
 } from "../../common/number/format_number";
 import { LineChartEntity, LineChartState } from "../../data/history";
 import { HomeAssistant } from "../../types";
-import { MIN_TIME_BETWEEN_UPDATES } from "./ha-chart-base";
+import {
+  ChartResizeOptions,
+  HaChartBase,
+  MIN_TIME_BETWEEN_UPDATES,
+} from "./ha-chart-base";
 
 const safeParseFloat = (value) => {
   const parsed = parseFloat(value);
   return isFinite(parsed) ? parsed : null;
 };
 
-class StateHistoryChartLine extends LitElement {
+export class StateHistoryChartLine extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
   @property({ attribute: false }) public data: LineChartEntity[] = [];
@@ -30,6 +35,8 @@ class StateHistoryChartLine extends LitElement {
 
   @property({ type: Boolean }) public showNames = true;
 
+  @property({ type: Boolean }) public clickForMoreInfo = true;
+
   @property({ attribute: false }) public startTime!: Date;
 
   @property({ attribute: false }) public endTime!: Date;
@@ -40,11 +47,19 @@ class StateHistoryChartLine extends LitElement {
 
   @state() private _chartData?: ChartData<"line">;
 
+  @state() private _entityIds: string[] = [];
+
   @state() private _chartOptions?: ChartOptions;
 
   @state() private _yWidth = 0;
 
   private _chartTime: Date = new Date();
+
+  @query("ha-chart-base") private _chart?: HaChartBase;
+
+  public resize = (options?: ChartResizeOptions): void => {
+    this._chart?.resize(options);
+  };
 
   protected render() {
     return html`
@@ -125,7 +140,11 @@ class StateHistoryChartLine extends LitElement {
               label: (context) =>
                 `${context.dataset.label}: ${formatNumber(
                   context.parsed.y,
-                  this.hass.locale
+                  this.hass.locale,
+                  getNumberFormatOptions(
+                    undefined,
+                    this.hass.entities[this._entityIds[context.datasetIndex]]
+                  )
                 )} ${this.unit}`,
             },
           },
@@ -150,6 +169,28 @@ class StateHistoryChartLine extends LitElement {
         },
         // @ts-expect-error
         locale: numberFormatToLocale(this.hass.locale),
+        onClick: (e: any) => {
+          if (!this.clickForMoreInfo) {
+            return;
+          }
+
+          const chart = e.chart;
+
+          const points = chart.getElementsAtEventForMode(
+            e,
+            "nearest",
+            { intersect: true },
+            true
+          );
+
+          if (points.length) {
+            const firstPoint = points[0];
+            fireEvent(this, "hass-more-info", {
+              entityId: this._entityIds[firstPoint.datasetIndex],
+            });
+            chart.canvas.dispatchEvent(new Event("mouseout")); // to hide tooltip
+          }
+        },
       };
     }
     if (
@@ -170,6 +211,7 @@ class StateHistoryChartLine extends LitElement {
     const computedStyles = getComputedStyle(this);
     const entityStates = this.data;
     const datasets: ChartDataset<"line">[] = [];
+    const entityIds: string[] = [];
     if (entityStates.length === 0) {
       return;
     }
@@ -221,6 +263,7 @@ class StateHistoryChartLine extends LitElement {
           pointRadius: 0,
           data: [],
         });
+        entityIds.push(states.entity_id);
       };
 
       if (
@@ -472,6 +515,7 @@ class StateHistoryChartLine extends LitElement {
     this._chartData = {
       datasets,
     };
+    this._entityIds = entityIds;
   }
 }
 customElements.define("state-history-chart-line", StateHistoryChartLine);

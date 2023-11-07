@@ -19,7 +19,7 @@ import {
   numberFormatToLocale,
 } from "../../../../common/number/format_number";
 import "../../../../components/chart/ha-chart-base";
-import type HaChartBase from "../../../../components/chart/ha-chart-base";
+import type { HaChartBase } from "../../../../components/chart/ha-chart-base";
 import "../../../../components/ha-card";
 import { EnergyData, getEnergyDataCollection } from "../../../../data/energy";
 import {
@@ -130,7 +130,7 @@ export class HuiEnergyDevicesGraphCard
           },
         },
       },
-      elements: { bar: { borderWidth: 1.5, borderRadius: 4 } },
+      elements: { bar: { borderWidth: 1, borderRadius: 4 } },
       plugins: {
         tooltip: {
           mode: "nearest",
@@ -164,6 +164,7 @@ export class HuiEnergyDevicesGraphCard
           // @ts-ignore
           entityId: this._chartData?.datasets[0]?.data[index]?.y,
         });
+        chart.canvas.dispatchEvent(new Event("mouseout")); // to hide tooltip
       },
     })
   );
@@ -277,6 +278,8 @@ export class HuiEnergyDevicesGraphCard
 
     chartData.sort((a, b) => b.x - a.x);
 
+    chartData.length = this._config?.max_devices || chartData.length;
+
     chartData.forEach((d: any) => {
       const color = getColorByIndex(d.idx);
 
@@ -292,6 +295,7 @@ export class HuiEnergyDevicesGraphCard
     });
 
     this._chartData = {
+      labels: chartData.map((d) => d.y),
       datasets,
     };
     await this.updateComplete;

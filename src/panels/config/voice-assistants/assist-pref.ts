@@ -25,6 +25,7 @@ import { showConfirmationDialog } from "../../../dialogs/generic/show-dialog-box
 import type { HomeAssistant } from "../../../types";
 import { brandsUrl } from "../../../util/brands-url";
 import { showVoiceAssistantPipelineDetailDialog } from "./show-dialog-voice-assistant-pipeline-detail";
+import { documentationUrl } from "../../../util/documentation-url";
 
 export class AssistPref extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
@@ -68,14 +69,15 @@ export class AssistPref extends LitElement {
               type: "icon",
               darkOptimized: this.hass.themes?.darkMode,
             })}
+            crossorigin="anonymous"
             referrerpolicy="no-referrer"
           />Assist
         </h1>
         <div class="header-actions">
           <a
-            href="https://www.home-assistant.io/docs/assist/"
+            href=${documentationUrl(this.hass, "/docs/assist/")}
             target="_blank"
-            rel="noreferrer"
+            rel="noreferrer noopener"
             class="icon-link"
           >
             <ha-icon-button

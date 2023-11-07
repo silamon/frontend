@@ -112,9 +112,7 @@ export class StateBadge extends LitElement {
     const stateObj = this.stateObj;
 
     const iconStyle: { [name: string]: string } = {};
-    const hostStyle: Partial<CSSStyleDeclaration> = {
-      backgroundImage: "",
-    };
+    let backgroundImage = "";
 
     this._showIcon = true;
 
@@ -131,11 +129,17 @@ export class StateBadge extends LitElement {
         if (this.hass) {
           imageUrl = this.hass.hassUrl(imageUrl);
         }
-        if (computeDomain(stateObj.entity_id) === "camera") {
+        const domain = computeDomain(stateObj.entity_id);
+        if (domain === "camera") {
           imageUrl = cameraUrlWithWidthHeight(imageUrl, 80, 80);
         }
-        hostStyle.backgroundImage = `url(${imageUrl})`;
+        backgroundImage = `url(${imageUrl})`;
         this._showIcon = false;
+        if (domain === "update") {
+          this.style.borderRadius = "0";
+        } else if (domain === "media_player") {
+          this.style.borderRadius = "8%";
+        }
       } else if (this.color) {
         // Externally provided overriding color wins over state color
         iconStyle.color = this.color;
@@ -175,12 +179,12 @@ export class StateBadge extends LitElement {
       if (this.hass) {
         imageUrl = this.hass.hassUrl(imageUrl);
       }
-      hostStyle.backgroundImage = `url(${imageUrl})`;
+      backgroundImage = `url(${imageUrl})`;
       this._showIcon = false;
     }
 
     this._iconStyle = iconStyle;
-    Object.assign(this.style, hostStyle);
+    this.style.backgroundImage = backgroundImage;
   }
 
   static get styles(): CSSResultGroup {

@@ -3,7 +3,6 @@ import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators";
 import { classMap } from "lit/directives/class-map";
 import { computeDomain } from "../common/entity/compute_domain";
-import { computeStateDisplay } from "../common/entity/compute_state_display";
 import { computeRTL } from "../common/util/compute_rtl";
 import "../components/entity/state-info";
 import { isUnavailableState } from "../data/entity";
@@ -48,13 +47,7 @@ export class StateCardDisplay extends LitElement {
                 format="datetime"
                 capitalize
               ></hui-timestamp-display>`
-            : computeStateDisplay(
-                this.hass!.localize,
-                this.stateObj,
-                this.hass.locale,
-                this.hass.config,
-                this.hass.entities
-              )}
+            : this.hass.formatEntityState(this.stateObj)}
         </div>
       </div>
     `;
@@ -77,19 +70,21 @@ export class StateCardDisplay extends LitElement {
       haStyle,
       css`
         state-info {
-          flex: 1 1 auto;
-          min-width: 0;
+          flex: 0 1 fit-content;
+          min-width: 120px;
         }
         .state {
           color: var(--primary-text-color);
           margin-inline-start: 16px;
           margin-inline-end: initial;
           text-align: var(--float-end, right);
-          flex: 0 0 auto;
-          overflow-wrap: break-word;
+          min-width: 50px;
+          flex: 0 1 fit-content;
+          word-break: break-word;
           display: flex;
           align-items: center;
           direction: ltr;
+          justify-content: flex-end;
         }
         .state.has-unit_of_measurement {
           white-space: nowrap;

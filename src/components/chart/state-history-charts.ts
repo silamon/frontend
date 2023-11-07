@@ -6,7 +6,13 @@ import {
   nothing,
   PropertyValues,
 } from "lit";
-import { customElement, eventOptions, property, state } from "lit/decorators";
+import {
+  customElement,
+  eventOptions,
+  property,
+  queryAll,
+  state,
+} from "lit/decorators";
 import { isComponentLoaded } from "../../common/config/is_component_loaded";
 import { restoreScroll } from "../../common/decorators/restore-scroll";
 import {
@@ -18,6 +24,9 @@ import { loadVirtualizer } from "../../resources/virtualizer";
 import type { HomeAssistant } from "../../types";
 import "./state-history-chart-line";
 import "./state-history-chart-timeline";
+import type { StateHistoryChartLine } from "./state-history-chart-line";
+import type { StateHistoryChartTimeline } from "./state-history-chart-timeline";
+import { ChartResizeOptions } from "./ha-chart-base";
 
 const CANVAS_TIMELINE_ROWS_CHUNK = 10; // Split up the canvases to avoid hitting the render limit
 
@@ -60,11 +69,13 @@ export class StateHistoryCharts extends LitElement {
 
   @property({ type: Boolean }) public showNames = true;
 
+  @property({ type: Boolean }) public clickForMoreInfo = true;
+
   @property({ type: Boolean }) public isLoadingData = false;
 
-  @state() private _computedStartTime!: Date;
+  private _computedStartTime!: Date;
 
-  @state() private _computedEndTime!: Date;
+  private _computedEndTime!: Date;
 
   @state() private _maxYWidth = 0;
 
@@ -74,6 +85,16 @@ export class StateHistoryCharts extends LitElement {
 
   // @ts-ignore
   @restoreScroll(".container") private _savedScrollPos?: number;
+
+  @queryAll("state-history-chart-line")
+  private _charts?: StateHistoryChartLine[];
+
+  public resize = (options?: ChartResizeOptions): void => {
+    this._charts?.forEach(
+      (chart: StateHistoryChartLine | StateHistoryChartTimeline) =>
+        chart.resize(options)
+    );
+  };
 
   protected render() {
     if (!isComponentLoaded(this.hass, "history")) {
@@ -93,31 +114,6 @@ export class StateHistoryCharts extends LitElement {
         ${this.hass.localize("ui.components.history_charts.no_history_found")}
       </div>`;
     }
-
-    const now = new Date();
-
-    this._computedEndTime =
-      this.upToNow || !this.endTime || this.endTime > now ? now : this.endTime;
-
-    if (this.startTime) {
-      this._computedStartTime = this.startTime;
-    } else if (this.hoursToShow) {
-      this._computedStartTime = new Date(
-        new Date().getTime() - 60 * 60 * this.hoursToShow * 1000
-      );
-    } else {
-      this._computedStartTime = new Date(
-        this.historyData.timeline.reduce(
-          (minTime, stateInfo) =>
-            Math.min(
-              minTime,
-              new Date(stateInfo.data[0].last_changed).getTime()
-            ),
-          new Date().getTime()
-        )
-      );
-    }
-
     const combinedItems = this.historyData.timeline.length
       ? (this.virtualize
           ? chunkData(this.historyData.timeline, CANVAS_TIMELINE_ROWS_CHUNK)
@@ -162,6 +158,7 @@ export class StateHistoryCharts extends LitElement {
           .paddingYAxis=${this._maxYWidth}
           .names=${this.names}
           .chartIndex=${index}
+          .clickForMoreInfo=${this.clickForMoreInfo}
           @y-width-changed=${this._yWidthChanged}
         ></state-history-chart-line>
       </div> `;
@@ -178,6 +175,7 @@ export class StateHistoryCharts extends LitElement {
         .chunked=${this.virtualize}
         .paddingYAxis=${this._maxYWidth}
         .chartIndex=${index}
+        .clickForMoreInfo=${this.clickForMoreInfo}
         @y-width-changed=${this._yWidthChanged}
       ></state-history-chart-timeline>
     </div> `;
@@ -197,9 +195,44 @@ export class StateHistoryCharts extends LitElement {
     return true;
   }
 
-  protected willUpdate() {
+  protected willUpdate(changedProps: PropertyValues) {
     if (!this.hasUpdated) {
       loadVirtualizer();
+    }
+    if (
+      [...changedProps.keys()].some(
+        (prop) =>
+          !(
+            ["_maxYWidth", "_childYWidths", "_chartCount"] as PropertyKey[]
+          ).includes(prop)
+      )
+    ) {
+      // Don't recompute times when we just want to update layout
+      const now = new Date();
+
+      this._computedEndTime =
+        this.upToNow || !this.endTime || this.endTime > now
+          ? now
+          : this.endTime;
+
+      if (this.startTime) {
+        this._computedStartTime = this.startTime;
+      } else if (this.hoursToShow) {
+        this._computedStartTime = new Date(
+          new Date().getTime() - 60 * 60 * this.hoursToShow * 1000
+        );
+      } else {
+        this._computedStartTime = new Date(
+          (this.historyData?.timeline ?? []).reduce(
+            (minTime, stateInfo) =>
+              Math.min(
+                minTime,
+                new Date(stateInfo.data[0].last_changed).getTime()
+              ),
+            new Date().getTime()
+          )
+        );
+      }
     }
   }
 

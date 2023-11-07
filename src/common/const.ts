@@ -15,6 +15,8 @@ import {
   mdiCalendarClock,
   mdiCarCoolantLevel,
   mdiCash,
+  mdiChatSleep,
+  mdiClipboardList,
   mdiClock,
   mdiCloudUpload,
   mdiCog,
@@ -31,7 +33,6 @@ import {
   mdiGauge,
   mdiGoogleAssistant,
   mdiGoogleCirclesCommunities,
-  mdiHomeAssistant,
   mdiHomeAutomation,
   mdiImage,
   mdiImageFilterFrames,
@@ -49,6 +50,7 @@ import {
   mdiProgressClock,
   mdiRayVertex,
   mdiRemote,
+  mdiRobotMower,
   mdiRobotVacuum,
   mdiScriptText,
   mdiSineWave,
@@ -68,6 +70,8 @@ import {
   mdiWeight,
   mdiWifi,
 } from "@mdi/js";
+
+import { mdiHomeAssistant } from "../resources/home-assistant-logo-svg";
 
 // Constants should be alphabetically sorted by name.
 // Arrays with values should be alphabetically sorted if order doesn't matter.
@@ -99,6 +103,7 @@ export const FIXED_DOMAIN_ICONS = {
   input_number: mdiRayVertex,
   input_select: mdiFormatListBulleted,
   input_text: mdiFormTextbox,
+  lawn_mower: mdiRobotMower,
   light: mdiLightbulb,
   mailbox: mdiMailbox,
   notify: mdiCommentAlert,
@@ -116,11 +121,13 @@ export const FIXED_DOMAIN_ICONS = {
   siren: mdiBullhorn,
   stt: mdiMicrophoneMessage,
   text: mdiFormTextbox,
+  todo: mdiClipboardList,
   time: mdiClock,
   timer: mdiTimerOutline,
   tts: mdiSpeakerMessage,
   updater: mdiCloudUpload,
   vacuum: mdiRobotVacuum,
+  wake_word: mdiChatSleep,
   zone: mdiMapMarkerRadius,
 };
 
@@ -176,6 +183,7 @@ export const FIXED_DEVICE_CLASS_ICONS = {
 
 /** Domains that have a state card. */
 export const DOMAINS_WITH_CARD = [
+  "alert",
   "button",
   "climate",
   "cover",
@@ -186,6 +194,7 @@ export const DOMAINS_WITH_CARD = [
   "input_number",
   "input_text",
   "humidifier",
+  "lawn_mower",
   "lock",
   "media_player",
   "number",

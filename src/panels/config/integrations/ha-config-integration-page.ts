@@ -261,6 +261,7 @@ class HaConfigIntegrationPage extends SubscribeMixin(LitElement) {
                       type: "logo",
                       darkOptimized: this.hass.themes?.darkMode,
                     })}
+                    crossorigin="anonymous"
                     referrerpolicy="no-referrer"
                     @load=${this._onImageLoad}
                     @error=${this._onImageError}
@@ -1024,7 +1025,7 @@ class HaConfigIntegrationPage extends SubscribeMixin(LitElement) {
     showOptionsFlowDialog(
       this,
       ev.target.closest(".config_entry").configEntry,
-      this._manifest
+      { manifest: this._manifest }
     );
   }
 
@@ -1157,9 +1158,8 @@ class HaConfigIntegrationPage extends SubscribeMixin(LitElement) {
   private async _removeIntegration(configEntry: ConfigEntry) {
     const entryId = configEntry.entry_id;
 
-    const applicationCredentialsId = await this._applicationCredentialForRemove(
-      entryId
-    );
+    const applicationCredentialsId =
+      await this._applicationCredentialForRemove(entryId);
 
     const confirmed = await showConfirmationDialog(this, {
       title: this.hass.localize(

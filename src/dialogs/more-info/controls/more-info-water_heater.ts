@@ -3,17 +3,17 @@ import { CSSResultGroup, LitElement, css, html, nothing } from "lit";
 import { customElement, property } from "lit/decorators";
 import { stopPropagation } from "../../../common/dom/stop_propagation";
 import { supportsFeature } from "../../../common/entity/supports-feature";
-import { formatNumber } from "../../../common/number/format_number";
 import "../../../components/ha-control-select-menu";
 import "../../../components/ha-list-item";
+import { UNAVAILABLE } from "../../../data/entity";
 import {
-  OperationMode,
   WaterHeaterEntity,
   WaterHeaterEntityFeature,
   compareWaterHeaterOperationMode,
   computeOperationModeIcon,
 } from "../../../data/water_heater";
 import { HomeAssistant } from "../../../types";
+import "../components/ha-more-info-control-select-container";
 import { moreInfoControlStyle } from "../components/ha-more-info-control-style";
 import "../components/water_heater/ha-more-info-water_heater-temperature";
 
@@ -54,8 +54,10 @@ class MoreInfoWaterHeater extends LitElement {
                   )}
                 </p>
                 <p class="value">
-                  ${formatNumber(currentTemperature, this.hass.locale)}
-                  ${this.hass.config.unit_system.temperature}
+                  ${this.hass.formatEntityAttributeValue(
+                    this.stateObj,
+                    "current_temperature"
+                  )}
                 </p>
               </div>
             `
@@ -67,82 +69,74 @@ class MoreInfoWaterHeater extends LitElement {
           .stateObj=${this.stateObj}
         ></ha-more-info-water_heater-temperature>
       </div>
-      <div class="secondary-controls">
-        <div class="secondary-controls-scroll">
-          ${supportOperationMode && stateObj.attributes.operation_list
-            ? html`
-                <ha-control-select-menu
-                  .label=${this.hass.formatEntityAttributeName(
-                    stateObj,
-                    "operation"
+      <ha-more-info-control-select-container>
+        ${supportOperationMode && stateObj.attributes.operation_list
+          ? html`
+              <ha-control-select-menu
+                .label=${this.hass.localize("ui.card.water_heater.mode")}
+                .value=${stateObj.state}
+                .disabled=${stateObj.state === UNAVAILABLE}
+                fixedMenuPosition
+                naturalMenuWidth
+                @selected=${this._handleOperationModeChanged}
+                @closed=${stopPropagation}
+              >
+                <ha-svg-icon slot="icon" .path=${mdiWaterBoiler}></ha-svg-icon>
+                ${stateObj.attributes.operation_list
+                  .concat()
+                  .sort(compareWaterHeaterOperationMode)
+                  .map(
+                    (mode) => html`
+                      <ha-list-item .value=${mode} graphic="icon">
+                        <ha-svg-icon
+                          slot="graphic"
+                          .path=${computeOperationModeIcon(mode)}
+                        ></ha-svg-icon>
+                        ${this.hass.formatEntityState(stateObj, mode)}
+                      </ha-list-item>
+                    `
                   )}
-                  .value=${stateObj.state}
-                  fixedMenuPosition
-                  naturalMenuWidth
-                  @selected=${this._handleOperationModeChanged}
-                  @closed=${stopPropagation}
-                >
+              </ha-control-select-menu>
+            `
+          : nothing}
+        ${supportAwayMode
+          ? html`
+              <ha-control-select-menu
+                .label=${this.hass.formatEntityAttributeName(
+                  stateObj,
+                  "away_mode"
+                )}
+                .value=${stateObj.attributes.away_mode}
+                .disabled=${stateObj.state === UNAVAILABLE}
+                fixedMenuPosition
+                naturalMenuWidth
+                @selected=${this._handleAwayModeChanged}
+                @closed=${stopPropagation}
+              >
+                <ha-svg-icon slot="icon" .path=${mdiAccount}></ha-svg-icon>
+                <ha-list-item value="on" graphic="icon">
                   <ha-svg-icon
-                    slot="icon"
-                    .path=${computeOperationModeIcon(
-                      stateObj.state as OperationMode
-                    ) ?? mdiWaterBoiler}
+                    slot="graphic"
+                    .path=${mdiAccountArrowRight}
                   ></ha-svg-icon>
-                  ${stateObj.attributes.operation_list
-                    .concat()
-                    .sort(compareWaterHeaterOperationMode)
-                    .map(
-                      (mode) => html`
-                        <ha-list-item .value=${mode} graphic="icon">
-                          <ha-svg-icon
-                            slot="graphic"
-                            .path=${computeOperationModeIcon(mode)}
-                          ></ha-svg-icon>
-                          ${this.hass.formatEntityState(stateObj, mode)}
-                        </ha-list-item>
-                      `
-                    )}
-                </ha-control-select-menu>
-              `
-            : nothing}
-          ${supportAwayMode
-            ? html`
-                <ha-control-select-menu
-                  .label=${this.hass.formatEntityAttributeName(
+                  ${this.hass.formatEntityAttributeValue(
                     stateObj,
-                    "away_mode"
+                    "away_mode",
+                    "on"
                   )}
-                  .value=${stateObj.attributes.away_mode}
-                  fixedMenuPosition
-                  naturalMenuWidth
-                  @selected=${this._handleAwayModeChanged}
-                  @closed=${stopPropagation}
-                >
-                  <ha-svg-icon
-                    slot="icon"
-                    .path=${stateObj.attributes.away_mode === "on"
-                      ? mdiAccountArrowRight
-                      : mdiAccount}
-                  ></ha-svg-icon>
-                  <ha-list-item .value=${"on"} graphic="icon">
-                    <ha-svg-icon
-                      slot="graphic"
-                      .path=${mdiAccountArrowRight}
-                    ></ha-svg-icon>
-                    ${this.hass.localize("state.default.on")}
-                  </ha-list-item>
-                  <ha-list-item .value=${"off"} graphic="icon">
-                    <ha-svg-icon
-                      slot="graphic"
-                      .path=${mdiAccount}
-                    ></ha-svg-icon>
-                    ${this.hass.localize("state.default.off")}
-                  </ha-list-item>
-                </ha-control-select-menu>
-              `
-            : nothing}
-        </div>
-      </div>
+                </ha-list-item>
+                <ha-list-item value="off" graphic="icon">
+                  <ha-svg-icon slot="graphic" .path=${mdiAccount}></ha-svg-icon>
+                  ${this.hass.formatEntityAttributeValue(
+                    stateObj,
+                    "away_mode",
+                    "off"
+                  )}
+                </ha-list-item>
+              </ha-control-select-menu>
+            `
+          : nothing}
+      </ha-more-info-control-select-container>
     `;
   }
 
@@ -249,6 +243,7 @@ class MoreInfoWaterHeater extends LitElement {
           font-size: 22px;
           font-weight: 500;
           line-height: 28px;
+          direction: ltr;
         }
       `,
     ];

@@ -12,7 +12,6 @@ import { ifDefined } from "lit/directives/if-defined";
 import { styleMap } from "lit/directives/style-map";
 import { applyThemesOnElement } from "../../../common/dom/apply_themes_on_element";
 import { fireEvent } from "../../../common/dom/fire_event";
-import { computeStateDisplay } from "../../../common/entity/compute_state_display";
 import { computeStateDomain } from "../../../common/entity/compute_state_domain";
 import { computeStateName } from "../../../common/entity/compute_state_name";
 import {
@@ -159,6 +158,7 @@ export class HuiEntityCard extends LitElement implements LovelaceCard {
               ? stateObj.attributes[this._config.attribute!] !== undefined
                 ? html`
                     <ha-attribute-value
+                      hide-unit
                       .hass=${this.hass}
                       .stateObj=${stateObj}
                       .attribute=${this._config.attribute!}
@@ -175,13 +175,7 @@ export class HuiEntityCard extends LitElement implements LovelaceCard {
                     this.hass.entities[this._config.entity]
                   )
                 )
-              : computeStateDisplay(
-                  this.hass.localize,
-                  stateObj,
-                  this.hass.locale,
-                  this.hass.config,
-                  this.hass.entities
-                )}</span
+              : this.hass.formatEntityState(stateObj)}</span
           >${showUnit
             ? html`
                 <span class="measurement"
