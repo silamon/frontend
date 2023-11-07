@@ -1,10 +1,9 @@
 import { LitElement, TemplateResult, css, html } from "lit";
+import { customElement, property } from "lit/decorators";
 import { isComponentLoaded } from "../../common/config/is_component_loaded";
-import "../../components/ha-push-notifications-toggle";
 import { pushSupported } from "../../components/ha-push-notifications-toggle";
 import "../../components/ha-settings-row";
 import { documentationUrl } from "../../util/documentation-url";
-import { customElement, property } from "lit/decorators";
 import { HomeAssistant } from "../../types";
 
 @customElement("ha-push-notifications-row")
@@ -15,7 +14,10 @@ class HaPushNotificationsRow extends LitElement {
 
   protected render(): TemplateResult {
     const platformLoaded = isComponentLoaded(this.hass, "notify.html5");
-    let descriptionKey;
+    let descriptionKey:
+      | "error_use_https"
+      | "error_load_platform"
+      | "description";
     if (!pushSupported) {
       descriptionKey = "error_use_https";
     } else if (!platformLoaded) {
@@ -23,7 +25,6 @@ class HaPushNotificationsRow extends LitElement {
     } else {
       descriptionKey = "description";
     }
-    descriptionKey = `ui.panel.profile.push_notifications.${descriptionKey}`;
 
     const isDisabled = !platformLoaded || !pushSupported;
 
@@ -35,7 +36,9 @@ class HaPushNotificationsRow extends LitElement {
           )}</span
         >
         <span slot="description">
-          ${this.hass.localize(descriptionKey)}
+          ${this.hass.localize(
+            `ui.panel.profile.push_notifications.${descriptionKey}`
+          )}
           <a
             href=${documentationUrl(this.hass, "/integrations/html5")}
             target="_blank"

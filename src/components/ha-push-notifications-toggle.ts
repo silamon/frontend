@@ -1,11 +1,10 @@
+import { LitElement, TemplateResult, html } from "lit";
+import { customElement, property } from "lit/decorators";
 import { getAppKey } from "../data/notify_html5";
 import { showPromptDialog } from "../dialogs/generic/show-dialog-box";
-import "./ha-switch";
-import { LitElement, TemplateResult, html } from "lit";
-import { HomeAssistant } from "../types";
-import { customElement, property } from "lit/decorators";
-import { fireEvent } from "../common/dom/fire_event";
 import { HaSwitch } from "./ha-switch";
+import { HomeAssistant } from "../types";
+import { fireEvent } from "../common/dom/fire_event";
 
 export const pushSupported =
   "serviceWorker" in navigator &&
@@ -30,7 +29,7 @@ class HaPushNotificationsToggle extends LitElement {
       <ha-switch
         .disabled=${this._compDisabled(this.disabled, this.loading)}
         .checked=${this.pushChecked}
-        @change=${this.handlePushChange}
+        @change=${this._handlePushChange}
       ></ha-switch>
     `;
   }
@@ -54,7 +53,7 @@ class HaPushNotificationsToggle extends LitElement {
     }
   }
 
-  private handlePushChange(ev: Event) {
+  private _handlePushChange(ev: Event) {
     // Somehow this is triggered on Safari on page load causing
     // it to get into a loop and crash the page.
     if (!pushSupported) return;
@@ -72,7 +71,7 @@ class HaPushNotificationsToggle extends LitElement {
     let sub;
 
     try {
-      let browserName;
+      let browserName: string;
       if (navigator.userAgent.toLowerCase().indexOf("firefox") > -1) {
         browserName = "firefox";
       } else {
@@ -92,7 +91,7 @@ class HaPushNotificationsToggle extends LitElement {
         return;
       }
 
-      let applicationServerKey;
+      let applicationServerKey: Uint8Array | null;
       try {
         applicationServerKey = await getAppKey(this.hass);
       } catch (ex) {
