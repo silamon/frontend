@@ -76,11 +76,7 @@ export class HaTextSelector extends LitElement {
       ${this.selector.text?.type === "password"
         ? html`<ha-icon-button
             toggles
-            .label=${this.hass.localize(
-              this._unmaskedPassword
-                ? "ui.components.selectors.text.hide_password"
-                : "ui.components.selectors.text.show_password"
-            )}
+            .label=${`${this._unmaskedPassword ? "Hide" : "Show"} password`}
             @click=${this._toggleUnmaskedPassword}
             .path=${this._unmaskedPassword ? mdiEyeOff : mdiEye}
           ></ha-icon-button>`
