@@ -41,6 +41,8 @@ import { haStyle } from "../../../resources/styles";
 import { HomeAssistant, Route } from "../../../types";
 import { computeRTL } from "../../../common/util/compute_rtl";
 
+const tabs = ["details", "config", "timeline", "logbook"] as const;
+
 @customElement("ha-automation-trace")
 export class HaAutomationTrace extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
@@ -213,9 +215,15 @@ export class HaAutomationTrace extends LitElement {
         </div>
 
         ${this._traces === undefined
-          ? html`<div class="container">Loading…</div>`
+          ? html`<div class="container">
+              ${this.hass!.localize("ui.common.loading")}
+            </div>`
           : this._traces.length === 0
-          ? html`<div class="container">No traces found</div>`
+          ? html`<div class="container">
+              ${this.hass!.localize(
+                "ui.panel.config.automation.trace.no_traces_found"
+              )}
+            </div>`
           : this._trace === undefined
           ? ""
           : html`
@@ -230,20 +238,17 @@ export class HaAutomationTrace extends LitElement {
 
                 <div class="info">
                   <div class="tabs top">
-                    ${[
-                      ["details", "Step Details"],
-                      ["timeline", "Trace Timeline"],
-                      ["logbook", "Related logbook entries"],
-                      ["config", "Automation Config"],
-                    ].map(
-                      ([view, label]) => html`
+                    ${tabs.map(
+                      (view) => html`
                         <button
                           tabindex="0"
                           .view=${view}
                           class=${classMap({ active: this._view === view })}
                           @click=${this._showTab}
                         >
-                          ${label}
+                          ${this.hass!.localize(
+                            `ui.panel.config.automation.trace.tabs.${view}`
+                          )}
                         </button>
                       `
                     )}
