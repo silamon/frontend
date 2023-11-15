@@ -3,20 +3,16 @@ import { ReactiveElement } from "lit";
 import { customElement } from "lit/decorators";
 import { isComponentLoaded } from "../../../common/config/is_component_loaded";
 import { getEnergyPreferences } from "../../../data/energy";
-import {
-  LovelaceStrategyConfig,
-  LovelaceViewConfig,
-} from "../../../data/lovelace";
+import { LovelaceStrategyConfig } from "../../../data/lovelace/config/strategy";
+import { LovelaceViewConfig } from "../../../data/lovelace/config/view";
 import { HomeAssistant } from "../../../types";
 import { generateDefaultViewConfig } from "../common/generate-lovelace-config";
-import { LovelaceStrategyParams } from "./types";
 
 @customElement("original-states-view-strategy")
 export class OriginalStatesViewStrategy extends ReactiveElement {
   static async generate(
     _config: LovelaceStrategyConfig,
-    hass: HomeAssistant,
-    _params?: LovelaceStrategyParams
+    hass: HomeAssistant
   ): Promise<LovelaceViewConfig> {
     if (hass.config.state === STATE_NOT_RUNNING) {
       return {
@@ -24,9 +20,9 @@ export class OriginalStatesViewStrategy extends ReactiveElement {
       };
     }
 
-    if (hass.config.safe_mode) {
+    if (hass.config.recovery_mode) {
       return {
-        cards: [{ type: "safe-mode" }],
+        cards: [{ type: "recovery-mode" }],
       };
     }
 

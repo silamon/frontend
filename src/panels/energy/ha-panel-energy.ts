@@ -1,21 +1,21 @@
 import {
-  css,
   CSSResultGroup,
-  html,
   LitElement,
   PropertyValues,
   TemplateResult,
+  css,
+  html,
   nothing,
 } from "lit";
 import { customElement, property, state } from "lit/decorators";
 import "../../components/ha-menu-button";
-import { LovelaceConfig } from "../../data/lovelace";
+import "../../components/ha-top-app-bar-fixed";
+import { LovelaceConfig } from "../../data/lovelace/config/types";
 import { haStyle } from "../../resources/styles";
 import { HomeAssistant } from "../../types";
 import "../lovelace/components/hui-energy-period-selector";
 import { Lovelace } from "../lovelace/types";
 import "../lovelace/views/hui-view";
-import "../../components/ha-top-app-bar-fixed";
 
 const ENERGY_LOVELACE_CONFIG: LovelaceConfig = {
   views: [
@@ -48,13 +48,7 @@ class PanelEnergy extends LitElement {
     if (oldHass?.locale !== this.hass.locale) {
       this._setLovelace();
     }
-  }
-
-  protected updated(changedProps: PropertyValues) {
-    if (
-      changedProps.has("narrow") &&
-      changedProps.get("narrow") !== undefined
-    ) {
+    if (oldHass && oldHass.localize !== this.hass.localize) {
       this._reloadView();
     }
   }

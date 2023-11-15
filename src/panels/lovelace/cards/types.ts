@@ -1,7 +1,10 @@
+import { HaDurationData } from "../../../components/ha-duration-input";
+import { ActionConfig } from "../../../data/lovelace/config/action";
+import { LovelaceCardConfig } from "../../../data/lovelace/config/card";
 import { Statistic, StatisticType } from "../../../data/recorder";
-import { ActionConfig, LovelaceCardConfig } from "../../../data/lovelace";
+import { ForecastType } from "../../../data/weather";
 import { FullCalendarView, TranslationDict } from "../../../types";
-import { Condition } from "../common/validate-condition";
+import { Condition, LegacyCondition } from "../common/validate-condition";
 import { HuiImage } from "../components/hui-image";
 import { LovelaceElementConfig } from "../elements/types";
 import {
@@ -10,9 +13,7 @@ import {
   LovelaceRowConfig,
 } from "../entity-rows/types";
 import { LovelaceHeaderFooterConfig } from "../header-footer/types";
-import { HaDurationData } from "../../../components/ha-duration-input";
 import { LovelaceTileFeatureConfig } from "../tile-features/types";
-import { ForecastType } from "../../../data/weather";
 
 export type AlarmPanelCardConfigState =
   | "arm_away"
@@ -37,7 +38,7 @@ export interface CalendarCardConfig extends LovelaceCardConfig {
 
 export interface ConditionalCardConfig extends LovelaceCardConfig {
   card: LovelaceCardConfig;
-  conditions: Condition[];
+  conditions: (Condition | LegacyCondition)[];
 }
 
 export interface EmptyStateCardConfig extends LovelaceCardConfig {
@@ -427,9 +428,10 @@ export interface SensorCardConfig extends LovelaceCardConfig {
   };
 }
 
-export interface ShoppingListCardConfig extends LovelaceCardConfig {
+export interface TodoListCardConfig extends LovelaceCardConfig {
   title?: string;
   theme?: string;
+  entity?: string;
 }
 
 export interface StackCardConfig extends LovelaceCardConfig {
@@ -519,6 +521,8 @@ export interface EnergyFlowCardConfig extends LovelaceCardConfig {
 export interface TileCardConfig extends LovelaceCardConfig {
   entity: string;
   name?: string;
+  hide_state?: boolean;
+  state_content?: string | string[];
   icon?: string;
   color?: string;
   show_entity_picture?: string;

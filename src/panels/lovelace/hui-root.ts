@@ -51,11 +51,7 @@ import "../../components/ha-icon-button-arrow-prev";
 import "../../components/ha-menu-button";
 import "../../components/ha-svg-icon";
 import "../../components/ha-tabs";
-import type {
-  LovelaceConfig,
-  LovelacePanelConfig,
-  LovelaceViewConfig,
-} from "../../data/lovelace";
+import type { LovelacePanelConfig } from "../../data/lovelace";
 import {
   showAlertDialog,
   showConfirmationDialog,
@@ -71,6 +67,8 @@ import { showEditViewDialog } from "./editor/view-editor/show-edit-view-dialog";
 import type { Lovelace } from "./types";
 import "./views/hui-view";
 import type { HUIView } from "./views/hui-view";
+import { LovelaceViewConfig } from "../../data/lovelace/config/view";
+import { LovelaceConfig } from "../../data/lovelace/config/types";
 
 @customElement("hui-root")
 class HUIRoot extends LitElement {
@@ -407,7 +405,7 @@ class HUIRoot extends LitElement {
                                 `
                               : ""}
                             ${this.hass!.user?.is_admin &&
-                            !this.hass!.config.safe_mode
+                            !this.hass!.config.recovery_mode
                               ? html`
                                   <mwc-list-item
                                     graphic="icon"
@@ -691,7 +689,7 @@ class HUIRoot extends LitElement {
     return (
       (this.narrow && this._conversation(this.hass.config.components)) ||
       this._editMode ||
-      (this.hass!.user?.is_admin && !this.hass!.config.safe_mode) ||
+      (this.hass!.user?.is_admin && !this.hass!.config.recovery_mode) ||
       (this.hass.panels.lovelace?.config as LovelacePanelConfig)?.mode ===
         "yaml" ||
       this._yamlMode

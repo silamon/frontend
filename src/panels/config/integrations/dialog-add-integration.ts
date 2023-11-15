@@ -1,6 +1,6 @@
 import "@material/mwc-button";
 import "@material/mwc-list/mwc-list";
-import Fuse from "fuse.js";
+import Fuse, { IFuseOptions } from "fuse.js";
 import { HassConfig } from "home-assistant-js-websocket";
 import {
   css,
@@ -139,12 +139,13 @@ class AddIntegrationDialog extends LitElement {
     }
     if (this._initialFilter !== undefined && this._filter === "") {
       this._initialFilter = undefined;
-      this._filter = "";
+      this._filter = undefined;
       this._width = undefined;
       this._height = undefined;
     } else if (
       this.hasUpdated &&
       changedProps.has("_filter") &&
+      !changedProps.has("_open") &&
       (!this._width || !this._height)
     ) {
       // Store the width and height so that when we search, box doesn't jump
@@ -239,7 +240,7 @@ class AddIntegrationDialog extends LitElement {
       });
 
       if (filter) {
-        const options: Fuse.IFuseOptions<IntegrationListItem> = {
+        const options: IFuseOptions<IntegrationListItem> = {
           keys: [
             { name: "name", weight: 5 },
             { name: "domain", weight: 5 },
@@ -677,6 +678,9 @@ class AddIntegrationDialog extends LitElement {
         display: flex;
         justify-content: center;
         margin: 24px 0;
+      }
+      mwc-list {
+        position: relative;
       }
       lit-virtualizer {
         contain: size layout !important;

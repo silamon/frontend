@@ -1,4 +1,11 @@
-import { LovelaceConfig, LovelaceViewConfig } from "../../../data/lovelace";
+import {
+  LovelaceConfig,
+  LovelaceRawConfig,
+} from "../../../data/lovelace/config/types";
+import {
+  LovelaceViewConfig,
+  LovelaceViewRawConfig,
+} from "../../../data/lovelace/config/view";
 import { HomeAssistant } from "../../../types";
 
 export const isLegacyStrategy = (
@@ -8,17 +15,15 @@ export const isLegacyStrategy = (
 
 export interface LovelaceDashboardStrategy {
   generateDashboard(info: {
-    config?: LovelaceConfig;
+    config?: LovelaceRawConfig;
     hass: HomeAssistant;
-    narrow: boolean | undefined;
   }): Promise<LovelaceConfig>;
 }
 
 export interface LovelaceViewStrategy {
   generateView(info: {
-    view: LovelaceViewConfig;
+    view: LovelaceViewRawConfig;
     config: LovelaceConfig;
     hass: HomeAssistant;
-    narrow: boolean | undefined;
   }): Promise<LovelaceViewConfig>;
 }
