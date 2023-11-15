@@ -1,7 +1,5 @@
 import { mdiPlus } from "@mdi/js";
 import "@material/mwc-list/mwc-list";
-import "@polymer/paper-item/paper-icon-item";
-import "@polymer/paper-item/paper-item-body";
 import { css, CSSResultGroup, html, LitElement, nothing } from "lit";
 import { property, state } from "lit/decorators";
 import { stringCompare } from "../../../common/string/compare";
@@ -290,13 +288,6 @@ class HaConfigPerson extends LitElement {
         display: flex;
         align-items: center;
         justify-content: space-around;
-      }
-      paper-icon-item {
-        padding-top: 4px;
-        padding-bottom: 4px;
-      }
-      ha-card.storage paper-icon-item {
-        cursor: pointer;
       }
     `;
   }
