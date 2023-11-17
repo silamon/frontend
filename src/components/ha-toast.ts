@@ -1,8 +1,8 @@
 import { customElement } from "lit/decorators";
-import { SnackbarBase } from "@material/mwc-snackbar/mwc-snackbar-base";
+import { Snackbar } from "@material/mwc-snackbar/mwc-snackbar";
 
 @customElement("ha-toast")
-export class HaToast extends SnackbarBase {}
+export class HaToast extends Snackbar {}
 
 declare global {
   interface HTMLElementTagNameMap {
