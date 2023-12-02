@@ -2961,9 +2961,10 @@
               "details": "Step Details",
               "timeline": "Trace Timeline",
               "logbook": "Related logbook entries",
-              "config": "Config",
+              "automation_config": "Automation Config",
               "step_config": "Step Config",
-              "changed_variables": "Changed Variables"
+              "changed_variables": "Changed Variables",
+              "blueprint_config": "Blueprint Config"
             },
             "path": {
               "choose": "Select a node on the left for more information.",

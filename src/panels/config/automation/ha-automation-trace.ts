@@ -48,7 +48,7 @@ import { haStyle } from "../../../resources/styles";
 import { HomeAssistant, Route } from "../../../types";
 import { computeRTL } from "../../../common/util/compute_rtl";
 
-const tabs = ["details", "config", "timeline", "logbook"] as const;
+const tabs = ["details", "automation_config", "timeline", "logbook"] as const;
 
 @customElement("ha-automation-trace")
 export class HaAutomationTrace extends LitElement {
@@ -269,7 +269,9 @@ export class HaAutomationTrace extends LitElement {
                                 })}
                                 @click=${this._showTab}
                               >
-                                Blueprint Config
+                                ${this.hass!.localize(
+                                  `ui.panel.config.automation.trace.tabs.blueprint_config`
+                                )}
                               </button>
                             `
                           : ""}
