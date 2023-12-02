@@ -7,7 +7,14 @@ import {
   mdiRayStartArrow,
   mdiRefresh,
 } from "@mdi/js";
-import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
+import {
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  nothing,
+  TemplateResult,
+} from "lit";
 import { customElement, property, query, state } from "lit/decorators";
 import { classMap } from "lit/directives/class-map";
 import { repeat } from "lit/directives/repeat";
@@ -267,6 +274,54 @@ export class HaAutomationTrace extends LitElement {
                             `
                           : ""}
                       </div>
+                      ${this._selected === undefined ||
+                      this._logbookEntries === undefined ||
+                      trackedNodes === undefined
+                        ? nothing
+                        : this._view === "details"
+                          ? html`
+                              <ha-trace-path-details
+                                .hass=${this.hass}
+                                .narrow=${this.narrow}
+                                .trace=${this._trace}
+                                .selected=${this._selected}
+                                .logbookEntries=${this._logbookEntries}
+                                .trackedNodes=${trackedNodes}
+                                .renderedNodes=${renderedNodes!}
+                              ></ha-trace-path-details>
+                            `
+                          : this._view === "config"
+                            ? html`
+                                <ha-trace-config
+                                  .hass=${this.hass}
+                                  .trace=${this._trace}
+                                ></ha-trace-config>
+                              `
+                            : this._view === "logbook"
+                              ? html`
+                                  <ha-trace-logbook
+                                    .hass=${this.hass}
+                                    .narrow=${this.narrow}
+                                    .trace=${this._trace}
+                                    .logbookEntries=${this._logbookEntries}
+                                  ></ha-trace-logbook>
+                                `
+                              : this._view === "blueprint"
+                                ? html`
+                                    <ha-trace-blueprint-config
+                                      .hass=${this.hass}
+                                      .trace=${this._trace}
+                                    ></ha-trace-blueprint-config>
+                                  `
+                                : html`
+                                    <ha-trace-timeline
+                                      .hass=${this.hass}
+                                      .trace=${this._trace}
+                                      .logbookEntries=${this._logbookEntries}
+                                      .selected=${this._selected}
+                                      @value-changed=${this._timelinePathPicked}
+                                    ></ha-trace-timeline>
+                                  `}
                     </div>
                   </div>
                 `}
