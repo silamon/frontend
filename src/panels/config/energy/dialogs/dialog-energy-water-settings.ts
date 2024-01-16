@@ -13,6 +13,7 @@ import "../../../../components/ha-textfield";
 import {
   emptyWaterEnergyPreference,
   WaterSourceTypeEnergyPreference,
+  energyStatisticHelpUrl,
 } from "../../../../data/energy";
 import {
   getDisplayUnit,
@@ -44,6 +45,8 @@ export class DialogEnergyWaterSettings
 
   @state() private _error?: string;
 
+  private _excludeList?: string[];
+
   public async showDialog(
     params: EnergySettingsWaterDialogParams
   ): Promise<void> {
@@ -59,13 +62,16 @@ export class DialogEnergyWaterSettings
     this._costs = this._source.entity_energy_price
       ? "entity"
       : this._source.number_energy_price
-      ? "number"
-      : this._source.stat_cost
-      ? "statistic"
-      : "no-costs";
+        ? "number"
+        : this._source.stat_cost
+          ? "statistic"
+          : "no-costs";
     this._water_units = (
       await getSensorDeviceClassConvertibleUnits(this.hass, "water")
     ).units;
+    this._excludeList = this._params.water_sources
+      .map((entry) => entry.stat_energy_from)
+      .filter((id) => id !== this._source?.stat_energy_from);
   }
 
   public closeDialog(): void {
@@ -73,6 +79,7 @@ export class DialogEnergyWaterSettings
     this._source = undefined;
     this._error = undefined;
     this._pickedDisplayUnit = undefined;
+    this._excludeList = undefined;
     fireEvent(this, "dialog-closed", { dialog: this.localName });
   }
 
@@ -122,12 +129,14 @@ export class DialogEnergyWaterSettings
 
         <ha-statistic-picker
           .hass=${this.hass}
+          .helpMissingEntityUrl=${energyStatisticHelpUrl}
           include-unit-class="volume"
           include-device-class="water"
           .value=${this._source.stat_energy_from}
           .label=${this.hass.localize(
             "ui.panel.config.energy.water.dialog.water_usage"
           )}
+          .excludeStatistics=${this._excludeList}
           @value-changed=${this._statisticChanged}
           dialogInitialFocus
         ></ha-statistic-picker>

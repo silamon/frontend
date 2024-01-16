@@ -9,7 +9,6 @@ import "../../../components/ha-circular-progress";
 import "../../../components/ha-markdown";
 import "../../../components/ha-selector/ha-selector";
 import "../../../components/ha-settings-row";
-import "../../../components/ha-textfield";
 import "../../../components/ha-alert";
 import { BlueprintAutomationConfig } from "../../../data/automation";
 import {
@@ -25,7 +24,7 @@ import "../ha-config-section";
 export class HaBlueprintAutomationEditor extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @property() public isWide!: boolean;
+  @property({ type: Boolean }) public isWide = false;
 
   @property({ type: Boolean }) public disabled = false;
 
@@ -33,7 +32,7 @@ export class HaBlueprintAutomationEditor extends LitElement {
 
   @property() public config!: BlueprintAutomationConfig;
 
-  @property() public stateObj?: HassEntity;
+  @property({ attribute: false }) public stateObj?: HassEntity;
 
   @state() private _blueprints?: Blueprints;
 
@@ -102,7 +101,7 @@ export class HaBlueprintAutomationEditor extends LitElement {
               : this.hass.localize(
                   "ui.panel.config.automation.editor.blueprint.no_blueprints"
                 )
-            : html`<ha-circular-progress active></ha-circular-progress>`}
+            : html`<ha-circular-progress indeterminate></ha-circular-progress>`}
         </div>
 
         ${this.config.use_blueprint.path
@@ -129,27 +128,19 @@ export class HaBlueprintAutomationEditor extends LitElement {
                           breaks
                           .content=${value?.description}
                         ></ha-markdown>
-                        ${value?.selector
-                          ? html`<ha-selector
-                              .hass=${this.hass}
-                              .selector=${value.selector}
-                              .key=${key}
-                              .value=${(this.config.use_blueprint.input &&
-                                this.config.use_blueprint.input[key]) ??
-                              value?.default}
-                              .disabled=${this.disabled}
-                              .required=${value?.default === undefined}
-                              @value-changed=${this._inputChanged}
-                            ></ha-selector>`
-                          : html`<ha-textfield
-                              .key=${key}
-                              .required=${value?.default === undefined}
-                              .value=${(this.config.use_blueprint.input &&
-                                this.config.use_blueprint.input[key]) ??
-                              value?.default}
-                              .disabled=${this.disabled}
-                              @input=${this._inputChanged}
-                            ></ha-textfield>`}
+                        ${html`<ha-selector
+                          .hass=${this.hass}
+                          .selector=${value?.selector ?? { text: undefined }}
+                          .key=${key}
+                          .disabled=${this.disabled}
+                          .required=${value?.default === undefined}
+                          .placeholder=${value?.default}
+                          .value=${this.config.use_blueprint.input &&
+                          key in this.config.use_blueprint.input
+                            ? this.config.use_blueprint.input[key]
+                            : value?.default}
+                          @value-changed=${this._inputChanged}
+                        ></ha-selector>`}
                       </ha-settings-row>`
                   )
                 : html`<p class="padding">
@@ -173,7 +164,7 @@ export class HaBlueprintAutomationEditor extends LitElement {
     }
     fireEvent(this, "value-changed", {
       value: {
-        ...this.config!,
+        ...this.config,
         use_blueprint: {
           path: ev.detail.value,
         },
@@ -195,20 +186,9 @@ export class HaBlueprintAutomationEditor extends LitElement {
     }
     const input = { ...this.config.use_blueprint.input, [key]: value };
 
-    const blueprint = this._blueprint;
-    const metaValue =
-      !blueprint || "error" in blueprint
-        ? undefined
-        : blueprint?.metadata.input && blueprint?.metadata?.input[key];
-    const keyDefault = metaValue && metaValue.default;
-
-    if ((value === "" && !keyDefault) || value === undefined) {
-      delete input[key];
-    }
-
     fireEvent(this, "value-changed", {
       value: {
-        ...this.config!,
+        ...this.config,
         use_blueprint: {
           ...this.config.use_blueprint,
           input,

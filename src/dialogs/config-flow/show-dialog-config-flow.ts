@@ -19,6 +19,7 @@ export const showConfigFlowDialog = (
   dialogParams: Omit<DataEntryFlowDialogParams, "flowConfig">
 ): void =>
   showFlowDialog(element, dialogParams, {
+    flowType: "config_flow",
     loadDevicesAndAreas: true,
     createFlow: async (hass, handler) => {
       const [step] = await Promise.all([
@@ -173,8 +174,7 @@ export const showConfigFlowDialog = (
         <p>
           ${hass.localize(
             "ui.panel.config.integrations.config_flow.created_config",
-            "name",
-            step.title
+            { name: step.title }
           )}
         </p>
       `;

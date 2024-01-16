@@ -4,7 +4,14 @@ import {
   HassServices,
   HassServiceTarget,
 } from "home-assistant-js-websocket";
-import { css, CSSResultGroup, html, LitElement, PropertyValues } from "lit";
+import {
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  PropertyValues,
+  nothing,
+} from "lit";
 import { customElement, property, query, state } from "lit/decorators";
 import memoizeOne from "memoize-one";
 import { ensureArray } from "../common/array/ensure-array";
@@ -17,11 +24,14 @@ import {
   IntegrationManifest,
 } from "../data/integration";
 import {
+  areaMeetsTargetSelector,
+  deviceMeetsTargetSelector,
+  entityMeetsTargetSelector,
   expandAreaTarget,
   expandDeviceTarget,
   Selector,
 } from "../data/selector";
-import { ValueChangedEvent, HomeAssistant } from "../types";
+import { HomeAssistant, ValueChangedEvent } from "../types";
 import { documentationUrl } from "../util/documentation-url";
 import "./ha-checkbox";
 import "./ha-icon-button";
@@ -79,6 +89,8 @@ export class HaServiceControl extends LitElement {
   @property({ reflect: true, type: Boolean }) public narrow!: boolean;
 
   @property({ type: Boolean }) public showAdvanced?: boolean;
+
+  @property({ type: Boolean, reflect: true }) public hidePicker?: boolean;
 
   @state() private _value!: this["value"];
 
@@ -360,12 +372,14 @@ export class HaServiceControl extends LitElement {
         )) ||
       serviceData?.description;
 
-    return html`<ha-service-picker
-        .hass=${this.hass}
-        .value=${this._value?.service}
-        .disabled=${this.disabled}
-        @value-changed=${this._serviceChanged}
-      ></ha-service-picker>
+    return html`${this.hidePicker
+        ? nothing
+        : html`<ha-service-picker
+            .hass=${this.hass}
+            .value=${this._value?.service}
+            .disabled=${this.disabled}
+            @value-changed=${this._serviceChanged}
+          ></ha-service-picker>`}
       <div class="description">
         ${description ? html`<p>${description}</p>` : ""}
         ${this._manifest
@@ -414,17 +428,17 @@ export class HaServiceControl extends LitElement {
             ></ha-selector
           ></ha-settings-row>`
         : entityId
-        ? html`<ha-entity-picker
-            .hass=${this.hass}
-            .disabled=${this.disabled}
-            .value=${this._value?.data?.entity_id}
-            .label=${this.hass.localize(
-              `component.${domain}.services.${serviceName}.fields.entity_id.description`
-            ) || entityId.description}
-            @value-changed=${this._entityPicked}
-            allow-custom-entity
-          ></ha-entity-picker>`
-        : ""}
+          ? html`<ha-entity-picker
+              .hass=${this.hass}
+              .disabled=${this.disabled}
+              .value=${this._value?.data?.entity_id}
+              .label=${this.hass.localize(
+                `component.${domain}.services.${serviceName}.fields.entity_id.description`
+              ) || entityId.description}
+              @value-changed=${this._entityPicked}
+              allow-custom-entity
+            ></ha-entity-picker>`
+          : ""}
       ${shouldRenderServiceDataYaml
         ? html`<ha-yaml-editor
             .hass=${this.hass}
@@ -519,6 +533,14 @@ export class HaServiceControl extends LitElement {
         defaultValue = field.selector.constant?.value;
       }
 
+      if (
+        defaultValue == null &&
+        field?.selector &&
+        "boolean" in field.selector
+      ) {
+        defaultValue = false;
+      }
+
       if (defaultValue != null) {
         data = {
           ...this._value?.data,
@@ -546,8 +568,68 @@ export class HaServiceControl extends LitElement {
     if (ev.detail.value === this._value?.service) {
       return;
     }
+
+    const newService = ev.detail.value || "";
+    let target: HassServiceTarget | undefined;
+
+    if (newService) {
+      const serviceData = this._getServiceInfo(newService, this.hass.services);
+      const currentTarget = this._value?.target;
+      if (currentTarget && serviceData?.target) {
+        const targetSelector = { target: { ...serviceData.target } };
+        let targetEntities =
+          ensureArray(
+            currentTarget.entity_id || this._value!.data?.entity_id
+          )?.slice() || [];
+        let targetDevices =
+          ensureArray(
+            currentTarget.device_id || this._value!.data?.device_id
+          )?.slice() || [];
+        let targetAreas =
+          ensureArray(
+            currentTarget.area_id || this._value!.data?.area_id
+          )?.slice() || [];
+        if (targetAreas.length) {
+          targetAreas = targetAreas.filter((area) =>
+            areaMeetsTargetSelector(
+              this.hass,
+              this.hass.entities,
+              this.hass.devices,
+              area,
+              targetSelector
+            )
+          );
+        }
+        if (targetDevices.length) {
+          targetDevices = targetDevices.filter((device) =>
+            deviceMeetsTargetSelector(
+              this.hass,
+              Object.values(this.hass.entities),
+              this.hass.devices[device],
+              targetSelector
+            )
+          );
+        }
+        if (targetEntities.length) {
+          targetEntities = targetEntities.filter((entity) =>
+            entityMeetsTargetSelector(this.hass.states[entity], targetSelector)
+          );
+        }
+        target = {
+          ...(targetEntities.length ? { entity_id: targetEntities } : {}),
+          ...(targetDevices.length ? { device_id: targetDevices } : {}),
+          ...(targetAreas.length ? { area_id: targetAreas } : {}),
+        };
+      }
+    }
+
+    const value = {
+      service: newService,
+      target,
+    };
+
     fireEvent(this, "value-changed", {
-      value: { service: ev.detail.value || "" },
+      value,
     });
   }
 
@@ -663,6 +745,9 @@ export class HaServiceControl extends LitElement {
       p {
         margin: var(--service-control-padding, 0 16px);
         padding: 16px 0;
+      }
+      :host([hidePicker]) p {
+        padding-top: 0;
       }
       .checkbox-spacer {
         width: 32px;

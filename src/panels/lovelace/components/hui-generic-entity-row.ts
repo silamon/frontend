@@ -1,12 +1,12 @@
 import {
-  css,
   CSSResultGroup,
-  html,
   LitElement,
   PropertyValues,
+  css,
+  html,
   nothing,
 } from "lit";
-import { property } from "lit/decorators";
+import { customElement, property } from "lit/decorators";
 import { classMap } from "lit/directives/class-map";
 import { ifDefined } from "lit/directives/if-defined";
 import { DOMAINS_INPUT_ROW } from "../../../common/const";
@@ -16,7 +16,7 @@ import { computeStateName } from "../../../common/entity/compute_state_name";
 import { computeRTL } from "../../../common/util/compute_rtl";
 import "../../../components/entity/state-badge";
 import "../../../components/ha-relative-time";
-import { ActionHandlerEvent } from "../../../data/lovelace";
+import { ActionHandlerEvent } from "../../../data/lovelace/action_handler";
 import { HomeAssistant } from "../../../types";
 import { EntitiesCardEntityConfig } from "../cards/types";
 import { actionHandler } from "../common/directives/action-handler-directive";
@@ -24,7 +24,8 @@ import { handleAction } from "../common/handle-action";
 import { hasAction } from "../common/has-action";
 import { createEntityNotFoundWarning } from "./hui-warning";
 
-class HuiGenericEntityRow extends LitElement {
+@customElement("hui-generic-entity-row")
+export class HuiGenericEntityRow extends LitElement {
   @property({ attribute: false }) public hass?: HomeAssistant;
 
   @property() public config?: EntitiesCardEntityConfig;
@@ -105,50 +106,57 @@ class HuiGenericEntityRow extends LitElement {
                     (this.config.secondary_info === "entity-id"
                       ? stateObj.entity_id
                       : this.config.secondary_info === "last-changed"
-                      ? html`
-                          <ha-relative-time
-                            .hass=${this.hass}
-                            .datetime=${stateObj.last_changed}
-                            capitalize
-                          ></ha-relative-time>
-                        `
-                      : this.config.secondary_info === "last-updated"
-                      ? html`
-                          <ha-relative-time
-                            .hass=${this.hass}
-                            .datetime=${stateObj.last_updated}
-                            capitalize
-                          ></ha-relative-time>
-                        `
-                      : this.config.secondary_info === "last-triggered"
-                      ? stateObj.attributes.last_triggered
                         ? html`
                             <ha-relative-time
                               .hass=${this.hass}
-                              .datetime=${stateObj.attributes.last_triggered}
+                              .datetime=${stateObj.last_changed}
                               capitalize
                             ></ha-relative-time>
                           `
-                        : this.hass.localize(
-                            "ui.panel.lovelace.cards.entities.never_triggered"
-                          )
-                      : this.config.secondary_info === "position" &&
-                        stateObj.attributes.current_position !== undefined
-                      ? `${this.hass.localize("ui.card.cover.position")}: ${
-                          stateObj.attributes.current_position
-                        }`
-                      : this.config.secondary_info === "tilt-position" &&
-                        stateObj.attributes.current_tilt_position !== undefined
-                      ? `${this.hass.localize(
-                          "ui.card.cover.tilt_position"
-                        )}: ${stateObj.attributes.current_tilt_position}`
-                      : this.config.secondary_info === "brightness" &&
-                        stateObj.attributes.brightness
-                      ? html`${Math.round(
-                          (stateObj.attributes.brightness / 255) * 100
-                        )}
-                        %`
-                      : "")}
+                        : this.config.secondary_info === "last-updated"
+                          ? html`
+                              <ha-relative-time
+                                .hass=${this.hass}
+                                .datetime=${stateObj.last_updated}
+                                capitalize
+                              ></ha-relative-time>
+                            `
+                          : this.config.secondary_info === "last-triggered"
+                            ? stateObj.attributes.last_triggered
+                              ? html`
+                                  <ha-relative-time
+                                    .hass=${this.hass}
+                                    .datetime=${stateObj.attributes
+                                      .last_triggered}
+                                    capitalize
+                                  ></ha-relative-time>
+                                `
+                              : this.hass.localize(
+                                  "ui.panel.lovelace.cards.entities.never_triggered"
+                                )
+                            : this.config.secondary_info === "position" &&
+                                stateObj.attributes.current_position !==
+                                  undefined
+                              ? `${this.hass.localize(
+                                  "ui.card.cover.position"
+                                )}: ${stateObj.attributes.current_position}`
+                              : this.config.secondary_info ===
+                                    "tilt-position" &&
+                                  stateObj.attributes.current_tilt_position !==
+                                    undefined
+                                ? `${this.hass.localize(
+                                    "ui.card.cover.tilt_position"
+                                  )}: ${
+                                    stateObj.attributes.current_tilt_position
+                                  }`
+                                : this.config.secondary_info === "brightness" &&
+                                    stateObj.attributes.brightness
+                                  ? html`${Math.round(
+                                      (stateObj.attributes.brightness / 255) *
+                                        100
+                                    )}
+                                    %`
+                                  : "")}
                   </div>
                 `
               : ""}
@@ -242,4 +250,9 @@ class HuiGenericEntityRow extends LitElement {
     `;
   }
 }
-customElements.define("hui-generic-entity-row", HuiGenericEntityRow);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "hui-generic-entity-row": HuiGenericEntityRow;
+  }
+}

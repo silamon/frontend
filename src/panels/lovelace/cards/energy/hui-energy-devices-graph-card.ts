@@ -8,7 +8,14 @@ import {
 import { getRelativePosition } from "chart.js/helpers";
 import { differenceInDays } from "date-fns/esm";
 import { UnsubscribeFunc } from "home-assistant-js-websocket";
-import { css, CSSResultGroup, html, LitElement, nothing } from "lit";
+import {
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  nothing,
+  PropertyValues,
+} from "lit";
 import { customElement, property, query, state } from "lit/decorators";
 import { classMap } from "lit/directives/class-map";
 import memoizeOne from "memoize-one";
@@ -19,7 +26,7 @@ import {
   numberFormatToLocale,
 } from "../../../../common/number/format_number";
 import "../../../../components/chart/ha-chart-base";
-import type HaChartBase from "../../../../components/chart/ha-chart-base";
+import type { HaChartBase } from "../../../../components/chart/ha-chart-base";
 import "../../../../components/ha-card";
 import { EnergyData, getEnergyDataCollection } from "../../../../data/energy";
 import {
@@ -34,6 +41,7 @@ import { SubscribeMixin } from "../../../../mixins/subscribe-mixin";
 import { HomeAssistant } from "../../../../types";
 import { LovelaceCard } from "../../types";
 import { EnergyDevicesGraphCardConfig } from "../types";
+import { hasConfigChanged } from "../../common/has-changed";
 
 @customElement("hui-energy-devices-graph-card")
 export class HuiEnergyDevicesGraphCard
@@ -69,6 +77,14 @@ export class HuiEnergyDevicesGraphCard
 
   public setConfig(config: EnergyDevicesGraphCardConfig): void {
     this._config = config;
+  }
+
+  protected shouldUpdate(changedProps: PropertyValues): boolean {
+    return (
+      hasConfigChanged(this, changedProps) ||
+      changedProps.size > 1 ||
+      !changedProps.has("hass")
+    );
   }
 
   protected render() {
@@ -130,7 +146,7 @@ export class HuiEnergyDevicesGraphCard
           },
         },
       },
-      elements: { bar: { borderWidth: 1.5, borderRadius: 4 } },
+      elements: { bar: { borderWidth: 1, borderRadius: 4 } },
       plugins: {
         tooltip: {
           mode: "nearest",
@@ -164,6 +180,7 @@ export class HuiEnergyDevicesGraphCard
           // @ts-ignore
           entityId: this._chartData?.datasets[0]?.data[index]?.y,
         });
+        chart.canvas.dispatchEvent(new Event("mouseout")); // to hide tooltip
       },
     })
   );
@@ -277,6 +294,8 @@ export class HuiEnergyDevicesGraphCard
 
     chartData.sort((a, b) => b.x - a.x);
 
+    chartData.length = this._config?.max_devices || chartData.length;
+
     chartData.forEach((d: any) => {
       const color = getColorByIndex(d.idx);
 
@@ -292,6 +311,7 @@ export class HuiEnergyDevicesGraphCard
     });
 
     this._chartData = {
+      labels: chartData.map((d) => d.y),
       datasets,
     };
     await this.updateComplete;

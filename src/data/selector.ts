@@ -15,6 +15,7 @@ export type Selector =
   | ActionSelector
   | AddonSelector
   | AreaSelector
+  | AreaFilterSelector
   | AttributeSelector
   | BooleanSelector
   | ColorRGBSelector
@@ -23,6 +24,7 @@ export type Selector =
   | ConversationAgentSelector
   | ConfigEntrySelector
   | ConstantSelector
+  | CountrySelector
   | DateSelector
   | DateTimeSelector
   | DeviceSelector
@@ -40,6 +42,7 @@ export type Selector =
   | ObjectSelector
   | AssistPipelineSelector
   | SelectSelector
+  | SelectorSelector
   | StateSelector
   | StatisticSelector
   | StringSelector
@@ -48,14 +51,17 @@ export type Selector =
   | TemplateSelector
   | ThemeSelector
   | TimeSelector
+  | TriggerSelector
   | TTSSelector
   | TTSVoiceSelector
   | UiActionSelector
   | UiColorSelector;
 
 export interface ActionSelector {
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  action: {} | null;
+  action: {
+    reorder_mode?: boolean;
+    nested?: boolean;
+  } | null;
 }
 
 export interface AddonSelector {
@@ -71,6 +77,11 @@ export interface AreaSelector {
     device?: DeviceSelectorFilter | readonly DeviceSelectorFilter[];
     multiple?: boolean;
   } | null;
+}
+
+export interface AreaFilterSelector {
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  area_filter: {} | null;
 }
 
 export interface AttributeSelector {
@@ -92,14 +103,19 @@ export interface ColorRGBSelector {
 
 export interface ColorTempSelector {
   color_temp: {
+    unit?: "kelvin" | "mired";
+    min?: number;
+    max?: number;
     min_mireds?: number;
     max_mireds?: number;
   } | null;
 }
 
 export interface ConditionSelector {
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  condition: {} | null;
+  condition: {
+    reorder_mode?: boolean;
+    nested?: boolean;
+  } | null;
 }
 
 export interface ConversationAgentSelector {
@@ -117,6 +133,13 @@ export interface ConstantSelector {
     value: string | number | boolean;
     label?: string;
     translation_key?: string;
+  } | null;
+}
+
+export interface CountrySelector {
+  country: {
+    countries: string[];
+    no_sort?: boolean;
   } | null;
 }
 
@@ -296,7 +319,14 @@ export interface SelectSelector {
     mode?: "list" | "dropdown";
     options: readonly string[] | readonly SelectOption[];
     translation_key?: string;
+    sort?: boolean;
+    reorder?: boolean;
   } | null;
+}
+
+export interface SelectorSelector {
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  selector: {} | null;
 }
 
 export interface StateSelector {
@@ -332,6 +362,7 @@ export interface StringSelector {
     prefix?: string;
     suffix?: string;
     autocomplete?: string;
+    multiple?: true;
   } | null;
 }
 
@@ -359,6 +390,13 @@ export interface TimeSelector {
   time: {} | null;
 }
 
+export interface TriggerSelector {
+  trigger: {
+    reorder_mode?: boolean;
+    nested?: boolean;
+  } | null;
+}
+
 export interface TTSSelector {
   tts: { language?: string } | null;
 }
@@ -370,6 +408,7 @@ export interface TTSVoiceSelector {
 export interface UiActionSelector {
   ui_action: {
     actions?: UiAction[];
+    default_action?: UiAction;
   } | null;
 }
 
@@ -440,7 +479,48 @@ export const expandDeviceTarget = (
   return { entities: newEntities };
 };
 
-const deviceMeetsTargetSelector = (
+export const areaMeetsTargetSelector = (
+  hass: HomeAssistant,
+  entities: HomeAssistant["entities"],
+  devices: HomeAssistant["devices"],
+  areaId: string,
+  targetSelector: TargetSelector,
+  entitySources?: EntitySources
+): boolean => {
+  const hasMatchingdevice = Object.values(devices).some((device) => {
+    if (
+      device.area_id === areaId &&
+      deviceMeetsTargetSelector(
+        hass,
+        Object.values(entities),
+        device,
+        targetSelector,
+        entitySources
+      )
+    ) {
+      return true;
+    }
+    return false;
+  });
+  if (hasMatchingdevice) {
+    return true;
+  }
+  return Object.values(entities).some((entity) => {
+    if (
+      entity.area_id === areaId &&
+      entityMeetsTargetSelector(
+        hass.states[entity.entity_id],
+        targetSelector,
+        entitySources
+      )
+    ) {
+      return true;
+    }
+    return false;
+  });
+};
+
+export const deviceMeetsTargetSelector = (
   hass: HomeAssistant,
   entityRegistry: EntityRegistryDisplayEntry[],
   device: DeviceRegistryEntry,
@@ -476,7 +556,7 @@ const deviceMeetsTargetSelector = (
   return true;
 };
 
-const entityMeetsTargetSelector = (
+export const entityMeetsTargetSelector = (
   entity: HassEntity,
   targetSelector: TargetSelector,
   entitySources?: EntitySources

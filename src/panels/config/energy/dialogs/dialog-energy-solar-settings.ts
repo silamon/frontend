@@ -14,6 +14,7 @@ import { ConfigEntry, getConfigEntries } from "../../../../data/config_entries";
 import {
   emptySolarEnergyPreference,
   SolarSourceTypeEnergyPreference,
+  energyStatisticHelpUrl,
 } from "../../../../data/energy";
 import { getSensorDeviceClassConvertibleUnits } from "../../../../data/sensor";
 import { showConfigFlowDialog } from "../../../../dialogs/config-flow/show-dialog-config-flow";
@@ -44,6 +45,8 @@ export class DialogEnergySolarSettings
 
   @state() private _error?: string;
 
+  private _excludeList?: string[];
+
   public async showDialog(
     params: EnergySettingsSolarDialogParams
   ): Promise<void> {
@@ -56,12 +59,16 @@ export class DialogEnergySolarSettings
     this._energy_units = (
       await getSensorDeviceClassConvertibleUnits(this.hass, "energy")
     ).units;
+    this._excludeList = this._params.solar_sources
+      .map((entry) => entry.stat_energy_from)
+      .filter((id) => id !== this._source?.stat_energy_from);
   }
 
   public closeDialog(): void {
     this._params = undefined;
     this._source = undefined;
     this._error = undefined;
+    this._excludeList = undefined;
     fireEvent(this, "dialog-closed", { dialog: this.localName });
   }
 
@@ -92,11 +99,13 @@ export class DialogEnergySolarSettings
 
         <ha-statistic-picker
           .hass=${this.hass}
+          .helpMissingEntityUrl=${energyStatisticHelpUrl}
           .includeUnitClass=${energyUnitClasses}
           .value=${this._source.stat_energy_from}
           .label=${this.hass.localize(
             "ui.panel.config.energy.solar.dialog.solar_production_energy"
           )}
+          .excludeStatistics=${this._excludeList}
           @value-changed=${this._statisticChanged}
           dialogInitialFocus
         ></ha-statistic-picker>
@@ -146,6 +155,7 @@ export class DialogEnergySolarSettings
                     >
                       <img
                         alt=""
+                        crossorigin="anonymous"
                         referrerpolicy="no-referrer"
                         style="height: 24px; margin-right: 16px;"
                         src=${brandsUrl({
@@ -194,13 +204,13 @@ export class DialogEnergySolarSettings
       domains.length === 0
         ? []
         : domains.length === 1
-        ? await getConfigEntries(this.hass, {
-            type: ["service"],
-            domain: domains[0],
-          })
-        : (await getConfigEntries(this.hass, { type: ["service"] })).filter(
-            (entry) => domains.includes(entry.domain)
-          );
+          ? await getConfigEntries(this.hass, {
+              type: ["service"],
+              domain: domains[0],
+            })
+          : (await getConfigEntries(this.hass, { type: ["service"] })).filter(
+              (entry) => domains.includes(entry.domain)
+            );
   }
 
   private _handleForecastChanged(ev: CustomEvent) {

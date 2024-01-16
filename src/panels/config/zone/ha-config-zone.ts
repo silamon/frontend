@@ -51,11 +51,11 @@ import "../../../components/ha-list-item";
 export class HaConfigZone extends SubscribeMixin(LitElement) {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @property() public isWide?: boolean;
+  @property({ type: Boolean }) public isWide = false;
 
-  @property() public narrow?: boolean;
+  @property({ type: Boolean }) public narrow = false;
 
-  @property() public route!: Route;
+  @property({ attribute: false }) public route!: Route;
 
   @state() private _storageItems?: Zone[];
 
@@ -91,8 +91,8 @@ export class HaConfigZone extends SubscribeMixin(LitElement) {
             entityState.entity_id === "zone.home"
               ? homeRadiusColor
               : entityState.attributes.passive
-              ? passiveRadiusColor
-              : zoneRadiusColor,
+                ? passiveRadiusColor
+                : zoneRadiusColor,
           location_editable:
             entityState.entity_id === "zone.home" && this._canEditCore,
           radius_editable: false,
@@ -533,5 +533,11 @@ export class HaConfigZone extends SubscribeMixin(LitElement) {
         align-items: center;
       }
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "ha-config-zone": HaConfigZone;
   }
 }

@@ -121,12 +121,12 @@ class DialogPersonDetail extends LitElement {
               .value=${this._name}
               @input=${this._nameChanged}
               label=${this.hass!.localize("ui.panel.config.person.detail.name")}
-              error-message=${this.hass!.localize(
+              .validationMessage=${this.hass!.localize(
                 "ui.panel.config.person.detail.name_error_msg"
               )}
               required
-              auto-validate
             ></ha-textfield>
+
             <ha-picture-upload
               .hass=${this.hass}
               .value=${this._picture}
@@ -306,8 +306,7 @@ class DialogPersonDetail extends LitElement {
         !(await showConfirmationDialog(this, {
           text: this.hass!.localize(
             "ui.panel.config.person.detail.confirm_delete_user",
-            "name",
-            this._name
+            { name: this._name }
           ),
           confirmText: this.hass!.localize(
             "ui.panel.config.person.detail.delete"
@@ -423,7 +422,8 @@ class DialogPersonDetail extends LitElement {
           display: block;
         }
         ha-picture-upload {
-          margin-top: 16px;
+          margin-bottom: 16px;
+          --file-upload-image-border-radius: 50%;
         }
         ha-formfield {
           display: block;

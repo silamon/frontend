@@ -20,7 +20,7 @@ export interface ClusterRowData extends Cluster {
 export class ZHAClustersDataTable extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @property() public narrow = false;
+  @property({ type: Boolean }) public narrow = false;
 
   @property() public clusters: Cluster[] = [];
 
@@ -38,7 +38,7 @@ export class ZHAClustersDataTable extends LitElement {
   });
 
   private _columns = memoizeOne(
-    (narrow: boolean): DataTableColumnContainer =>
+    (narrow: boolean): DataTableColumnContainer<ClusterRowData> =>
       narrow
         ? {
             name: {
@@ -57,7 +57,7 @@ export class ZHAClustersDataTable extends LitElement {
             },
             id: {
               title: "ID",
-              template: (id: number) => html` ${formatAsPaddedHex(id)} `,
+              template: (cluster) => html` ${formatAsPaddedHex(cluster.id)} `,
               sortable: true,
               width: "25%",
             },

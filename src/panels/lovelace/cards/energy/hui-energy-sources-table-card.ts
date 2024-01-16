@@ -1,7 +1,15 @@
 // @ts-ignore
 import dataTableStyles from "@material/data-table/dist/mdc.data-table.min.css";
 import { UnsubscribeFunc } from "home-assistant-js-websocket";
-import { css, CSSResultGroup, html, LitElement, unsafeCSS, nothing } from "lit";
+import {
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  unsafeCSS,
+  nothing,
+  PropertyValues,
+} from "lit";
 import { customElement, property, state } from "lit/decorators";
 import { styleMap } from "lit/directives/style-map";
 import {
@@ -28,6 +36,7 @@ import { SubscribeMixin } from "../../../../mixins/subscribe-mixin";
 import { HomeAssistant } from "../../../../types";
 import { LovelaceCard } from "../../types";
 import { EnergySourcesTableCardConfig } from "../types";
+import { hasConfigChanged } from "../../common/has-changed";
 
 @customElement("hui-energy-sources-table-card")
 export class HuiEnergySourcesTableCard
@@ -60,6 +69,35 @@ export class HuiEnergySourcesTableCard
     this._config = config;
   }
 
+  protected shouldUpdate(changedProps: PropertyValues): boolean {
+    return (
+      hasConfigChanged(this, changedProps) ||
+      changedProps.size > 1 ||
+      !changedProps.has("hass")
+    );
+  }
+
+  private _getColor(
+    computedStyles: CSSStyleDeclaration,
+    propertyName: string,
+    baseColor: string,
+    idx: number
+  ): string {
+    let color = computedStyles
+      .getPropertyValue(propertyName + "-" + idx)
+      .trim();
+    if (color.length === 0) {
+      const modifiedColor =
+        idx > 0
+          ? this.hass.themes.darkMode
+            ? labBrighten(rgb2lab(hex2rgb(baseColor)), idx)
+            : labDarken(rgb2lab(hex2rgb(baseColor)), idx)
+          : undefined;
+      color = modifiedColor ? rgb2hex(lab2rgb(modifiedColor)) : baseColor;
+    }
+    return color;
+  }
+
   protected render() {
     if (!this.hass || !this._config) {
       return nothing;
@@ -80,6 +118,10 @@ export class HuiEnergySourcesTableCard
     let totalWater = 0;
     let totalWaterCost = 0;
 
+    let hasGridCost = false;
+    let hasGasCost = false;
+    let hasWaterCost = false;
+
     let totalGridCompare = 0;
     let totalGridCostCompare = 0;
     let totalSolarCompare = 0;
@@ -91,27 +133,37 @@ export class HuiEnergySourcesTableCard
 
     const types = energySourcesByType(this._data.prefs);
 
+    const colorPropertyMap = {
+      grid_return: "--energy-grid-return-color",
+      grid_consumption: "--energy-grid-consumption-color",
+      battery_in: "--energy-battery-in-color",
+      battery_out: "--energy-battery-out-color",
+      solar: "--energy-solar-color",
+      gas: "--energy-gas-color",
+      water: "--energy-water-color",
+    };
+
     const computedStyles = getComputedStyle(this);
     const solarColor = computedStyles
-      .getPropertyValue("--energy-solar-color")
+      .getPropertyValue(colorPropertyMap.solar)
       .trim();
     const batteryFromColor = computedStyles
-      .getPropertyValue("--energy-battery-out-color")
+      .getPropertyValue(colorPropertyMap.battery_out)
       .trim();
     const batteryToColor = computedStyles
-      .getPropertyValue("--energy-battery-in-color")
+      .getPropertyValue(colorPropertyMap.battery_in)
       .trim();
     const returnColor = computedStyles
-      .getPropertyValue("--energy-grid-return-color")
+      .getPropertyValue(colorPropertyMap.grid_return)
       .trim();
     const consumptionColor = computedStyles
-      .getPropertyValue("--energy-grid-consumption-color")
+      .getPropertyValue(colorPropertyMap.grid_consumption)
       .trim();
     const gasColor = computedStyles
-      .getPropertyValue("--energy-gas-color")
+      .getPropertyValue(colorPropertyMap.gas)
       .trim();
     const waterColor = computedStyles
-      .getPropertyValue("--energy-water-color")
+      .getPropertyValue(colorPropertyMap.water)
       .trim();
 
     const showCosts =
@@ -221,15 +273,12 @@ export class HuiEnergySourcesTableCard
                   0;
                 totalSolarCompare += compareEnergy;
 
-                const modifiedColor =
-                  idx > 0
-                    ? this.hass.themes.darkMode
-                      ? labBrighten(rgb2lab(hex2rgb(solarColor)), idx)
-                      : labDarken(rgb2lab(hex2rgb(solarColor)), idx)
-                    : undefined;
-                const color = modifiedColor
-                  ? rgb2hex(lab2rgb(modifiedColor))
-                  : solarColor;
+                const color = this._getColor(
+                  computedStyles,
+                  colorPropertyMap.solar,
+                  solarColor,
+                  idx
+                );
 
                 return html`<tr class="mdc-data-table__row">
                   <td class="mdc-data-table__cell cell-bullet">
@@ -322,24 +371,18 @@ export class HuiEnergySourcesTableCard
                   0;
                 totalBatteryCompare += energyFromCompare - energyToCompare;
 
-                const modifiedFromColor =
-                  idx > 0
-                    ? this.hass.themes.darkMode
-                      ? labBrighten(rgb2lab(hex2rgb(batteryFromColor)), idx)
-                      : labDarken(rgb2lab(hex2rgb(batteryFromColor)), idx)
-                    : undefined;
-                const fromColor = modifiedFromColor
-                  ? rgb2hex(lab2rgb(modifiedFromColor))
-                  : batteryFromColor;
-                const modifiedToColor =
-                  idx > 0
-                    ? this.hass.themes.darkMode
-                      ? labBrighten(rgb2lab(hex2rgb(batteryToColor)), idx)
-                      : labDarken(rgb2lab(hex2rgb(batteryToColor)), idx)
-                    : undefined;
-                const toColor = modifiedToColor
-                  ? rgb2hex(lab2rgb(modifiedToColor))
-                  : batteryToColor;
+                const fromColor = this._getColor(
+                  computedStyles,
+                  colorPropertyMap.battery_out,
+                  batteryFromColor,
+                  idx
+                );
+                const toColor = this._getColor(
+                  computedStyles,
+                  colorPropertyMap.battery_in,
+                  batteryToColor,
+                  idx
+                );
 
                 return html`<tr class="mdc-data-table__row">
                     <td class="mdc-data-table__cell cell-bullet">
@@ -477,6 +520,7 @@ export class HuiEnergySourcesTableCard
                         ) || 0
                       : null;
                     if (cost !== null) {
+                      hasGridCost = true;
                       totalGridCost += cost;
                     }
 
@@ -490,15 +534,12 @@ export class HuiEnergySourcesTableCard
                       totalGridCostCompare += costCompare;
                     }
 
-                    const modifiedColor =
-                      idx > 0
-                        ? this.hass.themes.darkMode
-                          ? labBrighten(rgb2lab(hex2rgb(consumptionColor)), idx)
-                          : labDarken(rgb2lab(hex2rgb(consumptionColor)), idx)
-                        : undefined;
-                    const color = modifiedColor
-                      ? rgb2hex(lab2rgb(modifiedColor))
-                      : consumptionColor;
+                    const color = this._getColor(
+                      computedStyles,
+                      colorPropertyMap.grid_consumption,
+                      consumptionColor,
+                      idx
+                    );
 
                     return html`<tr class="mdc-data-table__row">
                       <td class="mdc-data-table__cell cell-bullet">
@@ -575,6 +616,7 @@ export class HuiEnergySourcesTableCard
                         ) || 0) * -1
                       : null;
                     if (cost !== null) {
+                      hasGridCost = true;
                       totalGridCost += cost;
                     }
 
@@ -596,15 +638,12 @@ export class HuiEnergySourcesTableCard
                       totalGridCostCompare += costCompare;
                     }
 
-                    const modifiedColor =
-                      idx > 0
-                        ? this.hass.themes.darkMode
-                          ? labBrighten(rgb2lab(hex2rgb(returnColor)), idx)
-                          : labDarken(rgb2lab(hex2rgb(returnColor)), idx)
-                        : undefined;
-                    const color = modifiedColor
-                      ? rgb2hex(lab2rgb(modifiedColor))
-                      : returnColor;
+                    const color = this._getColor(
+                      computedStyles,
+                      colorPropertyMap.grid_return,
+                      returnColor,
+                      idx
+                    );
 
                     return html`<tr class="mdc-data-table__row">
                       <td class="mdc-data-table__cell cell-bullet">
@@ -686,14 +725,16 @@ export class HuiEnergySourcesTableCard
                             ? html`<td
                                 class="mdc-data-table__cell mdc-data-table__cell--numeric"
                               >
-                                ${formatNumber(
-                                  totalGridCostCompare,
-                                  this.hass.locale,
-                                  {
-                                    style: "currency",
-                                    currency: this.hass.config.currency!,
-                                  }
-                                )}
+                                ${hasGridCost
+                                  ? formatNumber(
+                                      totalGridCostCompare,
+                                      this.hass.locale,
+                                      {
+                                        style: "currency",
+                                        currency: this.hass.config.currency!,
+                                      }
+                                    )
+                                  : ""}
                               </td>`
                             : ""}`
                       : ""}
@@ -706,10 +747,12 @@ export class HuiEnergySourcesTableCard
                       ? html`<td
                           class="mdc-data-table__cell mdc-data-table__cell--numeric"
                         >
-                          ${formatNumber(totalGridCost, this.hass.locale, {
-                            style: "currency",
-                            currency: this.hass.config.currency!,
-                          })}
+                          ${hasGridCost
+                            ? formatNumber(totalGridCost, this.hass.locale, {
+                                style: "currency",
+                                currency: this.hass.config.currency!,
+                              })
+                            : ""}
                         </td>`
                       : ""}
                   </tr>`
@@ -737,6 +780,7 @@ export class HuiEnergySourcesTableCard
                     0
                   : null;
                 if (cost !== null) {
+                  hasGasCost = true;
                   totalGasCost += cost;
                 }
 
@@ -750,15 +794,12 @@ export class HuiEnergySourcesTableCard
                   totalGasCostCompare += costCompare;
                 }
 
-                const modifiedColor =
-                  idx > 0
-                    ? this.hass.themes.darkMode
-                      ? labBrighten(rgb2lab(hex2rgb(gasColor)), idx)
-                      : labDarken(rgb2lab(hex2rgb(gasColor)), idx)
-                    : undefined;
-                const color = modifiedColor
-                  ? rgb2hex(lab2rgb(modifiedColor))
-                  : gasColor;
+                const color = this._getColor(
+                  computedStyles,
+                  colorPropertyMap.gas,
+                  gasColor,
+                  idx
+                );
 
                 return html`<tr class="mdc-data-table__row">
                   <td class="mdc-data-table__cell cell-bullet">
@@ -835,14 +876,16 @@ export class HuiEnergySourcesTableCard
                             ? html`<td
                                 class="mdc-data-table__cell mdc-data-table__cell--numeric"
                               >
-                                ${formatNumber(
-                                  totalGasCostCompare,
-                                  this.hass.locale,
-                                  {
-                                    style: "currency",
-                                    currency: this.hass.config.currency!,
-                                  }
-                                )}
+                                ${hasGasCost
+                                  ? formatNumber(
+                                      totalGasCostCompare,
+                                      this.hass.locale,
+                                      {
+                                        style: "currency",
+                                        currency: this.hass.config.currency!,
+                                      }
+                                    )
+                                  : ""}
                               </td>`
                             : ""}`
                       : ""}
@@ -855,10 +898,12 @@ export class HuiEnergySourcesTableCard
                       ? html`<td
                           class="mdc-data-table__cell mdc-data-table__cell--numeric"
                         >
-                          ${formatNumber(totalGasCost, this.hass.locale, {
-                            style: "currency",
-                            currency: this.hass.config.currency!,
-                          })}
+                          ${hasGasCost
+                            ? formatNumber(totalGasCost, this.hass.locale, {
+                                style: "currency",
+                                currency: this.hass.config.currency!,
+                              })
+                            : ""}
                         </td>`
                       : ""}
                   </tr>`
@@ -886,6 +931,7 @@ export class HuiEnergySourcesTableCard
                     0
                   : null;
                 if (cost !== null) {
+                  hasWaterCost = true;
                   totalWaterCost += cost;
                 }
 
@@ -899,15 +945,12 @@ export class HuiEnergySourcesTableCard
                   totalWaterCostCompare += costCompare;
                 }
 
-                const modifiedColor =
-                  idx > 0
-                    ? this.hass.themes.darkMode
-                      ? labBrighten(rgb2lab(hex2rgb(waterColor)), idx)
-                      : labDarken(rgb2lab(hex2rgb(waterColor)), idx)
-                    : undefined;
-                const color = modifiedColor
-                  ? rgb2hex(lab2rgb(modifiedColor))
-                  : waterColor;
+                const color = this._getColor(
+                  computedStyles,
+                  colorPropertyMap.water,
+                  waterColor,
+                  idx
+                );
 
                 return html`<tr class="mdc-data-table__row">
                   <td class="mdc-data-table__cell cell-bullet">
@@ -984,14 +1027,16 @@ export class HuiEnergySourcesTableCard
                             ? html`<td
                                 class="mdc-data-table__cell mdc-data-table__cell--numeric"
                               >
-                                ${formatNumber(
-                                  totalWaterCostCompare,
-                                  this.hass.locale,
-                                  {
-                                    style: "currency",
-                                    currency: this.hass.config.currency!,
-                                  }
-                                )}
+                                ${hasWaterCost
+                                  ? formatNumber(
+                                      totalWaterCostCompare,
+                                      this.hass.locale,
+                                      {
+                                        style: "currency",
+                                        currency: this.hass.config.currency!,
+                                      }
+                                    )
+                                  : ""}
                               </td>`
                             : ""}`
                       : ""}
@@ -1004,16 +1049,18 @@ export class HuiEnergySourcesTableCard
                       ? html`<td
                           class="mdc-data-table__cell mdc-data-table__cell--numeric"
                         >
-                          ${formatNumber(totalWaterCost, this.hass.locale, {
-                            style: "currency",
-                            currency: this.hass.config.currency!,
-                          })}
+                          ${hasWaterCost
+                            ? formatNumber(totalWaterCost, this.hass.locale, {
+                                style: "currency",
+                                currency: this.hass.config.currency!,
+                              })
+                            : ""}
                         </td>`
                       : ""}
                   </tr>`
                 : ""}
-              ${[totalGasCost, totalWaterCost, totalGridCost].filter(Boolean)
-                .length > 1
+              ${[hasGasCost, hasWaterCost, hasGridCost].filter(Boolean).length >
+              1
                 ? html`<tr class="mdc-data-table__row total">
                     <td class="mdc-data-table__cell"></td>
                     <th class="mdc-data-table__cell" scope="row">
@@ -1022,9 +1069,7 @@ export class HuiEnergySourcesTableCard
                       )}
                     </th>
                     ${compare
-                      ? html`${showCosts
-                            ? html`<td class="mdc-data-table__cell"></td>`
-                            : ""}
+                      ? html`<td class="mdc-data-table__cell"></td>
                           <td
                             class="mdc-data-table__cell mdc-data-table__cell--numeric"
                           >

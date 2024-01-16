@@ -4,9 +4,8 @@ import {
 } from "home-assistant-js-websocket";
 import { stateActive } from "../common/entity/state_active";
 import { supportsFeature } from "../common/entity/supports-feature";
-import { blankBeforePercent } from "../common/translations/blank_before_percent";
+import type { HomeAssistant } from "../types";
 import { UNAVAILABLE } from "./entity";
-import { FrontendLocaleData } from "./translation";
 
 export const enum CoverEntityFeature {
   OPEN = 1,
@@ -66,7 +65,7 @@ export function canOpen(stateObj: CoverEntity) {
     return false;
   }
   const assumedState = stateObj.attributes.assumed_state === true;
-  return (!isFullyOpen(stateObj) && !isOpening(stateObj)) || assumedState;
+  return assumedState || (!isFullyOpen(stateObj) && !isOpening(stateObj));
 }
 
 export function canClose(stateObj: CoverEntity): boolean {
@@ -74,7 +73,7 @@ export function canClose(stateObj: CoverEntity): boolean {
     return false;
   }
   const assumedState = stateObj.attributes.assumed_state === true;
-  return (!isFullyClosed(stateObj) && !isClosing(stateObj)) || assumedState;
+  return assumedState || (!isFullyClosed(stateObj) && !isClosing(stateObj));
 }
 
 export function canStop(stateObj: CoverEntity): boolean {
@@ -86,7 +85,7 @@ export function canOpenTilt(stateObj: CoverEntity): boolean {
     return false;
   }
   const assumedState = stateObj.attributes.assumed_state === true;
-  return !isFullyOpenTilt(stateObj) || assumedState;
+  return assumedState || !isFullyOpenTilt(stateObj);
 }
 
 export function canCloseTilt(stateObj: CoverEntity): boolean {
@@ -94,7 +93,7 @@ export function canCloseTilt(stateObj: CoverEntity): boolean {
     return false;
   }
   const assumedState = stateObj.attributes.assumed_state === true;
-  return !isFullyClosedTilt(stateObj) || assumedState;
+  return assumedState || !isFullyClosedTilt(stateObj);
 }
 
 export function canStopTilt(stateObj: CoverEntity): boolean {
@@ -112,7 +111,7 @@ export interface CoverEntity extends HassEntityBase {
 
 export function computeCoverPositionStateDisplay(
   stateObj: CoverEntity,
-  locale: FrontendLocaleData,
+  hass: HomeAssistant,
   position?: number
 ) {
   const statePosition = stateActive(stateObj)
@@ -123,6 +122,11 @@ export function computeCoverPositionStateDisplay(
   const currentPosition = position ?? statePosition;
 
   return currentPosition && currentPosition !== 100
-    ? `${Math.round(currentPosition)}${blankBeforePercent(locale)}%`
+    ? hass.formatEntityAttributeValue(
+        stateObj,
+        // Always use position as it's the same formatting as tilt position
+        "current_position",
+        Math.round(currentPosition)
+      )
     : "";
 }

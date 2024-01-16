@@ -1,6 +1,4 @@
-import "@polymer/paper-item/paper-icon-item";
-import "@polymer/paper-item/paper-item";
-import "@polymer/paper-item/paper-item-body";
+import "@material/mwc-list/mwc-list";
 import {
   css,
   CSSResultGroup,
@@ -17,6 +15,7 @@ import { stripPrefixFromEntityName } from "../../../../common/entity/strip_prefi
 import "../../../../components/entity/state-badge";
 import "../../../../components/ha-card";
 import "../../../../components/ha-icon";
+import "../../../../components/ha-list-item";
 import {
   ExtEntityRegistryEntry,
   getExtendedEntityRegistryEntry,
@@ -40,7 +39,7 @@ export class HaDeviceEntitiesCard extends LitElement {
 
   @property() public entities!: EntityRegistryStateEntry[];
 
-  @property() public showHidden = false;
+  @property({ type: Boolean }) public showHidden = false;
 
   @state() private _extDisabledEntityEntries?: Record<
     string,
@@ -91,11 +90,13 @@ export class HaDeviceEntitiesCard extends LitElement {
     return html`
       <ha-card outlined .header=${this.header}>
         <div id="entities">
-          ${shownEntities.map((entry) =>
-            this.hass.states[entry.entity_id]
-              ? this._renderEntity(entry)
-              : this._renderEntry(entry)
-          )}
+          <mwc-list>
+            ${shownEntities.map((entry) =>
+              this.hass.states[entry.entity_id]
+                ? this._renderEntity(entry)
+                : this._renderEntry(entry)
+            )}
+          </mwc-list>
         </div>
         ${hiddenEntities.length
           ? !this.showHidden
@@ -103,16 +104,17 @@ export class HaDeviceEntitiesCard extends LitElement {
                 <button class="show-more" @click=${this._toggleShowHidden}>
                   ${this.hass.localize(
                     "ui.panel.config.devices.entities.hidden_entities",
-                    "count",
-                    hiddenEntities.length
+                    { count: hiddenEntities.length }
                   )}
                 </button>
               `
             : html`
-                ${hiddenEntities.map((entry) => this._renderEntry(entry))}
+                <mwc-list>
+                  ${hiddenEntities.map((entry) => this._renderEntry(entry))}
+                </mwc-list>
                 <button class="show-more" @click=${this._toggleShowHidden}>
                   ${this.hass.localize(
-                    "ui.panel.config.devices.entities.hide_disabled"
+                    "ui.panel.config.devices.entities.show_less"
                   )}
                 </button>
               `
@@ -167,11 +169,11 @@ export class HaDeviceEntitiesCard extends LitElement {
       let name = entry.name
         ? stripPrefixFromEntityName(entry.name, this.deviceName.toLowerCase())
         : entry.has_entity_name
-        ? entry.original_name || this.deviceName
-        : stripPrefixFromEntityName(
-            computeStateName(stateObj),
-            this.deviceName.toLowerCase()
-          );
+          ? entry.original_name || this.deviceName
+          : stripPrefixFromEntityName(
+              computeStateName(stateObj),
+              this.deviceName.toLowerCase()
+            );
 
       if (!name) {
         name = computeStateName(stateObj);
@@ -198,26 +200,23 @@ export class HaDeviceEntitiesCard extends LitElement {
       (entry as ExtEntityRegistryEntry).original_name;
 
     return html`
-      <paper-icon-item
+      <ha-list-item
+        graphic="icon"
         class="disabled-entry"
         .entry=${entry}
         @click=${this._openEditEntry}
       >
         <ha-svg-icon
-          slot="item-icon"
+          slot="graphic"
           .path=${domainIcon(computeDomain(entry.entity_id))}
         ></ha-svg-icon>
-        <paper-item-body>
-          <div class="name">
-            ${name
-              ? stripPrefixFromEntityName(
-                  name,
-                  this.deviceName.toLowerCase()
-                ) || name
-              : entry.entity_id}
-          </div>
-        </paper-item-body>
-      </paper-icon-item>
+        <div class="name">
+          ${name
+            ? stripPrefixFromEntityName(name, this.deviceName.toLowerCase()) ||
+              name
+            : entry.entity_id}
+        </div>
+      </ha-list-item>
     `;
   }
 

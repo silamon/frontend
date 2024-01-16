@@ -15,6 +15,8 @@ import {
   mdiCalendarClock,
   mdiCarCoolantLevel,
   mdiCash,
+  mdiChatSleep,
+  mdiClipboardList,
   mdiClock,
   mdiCloudUpload,
   mdiCog,
@@ -27,11 +29,11 @@ import {
   mdiFlash,
   mdiFlower,
   mdiFormatListBulleted,
+  mdiFormatListCheckbox,
   mdiFormTextbox,
   mdiGauge,
   mdiGoogleAssistant,
   mdiGoogleCirclesCommunities,
-  mdiHomeAssistant,
   mdiHomeAutomation,
   mdiImage,
   mdiImageFilterFrames,
@@ -49,6 +51,7 @@ import {
   mdiProgressClock,
   mdiRayVertex,
   mdiRemote,
+  mdiRobotMower,
   mdiRobotVacuum,
   mdiScriptText,
   mdiSineWave,
@@ -62,12 +65,15 @@ import {
   mdiTransmissionTower,
   mdiWater,
   mdiWaterPercent,
+  mdiWeatherPartlyCloudy,
   mdiWeatherPouring,
   mdiWeatherRainy,
   mdiWeatherWindy,
   mdiWeight,
   mdiWifi,
 } from "@mdi/js";
+
+import { mdiHomeAssistant } from "../resources/home-assistant-logo-svg";
 
 // Constants should be alphabetically sorted by name.
 // Arrays with values should be alphabetically sorted if order doesn't matter.
@@ -99,6 +105,7 @@ export const FIXED_DOMAIN_ICONS = {
   input_number: mdiRayVertex,
   input_select: mdiFormatListBulleted,
   input_text: mdiFormTextbox,
+  lawn_mower: mdiRobotMower,
   light: mdiLightbulb,
   mailbox: mdiMailbox,
   notify: mdiCommentAlert,
@@ -116,11 +123,14 @@ export const FIXED_DOMAIN_ICONS = {
   siren: mdiBullhorn,
   stt: mdiMicrophoneMessage,
   text: mdiFormTextbox,
+  todo: mdiClipboardList,
   time: mdiClock,
   timer: mdiTimerOutline,
   tts: mdiSpeakerMessage,
   updater: mdiCloudUpload,
   vacuum: mdiRobotVacuum,
+  wake_word: mdiChatSleep,
+  weather: mdiWeatherPartlyCloudy,
   zone: mdiMapMarkerRadius,
 };
 
@@ -159,6 +169,7 @@ export const FIXED_DEVICE_CLASS_ICONS = {
   precipitation_intensity: mdiWeatherPouring,
   pressure: mdiGauge,
   reactive_power: mdiFlash,
+  shopping_List: mdiFormatListCheckbox,
   signal_strength: mdiWifi,
   sound_pressure: mdiEarHearing,
   speed: mdiSpeedometer,
@@ -176,6 +187,7 @@ export const FIXED_DEVICE_CLASS_ICONS = {
 
 /** Domains that have a state card. */
 export const DOMAINS_WITH_CARD = [
+  "alert",
   "button",
   "climate",
   "cover",
@@ -186,6 +198,7 @@ export const DOMAINS_WITH_CARD = [
   "input_number",
   "input_text",
   "humidifier",
+  "lawn_mower",
   "lock",
   "media_player",
   "number",
@@ -194,6 +207,7 @@ export const DOMAINS_WITH_CARD = [
   "select",
   "timer",
   "text",
+  "update",
   "vacuum",
   "water_heater",
 ];
@@ -240,6 +254,7 @@ export const DOMAINS_INPUT_ROW = [
   "text",
   "time",
   "vacuum",
+  "valve",
 ];
 
 /** States that we consider "off". */
@@ -258,6 +273,7 @@ export const DOMAINS_TOGGLE = new Set([
   "group",
   "automation",
   "humidifier",
+  "valve",
 ]);
 
 /** Domains that have a dynamic entity image / picture. */

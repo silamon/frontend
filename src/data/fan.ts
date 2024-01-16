@@ -10,8 +10,7 @@ import {
   HassEntityBase,
 } from "home-assistant-js-websocket";
 import { stateActive } from "../common/entity/state_active";
-import { blankBeforePercent } from "../common/translations/blank_before_percent";
-import { FrontendLocaleData } from "./translation";
+import type { HomeAssistant } from "../types";
 
 export const enum FanEntityFeature {
   SET_SPEED = 1,
@@ -90,14 +89,14 @@ export function computeFanSpeedIcon(
   return speed === "on"
     ? mdiFan
     : speed === "off"
-    ? mdiFanOff
-    : [mdiFanSpeed1, mdiFanSpeed2, mdiFanSpeed3][index - 1];
+      ? mdiFanOff
+      : [mdiFanSpeed1, mdiFanSpeed2, mdiFanSpeed3][index - 1];
 }
 export const FAN_SPEED_COUNT_MAX_FOR_BUTTONS = 4;
 
 export function computeFanSpeedStateDisplay(
   stateObj: FanEntity,
-  locale: FrontendLocaleData,
+  hass: HomeAssistant,
   speed?: number
 ) {
   const percentage = stateActive(stateObj)
@@ -106,6 +105,10 @@ export function computeFanSpeedStateDisplay(
   const currentSpeed = speed ?? percentage;
 
   return currentSpeed
-    ? `${Math.floor(currentSpeed)}${blankBeforePercent(locale)}%`
+    ? hass.formatEntityAttributeValue(
+        stateObj,
+        "percentage",
+        Math.round(currentSpeed)
+      )
     : "";
 }

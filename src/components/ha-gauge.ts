@@ -19,7 +19,7 @@ export interface LevelDefinition {
 }
 
 @customElement("ha-gauge")
-export class Gauge extends LitElement {
+export class HaGauge extends LitElement {
   @property({ type: Number }) public min = 0;
 
   @property({ type: Number }) public max = 100;
@@ -141,8 +141,8 @@ export class Gauge extends LitElement {
             this._segment_label
               ? ""
               : this.label === "%"
-              ? blankBeforePercent(this.locale) + "%"
-              : ` ${this.label}`
+                ? blankBeforePercent(this.locale) + "%"
+                : ` ${this.label}`
           }
         </text>
       </svg>`;
@@ -214,5 +214,11 @@ export class Gauge extends LitElement {
         direction: ltr;
       }
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "ha-gauge": HaGauge;
   }
 }

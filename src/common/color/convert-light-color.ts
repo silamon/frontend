@@ -1,7 +1,7 @@
 import { clamp } from "../number/clamp";
 
-const DEFAULT_MIN_KELVIN = 2700;
-const DEFAULT_MAX_KELVIN = 6500;
+export const DEFAULT_MIN_KELVIN = 2700;
+export const DEFAULT_MAX_KELVIN = 6500;
 
 export const temperature2rgb = (
   temperature: number
@@ -58,10 +58,10 @@ const matchMaxScale = (
   return outputColors.map((value) => Math.round(value * factor));
 };
 
-const mired2kelvin = (miredTemperature: number) =>
+export const mired2kelvin = (miredTemperature: number) =>
   Math.floor(1000000 / miredTemperature);
 
-const kelvin2mired = (kelvintTemperature: number) =>
+export const kelvin2mired = (kelvintTemperature: number) =>
   Math.floor(1000000 / kelvintTemperature);
 
 export const rgbww2rgb = (

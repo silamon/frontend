@@ -2,7 +2,11 @@ import { mdiDownload } from "@mdi/js";
 import { dump } from "js-yaml";
 import { CSSResultGroup, LitElement, css, html, nothing } from "lit";
 import { customElement, property, query, state } from "lit/decorators";
+import { storage } from "../../../common/decorators/storage";
+import { formatLanguageCode } from "../../../common/language/format_language";
+import "../../../components/ha-alert";
 import "../../../components/ha-button";
+import "../../../components/ha-card";
 import "../../../components/ha-code-editor";
 import "../../../components/ha-language-picker";
 import "../../../components/ha-textarea";
@@ -15,8 +19,6 @@ import {
 import { SubscribeMixin } from "../../../mixins/subscribe-mixin";
 import { haStyle } from "../../../resources/styles";
 import { HomeAssistant } from "../../../types";
-import { formatLanguageCode } from "../../../common/language/format_language";
-import { storage } from "../../../common/decorators/storage";
 import { fileDownload } from "../../../util/file_download";
 
 type SentenceParsingResult = {
@@ -113,12 +115,17 @@ class HaPanelDevAssist extends SubscribeMixin(LitElement) {
   protected render() {
     return html`
       <div class="content">
-        <ha-card header="Sentences parser" class="form">
+        <ha-card
+          .header=${this.hass.localize(
+            "ui.panel.developer-tools.tabs.assist.title"
+          )}
+          class="form"
+        >
           <div class="card-content">
             <p class="description">
-              Enter sentences and see how they will be parsed by Home Assistant.
-              Each line will be processed as individual sentence. Intents will
-              not be executed on your instance.
+              ${this.hass.localize(
+                "ui.panel.developer-tools.tabs.assist.description"
+              )}
             </p>
             ${this.supportedLanguages
               ? html`
@@ -132,7 +139,9 @@ class HaPanelDevAssist extends SubscribeMixin(LitElement) {
               : nothing}
             <ha-textarea
               autogrow
-              label="Sentences"
+              .label=${this.hass.localize(
+                "ui.panel.developer-tools.tabs.assist.sentences"
+              )}
               id="sentences-input"
               @input=${this._textAreaInput}
               @keydown=${this._handleKeyDown}
@@ -143,7 +152,9 @@ class HaPanelDevAssist extends SubscribeMixin(LitElement) {
               @click=${this._parse}
               .disabled=${!this._language || !this._validInput}
             >
-              Parse sentences
+              ${this.hass.localize(
+                "ui.panel.developer-tools.tabs.assist.parse_sentences"
+              )}
             </ha-button>
           </div>
         </ha-card>
@@ -153,8 +164,10 @@ class HaPanelDevAssist extends SubscribeMixin(LitElement) {
               <div class="result-toolbar">
                 <ha-button outlined @click=${this._download}>
                   <ha-svg-icon slot="icon" .path=${mdiDownload}></ha-svg-icon>
-                  Download Results
-                </button>
+                  ${this.hass.localize(
+                    "ui.panel.developer-tools.tabs.assist.download_results"
+                  )}
+                </ha-button>
               </div>
             `
           : ""}
@@ -170,7 +183,10 @@ class HaPanelDevAssist extends SubscribeMixin(LitElement) {
                   <p>${matched ? "✅" : "❌"}</p>
                 </div>
                 <div class="info">
-                  Language: ${formatLanguageCode(language, this.hass.locale)}
+                  ${this.hass.localize(
+                    "ui.panel.developer-tools.tabs.assist.language"
+                  )}:
+                  ${formatLanguageCode(language, this.hass.locale)}
                   (${language})
                 </div>
                 ${result
@@ -184,7 +200,9 @@ class HaPanelDevAssist extends SubscribeMixin(LitElement) {
                       ></ha-code-editor>
                     `
                   : html`<ha-alert alert-type="error">
-                      No intent matched
+                      ${this.hass.localize(
+                        "ui.panel.developer-tools.tabs.assist.no_match"
+                      )}
                     </ha-alert>`}
               </div>
             </ha-card>

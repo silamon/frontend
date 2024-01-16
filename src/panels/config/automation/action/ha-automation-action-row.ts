@@ -1,3 +1,4 @@
+import { consume } from "@lit-labs/context";
 import { ActionDetail } from "@material/mwc-list/mwc-list-foundation";
 import "@material/mwc-list/mwc-list-item";
 import {
@@ -25,10 +26,11 @@ import {
 } from "lit";
 import { customElement, property, query, state } from "lit/decorators";
 import { classMap } from "lit/directives/class-map";
-import { consume } from "@lit-labs/context";
 import { storage } from "../../../../common/decorators/storage";
 import { dynamicElement } from "../../../../common/dom/dynamic-element-directive";
 import { fireEvent } from "../../../../common/dom/fire_event";
+import { computeDomain } from "../../../../common/entity/compute_domain";
+import { domainIconWithoutDefault } from "../../../../common/entity/domain_icon";
 import { capitalizeFirstLetter } from "../../../../common/string/capitalize-first-letter";
 import { handleStructError } from "../../../../common/structs/handle-errors";
 import "../../../../components/ha-alert";
@@ -37,9 +39,10 @@ import "../../../../components/ha-card";
 import "../../../../components/ha-expansion-panel";
 import "../../../../components/ha-icon-button";
 import type { HaYamlEditor } from "../../../../components/ha-yaml-editor";
-import { ACTION_TYPES, YAML_ONLY_ACTION_TYPES } from "../../../../data/action";
+import { ACTION_ICONS, YAML_ONLY_ACTION_TYPES } from "../../../../data/action";
 import { AutomationClipboard } from "../../../../data/automation";
 import { validateConfig } from "../../../../data/config";
+import { fullEntitiesContext } from "../../../../data/context";
 import { EntityRegistryEntry } from "../../../../data/entity_registry";
 import {
   Action,
@@ -70,19 +73,20 @@ import "./types/ha-automation-action-service";
 import "./types/ha-automation-action-stop";
 import "./types/ha-automation-action-wait_for_trigger";
 import "./types/ha-automation-action-wait_template";
-import { fullEntitiesContext } from "../../../../data/context";
 
 export const getType = (action: Action | undefined) => {
   if (!action) {
     return undefined;
   }
   if ("service" in action || "scene" in action) {
-    return getActionType(action);
+    return getActionType(action) as "activate_scene" | "service" | "play_media";
   }
   if (["and", "or", "not"].some((key) => key in action)) {
-    return "condition";
+    return "condition" as const;
   }
-  return Object.keys(ACTION_TYPES).find((option) => option in action);
+  return Object.keys(ACTION_ICONS).find(
+    (option) => option in action
+  ) as keyof typeof ACTION_ICONS;
 };
 
 export interface ActionElement extends LitElement {
@@ -188,7 +192,13 @@ export default class HaAutomationActionRow extends LitElement {
           <h3 slot="header">
             <ha-svg-icon
               class="action-icon"
-              .path=${ACTION_TYPES[type!]}
+              .path=${type === "service" &&
+              "service" in this.action &&
+              this.action.service
+                ? domainIconWithoutDefault(
+                    computeDomain(this.action.service as string)
+                  ) || ACTION_ICONS[type!]
+                : ACTION_ICONS[type!]}
             ></ha-svg-icon>
             ${capitalizeFirstLetter(
               describeAction(this.hass, this._entityReg, this.action)
@@ -375,9 +385,7 @@ export default class HaAutomationActionRow extends LitElement {
                   ${type === undefined
                     ? html`
                         ${this.hass.localize(
-                          "ui.panel.config.automation.editor.actions.unsupported_action",
-                          "action",
-                          type
+                          "ui.panel.config.automation.editor.actions.unsupported_action"
                         )}
                       `
                     : ""}
@@ -389,7 +397,10 @@ export default class HaAutomationActionRow extends LitElement {
                   ></ha-yaml-editor>
                 `
               : html`
-                  <div @ui-mode-not-available=${this._handleUiModeNotAvailable}>
+                  <div
+                    @ui-mode-not-available=${this._handleUiModeNotAvailable}
+                    @value-changed=${this._onUiChanged}
+                  >
                     ${dynamicElement(`ha-automation-action-${type}`, {
                       hass: this.hass,
                       action: this.action,
@@ -526,6 +537,15 @@ export default class HaAutomationActionRow extends LitElement {
       return;
     }
     fireEvent(this, "value-changed", { value: ev.detail.value });
+  }
+
+  private _onUiChanged(ev: CustomEvent) {
+    ev.stopPropagation();
+    const value = {
+      ...(this.action.alias ? { alias: this.action.alias } : {}),
+      ...ev.detail.value,
+    };
+    fireEvent(this, "value-changed", { value });
   }
 
   private _switchUiMode() {

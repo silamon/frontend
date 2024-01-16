@@ -37,7 +37,7 @@ import { describeTrigger } from "../../../../data/automation_i18n";
 import { validateConfig } from "../../../../data/config";
 import { fullEntitiesContext } from "../../../../data/context";
 import { EntityRegistryEntry } from "../../../../data/entity_registry";
-import { TRIGGER_TYPES } from "../../../../data/trigger";
+import { TRIGGER_ICONS } from "../../../../data/trigger";
 import {
   showAlertDialog,
   showConfirmationDialog,
@@ -150,11 +150,9 @@ export default class HaAutomationTriggerRow extends LitElement {
           <h3 slot="header">
             <ha-svg-icon
               class="trigger-icon"
-              .path=${TRIGGER_TYPES[this.trigger.platform]}
+              .path=${TRIGGER_ICONS[this.trigger.platform]}
             ></ha-svg-icon>
-            ${capitalizeFirstLetter(
-              describeTrigger(this.trigger, this.hass, this._entityReg)
-            )}
+            ${describeTrigger(this.trigger, this.hass, this._entityReg)}
           </h3>
 
           <slot name="icons" slot="icons"></slot>
@@ -324,8 +322,7 @@ export default class HaAutomationTriggerRow extends LitElement {
                     ? html`
                         ${this.hass.localize(
                           "ui.panel.config.automation.editor.triggers.unsupported_platform",
-                          "platform",
-                          this.trigger.platform
+                          { platform: this.trigger.platform }
                         )}
                       `
                     : ""}
@@ -350,7 +347,10 @@ export default class HaAutomationTriggerRow extends LitElement {
                         </ha-textfield>
                       `
                     : ""}
-                  <div @ui-mode-not-available=${this._handleUiModeNotAvailable}>
+                  <div
+                    @ui-mode-not-available=${this._handleUiModeNotAvailable}
+                    @value-changed=${this._onUiChanged}
+                  >
                     ${dynamicElement(
                       `ha-automation-trigger-${this.trigger.platform}`,
                       {
@@ -560,6 +560,15 @@ export default class HaAutomationTriggerRow extends LitElement {
     }
     this._warnings = undefined;
     fireEvent(this, "value-changed", { value: ev.detail.value });
+  }
+
+  private _onUiChanged(ev: CustomEvent) {
+    ev.stopPropagation();
+    const value = {
+      ...(this.trigger.alias ? { alias: this.trigger.alias } : {}),
+      ...ev.detail.value,
+    };
+    fireEvent(this, "value-changed", { value });
   }
 
   private _switchUiMode() {

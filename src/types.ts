@@ -3,6 +3,7 @@ import {
   Connection,
   HassConfig,
   HassEntities,
+  HassEntity,
   HassServices,
   HassServiceTarget,
   MessageBase,
@@ -48,7 +49,6 @@ declare global {
     };
     change: undefined;
     "hass-logout": undefined;
-    "iron-resize": undefined;
     "config-refresh": undefined;
     "hass-api-called": {
       success: boolean;
@@ -229,6 +229,7 @@ export interface HomeAssistant {
   suspendWhenHidden: boolean;
   enableShortcuts: boolean;
   vibrate: boolean;
+  debugConnection: boolean;
   dockedSidebar: "docked" | "always_hidden" | "auto";
   defaultPanel: string;
   moreInfoEntityId: string | null;
@@ -239,7 +240,8 @@ export interface HomeAssistant {
     domain: ServiceCallRequest["domain"],
     service: ServiceCallRequest["service"],
     serviceData?: ServiceCallRequest["serviceData"],
-    target?: ServiceCallRequest["target"]
+    target?: ServiceCallRequest["target"],
+    notifyOnError?: boolean
   ): Promise<ServiceCallResponse>;
   callApi<T>(
     method: "GET" | "POST" | "PUT" | "DELETE",
@@ -256,6 +258,13 @@ export interface HomeAssistant {
     configFlow?: Parameters<typeof getHassTranslations>[4]
   ): Promise<LocalizeFunc>;
   loadFragmentTranslation(fragment: string): Promise<LocalizeFunc | undefined>;
+  formatEntityState(stateObj: HassEntity, state?: string): string;
+  formatEntityAttributeValue(
+    stateObj: HassEntity,
+    attribute: string,
+    value?: any
+  ): string;
+  formatEntityAttributeName(stateObj: HassEntity, attribute: string): string;
 }
 
 export interface Route {
@@ -281,5 +290,7 @@ export type AsyncReturnType<T extends (...args: any) => any> = T extends (
 ) => Promise<infer U>
   ? U
   : T extends (...args: any) => infer U
-  ? U
-  : never;
+    ? U
+    : never;
+
+export type Entries<T> = [keyof T, T[keyof T]][];

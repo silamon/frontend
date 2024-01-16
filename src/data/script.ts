@@ -52,6 +52,7 @@ export const serviceActionStruct: Describe<ServiceAction> = assign(
     target: optional(targetStruct),
     data: optional(object()),
     response_variable: optional(string()),
+    metadata: optional(object()),
   })
 );
 
@@ -93,10 +94,25 @@ export interface ManualScriptConfig {
   icon?: string;
   mode?: (typeof MODES)[number];
   max?: number;
+  fields?: Fields;
 }
 
 export interface BlueprintScriptConfig extends ManualScriptConfig {
   use_blueprint: { path: string; input?: BlueprintInput };
+}
+
+export interface Fields {
+  [key: string]: Field;
+}
+
+export interface Field {
+  name?: string;
+  description?: string;
+  advanced?: boolean;
+  required?: boolean;
+  example?: string;
+  default?: any;
+  selector?: any;
 }
 
 interface BaseAction {
@@ -118,6 +134,7 @@ export interface ServiceAction extends BaseAction {
   target?: HassServiceTarget;
   data?: Record<string, unknown>;
   response_variable?: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface DeviceAction extends BaseAction {

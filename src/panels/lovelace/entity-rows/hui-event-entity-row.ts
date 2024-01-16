@@ -1,16 +1,14 @@
 import {
-  css,
   CSSResultGroup,
-  html,
   LitElement,
   PropertyValues,
+  css,
+  html,
   nothing,
 } from "lit";
 import { customElement, property, state } from "lit/decorators";
-import { computeStateDisplay } from "../../../common/entity/compute_state_display";
-import { computeAttributeValueDisplay } from "../../../common/entity/compute_attribute_display";
 import { isUnavailableState } from "../../../data/entity";
-import { ActionHandlerEvent } from "../../../data/lovelace";
+import { ActionHandlerEvent } from "../../../data/lovelace/action_handler";
 import { HomeAssistant } from "../../../types";
 import { EntitiesCardEntityConfig } from "../cards/types";
 import { actionHandler } from "../common/directives/action-handler-directive";
@@ -68,26 +66,20 @@ class HuiEventEntityRow extends LitElement implements LovelaceRow {
             hasDoubleClick: hasAction(this._config.double_tap_action),
           })}
         >
-          <div class="what">
-            ${computeStateDisplay(
-              this.hass!.localize,
-              stateObj,
-              this.hass.locale,
-              this.hass.config,
-              this.hass.entities
-            )}
-          </div>
           <div class="when">
             ${isUnavailableState(stateObj.state)
-              ? ``
-              : computeAttributeValueDisplay(
-                  this.hass!.localize,
-                  stateObj,
-                  this.hass.locale,
-                  this.hass.config,
-                  this.hass.entities,
-                  "event_type"
-                )}
+              ? this.hass.formatEntityState(stateObj)
+              : html`<hui-timestamp-display
+                  .hass=${this.hass}
+                  .ts=${new Date(stateObj.state)}
+                  .format=${this._config.format}
+                  capitalize
+                ></hui-timestamp-display>`}
+          </div>
+          <div class="what">
+            ${isUnavailableState(stateObj.state)
+              ? nothing
+              : this.hass.formatEntityAttributeValue(stateObj, "event_type")}
           </div>
         </div>
       </hui-generic-entity-row>
@@ -104,10 +96,10 @@ class HuiEventEntityRow extends LitElement implements LovelaceRow {
         text-align: right;
       }
       .when {
-        color: var(--secondary-text-color);
+        color: var(--primary-text-color);
       }
       .what {
-        color: var(--primary-text-color);
+        color: var(--secondary-text-color);
       }
     `;
   }

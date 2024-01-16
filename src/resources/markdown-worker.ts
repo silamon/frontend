@@ -1,7 +1,5 @@
-// To use comlink under ES5
-import "proxy-polyfill";
 import { expose } from "comlink";
-import { marked } from "marked";
+import { marked, MarkedOptions } from "marked";
 import { filterXSS, getDefaultWhiteList, IWhiteList } from "xss";
 
 let whiteListNormal: IWhiteList | undefined;
@@ -29,14 +27,14 @@ const onTagAttr = (
   return undefined;
 };
 
-const renderMarkdown = (
+const renderMarkdown = async (
   content: string,
-  markedOptions: marked.MarkedOptions,
+  markedOptions: MarkedOptions,
   hassOptions: {
     // Do not allow SVG on untrusted content, it allows XSS.
     allowSvg?: boolean;
   } = {}
-): string => {
+): Promise<string> => {
   if (!whiteListNormal) {
     whiteListNormal = {
       ...getDefaultWhiteList(),
@@ -44,6 +42,14 @@ const renderMarkdown = (
       "ha-icon": ["icon"],
       "ha-svg-icon": ["path"],
       "ha-alert": ["alert-type", "title"],
+      "ha-qr-code": [
+        "data",
+        "scale",
+        "width",
+        "margin",
+        "error-correction-level",
+        "center-image",
+      ],
     };
   }
 
@@ -63,7 +69,7 @@ const renderMarkdown = (
     whiteList = whiteListNormal;
   }
 
-  return filterXSS(marked(content, markedOptions), {
+  return filterXSS(await marked(content, markedOptions), {
     whiteList,
     onTagAttr,
   });

@@ -34,12 +34,16 @@ export function stateActive(stateObj: HassEntity, state?: string): boolean {
     case "device_tracker":
     case "person":
       return compareState !== "not_home";
+    case "lawn_mower":
+      return ["mowing", "error"].includes(compareState);
     case "lock":
       return compareState !== "locked";
     case "media_player":
       return compareState !== "standby";
     case "vacuum":
       return !["idle", "docked", "paused"].includes(compareState);
+    case "valve":
+      return compareState !== "closed";
     case "plant":
       return compareState === "problem";
     case "group":

@@ -95,11 +95,20 @@ class HaMarkdownElement extends ReactiveElement {
           }
           node.firstElementChild!.replaceWith(alertNote);
         }
+      } else if (
+        node instanceof HTMLElement &&
+        ["ha-alert", "ha-qr-code", "ha-icon", "ha-svg-icon"].includes(
+          node.localName
+        )
+      ) {
+        import(
+          /* webpackInclude: /(ha-alert)|(ha-qr-code)|(ha-icon)|(ha-svg-icon)/ */ `./${node.localName}`
+        );
       }
     }
   }
 
-  private _resize = () => fireEvent(this, "iron-resize");
+  private _resize = () => fireEvent(this, "content-resize");
 }
 
 declare global {
