@@ -26,13 +26,13 @@ import "../ha-state-icon";
 export class StateBadge extends LitElement {
   public hass?: HomeAssistant;
 
-  @property() public stateObj?: HassEntity;
+  @property({ attribute: false }) public stateObj?: HassEntity;
 
   @property() public overrideIcon?: string;
 
   @property() public overrideImage?: string;
 
-  @property({ type: Boolean }) public stateColor?: boolean;
+  @property({ type: Boolean }) public stateColor = false;
 
   @property() public color?: string;
 

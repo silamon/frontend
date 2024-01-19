@@ -16,10 +16,10 @@ import "./mqtt-subscribe-card";
 const qosLevel = ["0", "1", "2"];
 
 @customElement("mqtt-config-panel")
-class HaPanelDevMqtt extends LitElement {
+export class MQTTConfigPanel extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @property({ type: Boolean }) public narrow!: boolean;
+  @property({ type: Boolean }) public narrow = false;
 
   @storage({
     key: "panel-dev-mqtt-topic-ls",
@@ -248,6 +248,6 @@ class HaPanelDevMqtt extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "developer-tools-mqtt": HaPanelDevMqtt;
+    "mqtt-config-panel": MQTTConfigPanel;
   }
 }

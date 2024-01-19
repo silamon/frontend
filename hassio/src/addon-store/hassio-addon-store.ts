@@ -56,7 +56,7 @@ export class HassioAddonStore extends LitElement {
 
   @property({ attribute: false }) public supervisor!: Supervisor;
 
-  @property({ type: Boolean }) public narrow!: boolean;
+  @property({ type: Boolean }) public narrow = false;
 
   @property({ attribute: false }) public route!: Route;
 
@@ -246,5 +246,11 @@ export class HassioAddonStore extends LitElement {
         color: var(--primary-color);
       }
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "hassio-addon-store": HassioAddonStore;
   }
 }
