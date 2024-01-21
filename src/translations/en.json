@@ -2508,7 +2508,9 @@
                   "label": "Time and location",
                   "description": "When someone enters or leaves a zone, or at a specific time."
                 },
-                "other": { "label": "Other triggers" }
+                "other": {
+                  "label": "Other triggers"
+                }
               },
               "type": {
                 "calendar": {
@@ -2748,7 +2750,9 @@
                   "label": "Time and location",
                   "description": "If someone is in a zone or if the current time is before or after a specified time."
                 },
-                "other": { "label": "Other conditions" },
+                "other": {
+                  "label": "Other conditions"
+                },
                 "building_blocks": {
                   "label": "Building blocks",
                   "description": "Build more complex conditions."
@@ -2912,8 +2916,12 @@
               "type_select": "Action type",
               "continue_on_error": "Continue on error",
               "groups": {
-                "helpers": { "label": "Helpers" },
-                "other": { "label": "Other actions" },
+                "helpers": {
+                  "label": "Helpers"
+                },
+                "other": {
+                  "label": "Other actions"
+                },
                 "building_blocks": {
                   "label": "Building blocks",
                   "description": "Build more complex sequences of actions."
@@ -3143,6 +3151,23 @@
               "no_logbook_entries": "No Logbook entries found for this step.",
               "no_variables_changed": "No variables changed",
               "unable_to_find_config": "Unable to find config"
+            },
+            "messages": {
+              "no_action_executed": "{name}: No action executed",
+              "default_action_executed": "{name}: Default action executed",
+              "action_executed": "{action} action executed",
+              "option_executed": "Option {option} executed",
+              "error": "Error: {error}",
+              "execute_in_parallel": "Execute in parallel",
+              "if": "If",
+              "choose": "Choose",
+              "still_running": "Still running",
+              "debugged": "Debugged",
+              "finished": "Finished at {time} (runtime: {executiontime} seconds)",
+              "aborted": "Finished at {time} (runtime: {executiontime} seconds)",
+              "cancelled": "Finished at {time} (runtime: {executiontime} seconds)",
+              "stopped": "Stopped because {reason, select, failed_conditions {a condition failed} \n, failed_single {only a single execution is allowed} \n, failed_max_runs {maximum number of parallel runs reached} \n, error {an error was encountered} \n, other {of unknown reason {reason}}} at {time} (runtime: {executiontime} seconds) \n\n {error}",
+              "disabled": "(disabled)"
             }
           }
         },
