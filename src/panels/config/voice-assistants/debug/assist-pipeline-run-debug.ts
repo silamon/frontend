@@ -28,7 +28,7 @@ import "./assist-render-pipeline-run";
 export class AssistPipelineRunDebug extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @property({ type: Boolean }) public narrow!: boolean;
+  @property({ type: Boolean }) public narrow = false;
 
   @state() private _pipelineRuns: PipelineRun[] = [];
 
@@ -104,38 +104,39 @@ export class AssistPipelineRunDebug extends LitElement {
                   </div>
                 `
               : this._pipelineRuns[0].init_options!.start_stage === "intent"
-              ? html`
-                  <ha-textfield
-                    id="continue-conversation-text"
-                    label="Response"
-                    .disabled=${!this._finished}
-                    @keydown=${this._handleContinueKeyDown}
-                  ></ha-textfield>
-                  <ha-button
-                    @click=${this._runTextPipeline}
-                    .disabled=${!this._finished}
-                  >
-                    Send
-                  </ha-button>
-                `
-              : this._finished
-              ? this._pipelineRuns[0].init_options!.start_stage === "wake_word"
                 ? html`
-                    <ha-button @click=${this._runAudioWakeWordPipeline}>
-                      Continue listening for wake word
+                    <ha-textfield
+                      id="continue-conversation-text"
+                      label="Response"
+                      .disabled=${!this._finished}
+                      @keydown=${this._handleContinueKeyDown}
+                    ></ha-textfield>
+                    <ha-button
+                      @click=${this._runTextPipeline}
+                      .disabled=${!this._finished}
+                    >
+                      Send
                     </ha-button>
                   `
-                : html`<ha-button @click=${this._runAudioPipeline}>
-                    Continue talking
-                  </ha-button>`
-              : html`
-                  <ha-formfield label="Continue conversation">
-                    <ha-checkbox
-                      id="continue-conversation"
-                      checked
-                    ></ha-checkbox>
-                  </ha-formfield>
-                `}
+                : this._finished
+                  ? this._pipelineRuns[0].init_options!.start_stage ===
+                    "wake_word"
+                    ? html`
+                        <ha-button @click=${this._runAudioWakeWordPipeline}>
+                          Continue listening for wake word
+                        </ha-button>
+                      `
+                    : html`<ha-button @click=${this._runAudioPipeline}>
+                        Continue talking
+                      </ha-button>`
+                  : html`
+                      <ha-formfield label="Continue conversation">
+                        <ha-checkbox
+                          id="continue-conversation"
+                          checked
+                        ></ha-checkbox>
+                      </ha-formfield>
+                    `}
           </div>
 
           ${this._pipelineRuns.map((run) =>
@@ -246,7 +247,7 @@ export class AssistPipelineRunDebug extends LitElement {
         }
 
         // Play audio when we're done.
-        if (updatedRun.stage === "done") {
+        if (updatedRun.stage === "done" && !updatedRun.error) {
           const url = updatedRun.tts!.tts_output!.url;
           const audio = new Audio(url);
           audio.addEventListener("ended", () => {
@@ -260,7 +261,10 @@ export class AssistPipelineRunDebug extends LitElement {
             }
           });
           audio.play();
-        } else if (updatedRun.stage === "error") {
+        } else if (
+          (updatedRun.stage === "done" && updatedRun.error) ||
+          updatedRun.stage === "error"
+        ) {
           this._finished = true;
         }
       },

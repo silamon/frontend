@@ -23,9 +23,9 @@ export class StateHistoryChartTimeline extends LitElement {
 
   @property({ attribute: false }) public data: TimelineEntity[] = [];
 
-  @property() public narrow!: boolean;
+  @property({ type: Boolean }) public narrow = false;
 
-  @property() public names?: Record<string, string>;
+  @property({ attribute: false }) public names?: Record<string, string>;
 
   @property() public unit?: string;
 
@@ -161,8 +161,8 @@ export class StateHistoryChartTimeline extends LitElement {
             const yWidth = this.showNames
               ? y.width ?? 0
               : computeRTL(this.hass)
-              ? 0
-              : y.left ?? 0;
+                ? 0
+                : y.left ?? 0;
             if (
               this._yWidth !== Math.floor(yWidth) &&
               y.ticks.length === this.data.length

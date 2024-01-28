@@ -15,7 +15,14 @@ import {
   mdiStopCircleOutline,
 } from "@mdi/js";
 import type { UnsubscribeFunc } from "home-assistant-js-websocket";
-import { CSSResultGroup, LitElement, PropertyValues, css, html } from "lit";
+import {
+  CSSResultGroup,
+  LitElement,
+  PropertyValues,
+  css,
+  html,
+  nothing,
+} from "lit";
 import { customElement, property, query, state } from "lit/decorators";
 import { classMap } from "lit/directives/class-map";
 import { storage } from "../../../../common/decorators/storage";
@@ -37,14 +44,14 @@ import { describeTrigger } from "../../../../data/automation_i18n";
 import { validateConfig } from "../../../../data/config";
 import { fullEntitiesContext } from "../../../../data/context";
 import { EntityRegistryEntry } from "../../../../data/entity_registry";
-import { TRIGGER_TYPES } from "../../../../data/trigger";
+import { TRIGGER_ICONS } from "../../../../data/trigger";
 import {
   showAlertDialog,
   showConfirmationDialog,
   showPromptDialog,
 } from "../../../../dialogs/generic/show-dialog-box";
 import { haStyle } from "../../../../resources/styles";
-import type { HomeAssistant } from "../../../../types";
+import type { HomeAssistant, ItemPath } from "../../../../types";
 import "./types/ha-automation-trigger-calendar";
 import "./types/ha-automation-trigger-device";
 import "./types/ha-automation-trigger-event";
@@ -62,6 +69,10 @@ import "./types/ha-automation-trigger-time";
 import "./types/ha-automation-trigger-time_pattern";
 import "./types/ha-automation-trigger-webhook";
 import "./types/ha-automation-trigger-zone";
+import {
+  ReorderMode,
+  reorderModeContext,
+} from "../../../../state/reorder-mode-mixin";
 
 export interface TriggerElement extends LitElement {
   trigger: Trigger;
@@ -101,6 +112,8 @@ export default class HaAutomationTriggerRow extends LitElement {
 
   @property({ type: Boolean }) public disabled = false;
 
+  @property({ type: Array }) public path?: ItemPath;
+
   @state() private _warnings?: string[];
 
   @state() private _yamlMode = false;
@@ -125,9 +138,17 @@ export default class HaAutomationTriggerRow extends LitElement {
   @consume({ context: fullEntitiesContext, subscribe: true })
   _entityReg!: EntityRegistryEntry[];
 
+  @state()
+  @consume({ context: reorderModeContext, subscribe: true })
+  private _reorderMode?: ReorderMode;
+
   private _triggerUnsub?: Promise<UnsubscribeFunc>;
 
   protected render() {
+    if (!this.trigger) return nothing;
+
+    const noReorderModeAvailable = this._reorderMode === undefined;
+
     const supported =
       customElements.get(`ha-automation-trigger-${this.trigger.platform}`) !==
       undefined;
@@ -150,7 +171,7 @@ export default class HaAutomationTriggerRow extends LitElement {
           <h3 slot="header">
             <ha-svg-icon
               class="trigger-icon"
-              .path=${TRIGGER_TYPES[this.trigger.platform]}
+              .path=${TRIGGER_ICONS[this.trigger.platform]}
             ></ha-svg-icon>
             ${describeTrigger(this.trigger, this.hass, this._entityReg)}
           </h3>
@@ -181,7 +202,11 @@ export default class HaAutomationTriggerRow extends LitElement {
                     ></ha-svg-icon>
                   </mwc-list-item>
 
-                  <mwc-list-item graphic="icon" .disabled=${this.disabled}>
+                  <mwc-list-item
+                    graphic="icon"
+                    .disabled=${this.disabled}
+                    class=${classMap({ hidden: noReorderModeAvailable })}
+                  >
                     ${this.hass.localize(
                       "ui.panel.config.automation.editor.triggers.re_order"
                     )}
@@ -322,8 +347,7 @@ export default class HaAutomationTriggerRow extends LitElement {
                     ? html`
                         ${this.hass.localize(
                           "ui.panel.config.automation.editor.triggers.unsupported_platform",
-                          "platform",
-                          this.trigger.platform
+                          { platform: this.trigger.platform }
                         )}
                       `
                     : ""}
@@ -358,6 +382,7 @@ export default class HaAutomationTriggerRow extends LitElement {
                         hass: this.hass,
                         trigger: this.trigger,
                         disabled: this.disabled,
+                        path: this.path,
                       }
                     )}
                   </div>
@@ -471,7 +496,7 @@ export default class HaAutomationTriggerRow extends LitElement {
         await this._renameTrigger();
         break;
       case 1:
-        fireEvent(this, "re-order");
+        this._reorderMode?.enter();
         break;
       case 2:
         this._requestShowId = true;
@@ -702,6 +727,9 @@ export default class HaAutomationTriggerRow extends LitElement {
         }
         mwc-list-item[disabled] {
           --mdc-theme-text-primary-on-background: var(--disabled-text-color);
+        }
+        mwc-list-item.hidden {
+          display: none;
         }
         ha-textfield {
           display: block;

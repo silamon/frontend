@@ -1,6 +1,7 @@
 import "@material/mwc-button";
 import deepFreeze from "deep-freeze";
-import { html, LitElement, TemplateResult } from "lit";
+import { UnsubscribeFunc } from "home-assistant-js-websocket";
+import { html, LitElement, PropertyValues, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators";
 import { constructUrlCurrentPath } from "../../common/url/construct-url";
 import {
@@ -9,6 +10,20 @@ import {
 } from "../../common/url/search-params";
 import { domainToName } from "../../data/integration";
 import { subscribeLovelaceUpdates } from "../../data/lovelace";
+import {
+  deleteConfig,
+  fetchConfig,
+  isStrategyDashboard,
+  LovelaceConfig,
+  LovelaceDashboardStrategyConfig,
+  LovelaceRawConfig,
+  saveConfig,
+} from "../../data/lovelace/config/types";
+import {
+  isStrategyView,
+  LovelaceViewConfig,
+} from "../../data/lovelace/config/view";
+import { fetchResources } from "../../data/lovelace/resource";
 import { WindowWithPreloads } from "../../data/preloads";
 import "../../layouts/hass-error-screen";
 import "../../layouts/hass-loading-screen";
@@ -19,20 +34,6 @@ import { showSaveDialog } from "./editor/show-save-config-dialog";
 import "./hui-root";
 import { generateLovelaceDashboardStrategy } from "./strategies/get-strategy";
 import { Lovelace } from "./types";
-import {
-  deleteConfig,
-  fetchConfig,
-  isStrategyDashboard,
-  LovelaceConfig,
-  LovelaceRawConfig,
-  LovelaceDashboardStrategyConfig,
-  saveConfig,
-} from "../../data/lovelace/config/types";
-import { fetchResources } from "../../data/lovelace/resource";
-import {
-  isStrategyView,
-  LovelaceViewConfig,
-} from "../../data/lovelace/config/view";
 
 (window as any).loadCardHelpers = () => import("./custom-card-helpers");
 
@@ -51,16 +52,15 @@ let resourcesLoaded = false;
 
 @customElement("ha-panel-lovelace")
 export class LovelacePanel extends LitElement {
-  @property() public panel?: PanelInfo<LovelacePanelConfig>;
+  @property({ attribute: false }) public panel?: PanelInfo<LovelacePanelConfig>;
 
   @property({ attribute: false }) public hass?: HomeAssistant;
 
-  @property() public narrow?: boolean;
+  @property({ type: Boolean }) public narrow = false;
 
-  @property() public route?: Route;
+  @property({ attribute: false }) public route?: Route;
 
-  @property()
-  private _panelState?: "loading" | "loaded" | "error" | "yaml-editor" =
+  @state() private _panelState: "loading" | "loaded" | "error" | "yaml-editor" =
     "loading";
 
   @state() private _errorMsg?: string;
@@ -71,12 +71,7 @@ export class LovelacePanel extends LitElement {
 
   private _fetchConfigOnConnect = false;
 
-  private _unsubUpdates?;
-
-  constructor() {
-    super();
-    this._closeEditor = this._closeEditor.bind(this);
-  }
+  private _unsubUpdates?: Promise<UnsubscribeFunc>;
 
   public connectedCallback(): void {
     super.connectedCallback();
@@ -100,18 +95,25 @@ export class LovelacePanel extends LitElement {
       // Config was changed when we were not at the lovelace panel
       this._fetchConfig(false);
     }
+    window.addEventListener("connection-status", this._handleConnectionStatus);
   }
 
   public disconnectedCallback(): void {
     super.disconnectedCallback();
     // On the main dashboard we want to stay subscribed as that one is cached.
     if (this.urlPath !== null && this._unsubUpdates) {
-      this._unsubUpdates();
+      this._unsubUpdates.then((unsub) => unsub());
+      this._unsubUpdates = undefined;
     }
+    // reload lovelace on reconnect so we are sure we have the latest config
+    window.removeEventListener(
+      "connection-status",
+      this._handleConnectionStatus
+    );
   }
 
   protected render(): TemplateResult | void {
-    const panelState = this._panelState!;
+    const panelState = this._panelState;
 
     if (panelState === "loaded") {
       return html`
@@ -158,20 +160,26 @@ export class LovelacePanel extends LitElement {
     `;
   }
 
-  protected firstUpdated(changedProps) {
-    super.firstUpdated(changedProps);
+  protected willUpdate(changedProps: PropertyValues) {
+    super.willUpdate(changedProps);
+    if (!this.lovelace && this._panelState !== "error") {
+      this._fetchConfig(false);
+    }
+  }
 
-    this._fetchConfig(false);
+  protected firstUpdated(changedProps: PropertyValues): void {
+    super.firstUpdated(changedProps);
     if (!this._unsubUpdates) {
       this._subscribeUpdates();
     }
-    // reload lovelace on reconnect so we are sure we have the latest config
-    window.addEventListener("connection-status", (ev) => {
-      if (ev.detail === "connected") {
-        this._fetchConfig(false);
-      }
-    });
   }
+
+  private _handleConnectionStatus = (ev) => {
+    // reload lovelace on reconnect so we are sure we have the latest config
+    if (ev.detail === "connected") {
+      this._fetchConfig(false);
+    }
+  };
 
   private async _regenerateConfig() {
     const conf = await generateLovelaceDashboardStrategy(
@@ -183,16 +191,16 @@ export class LovelacePanel extends LitElement {
   }
 
   private async _subscribeUpdates() {
-    this._unsubUpdates = await subscribeLovelaceUpdates(
+    this._unsubUpdates = subscribeLovelaceUpdates(
       this.hass!.connection,
       this.urlPath,
       () => this._lovelaceChanged()
     );
   }
 
-  private _closeEditor() {
+  private _closeEditor = () => {
     this._panelState = "loaded";
-  }
+  };
 
   private _lovelaceChanged() {
     if (this._ignoreNextUpdateEvent) {
@@ -263,6 +271,10 @@ export class LovelacePanel extends LitElement {
 
       // If strategy defined, apply it here.
       if (isStrategyDashboard(rawConf)) {
+        if (!this.hass?.entities || !this.hass.devices || !this.hass.areas) {
+          // We need these to generate a dashboard, wait for them
+          return;
+        }
         conf = await generateLovelaceDashboardStrategy(
           rawConf.strategy,
           this.hass!
@@ -276,6 +288,10 @@ export class LovelacePanel extends LitElement {
         console.log(err);
         this._panelState = "error";
         this._errorMsg = err.message;
+        return;
+      }
+      if (!this.hass?.entities || !this.hass.devices || !this.hass.areas) {
+        // We need these to generate a dashboard, wait for them
         return;
       }
       conf = await generateLovelaceDashboardStrategy(
@@ -453,5 +469,11 @@ export class LovelacePanel extends LitElement {
         )
       );
     }
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "ha-panel-lovelace": LovelacePanel;
   }
 }

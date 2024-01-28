@@ -51,11 +51,13 @@ type DisplayedStatisticData = StatisticData & {
 class HaPanelDevStatistics extends SubscribeMixin(LitElement) {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @property({ type: Boolean }) public narrow!: boolean;
+  @property({ type: Boolean }) public narrow = false;
 
   @state() private _data: StatisticData[] = [] as StatisticsMetaData[];
 
   private _disabledEntities = new Set<string>();
+
+  private _deletedStatistics = new Set<string>();
 
   protected firstUpdated() {
     this._validateStatistics();
@@ -175,7 +177,9 @@ class HaPanelDevStatistics extends SubscribeMixin(LitElement) {
         .hass=${this.hass}
         .columns=${this._columns(this.hass.localize)}
         .data=${this._displayData(this._data, this.hass.localize)}
-        noDataText="No statistics"
+        .noDataText=${this.hass.localize(
+          "ui.panel.developer-tools.tabs.statistics.data_table.no_statistics"
+        )}
         id="statistic_id"
         clickable
         @row-click=${this._rowClicked}
@@ -227,7 +231,9 @@ class HaPanelDevStatistics extends SubscribeMixin(LitElement) {
 
     this._data = statisticIds
       .filter(
-        (statistic) => !this._disabledEntities.has(statistic.statistic_id)
+        (statistic) =>
+          !this._disabledEntities.has(statistic.statistic_id) &&
+          !this._deletedStatistics.has(statistic.statistic_id)
       )
       .map((statistic) => {
         statsIds.add(statistic.statistic_id);
@@ -241,7 +247,8 @@ class HaPanelDevStatistics extends SubscribeMixin(LitElement) {
     Object.keys(issues).forEach((statisticId) => {
       if (
         !statsIds.has(statisticId) &&
-        !this._disabledEntities.has(statisticId)
+        !this._disabledEntities.has(statisticId) &&
+        !this._deletedStatistics.has(statisticId)
       ) {
         this._data.push({
           statistic_id: statisticId,
@@ -279,6 +286,7 @@ class HaPanelDevStatistics extends SubscribeMixin(LitElement) {
           confirmText: this.hass.localize("ui.common.delete"),
           confirm: async () => {
             await clearStatistics(this.hass, [issue.data.statistic_id]);
+            this._deletedStatistics.add(issue.data.statistic_id);
             this._validateStatistics();
           },
         });
@@ -377,6 +385,7 @@ class HaPanelDevStatistics extends SubscribeMixin(LitElement) {
           confirmText: this.hass.localize("ui.common.delete"),
           confirm: async () => {
             await clearStatistics(this.hass, [issue.data.statistic_id]);
+            this._deletedStatistics.add(issue.data.statistic_id);
             this._validateStatistics();
           },
         });
@@ -416,9 +425,6 @@ class HaPanelDevStatistics extends SubscribeMixin(LitElement) {
         th {
           padding: 0 8px;
           text-align: left;
-          font-size: var(
-            --paper-input-container-shared-input-style_-_font-size
-          );
         }
 
         :host([rtl]) th {

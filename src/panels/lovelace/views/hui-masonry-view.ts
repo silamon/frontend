@@ -44,7 +44,7 @@ export class MasonryView extends LitElement implements LovelaceViewElement {
 
   @property({ attribute: false }) public lovelace?: Lovelace;
 
-  @property({ type: Boolean }) public narrow!: boolean;
+  @property({ type: Boolean }) public narrow = false;
 
   @property({ type: Number }) public index?: number;
 
@@ -63,11 +63,6 @@ export class MasonryView extends LitElement implements LovelaceViewElement {
   private _mqls?: MediaQueryList[];
 
   private _mqlListenerRef?: () => void;
-
-  public constructor() {
-    super();
-    this.addEventListener("iron-resize", (ev: Event) => ev.stopPropagation());
-  }
 
   public connectedCallback() {
     super.connectedCallback();

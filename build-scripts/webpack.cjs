@@ -7,6 +7,9 @@ const TerserPlugin = require("terser-webpack-plugin");
 const { WebpackManifestPlugin } = require("webpack-manifest-plugin");
 const log = require("fancy-log");
 const WebpackBar = require("webpackbar");
+const {
+  TransformAsyncModulesPlugin,
+} = require("transform-async-modules-webpack-plugin");
 const paths = require("./paths.cjs");
 const bundle = require("./bundle.cjs");
 
@@ -51,8 +54,8 @@ const createWebpackConfig = ({
     devtool: isTestBuild
       ? false
       : isProdBuild
-      ? "nosources-source-map"
-      : "eval-cheap-module-source-map",
+        ? "nosources-source-map"
+        : "eval-cheap-module-source-map",
     entry,
     node: false,
     module: {
@@ -142,17 +145,6 @@ const createWebpackConfig = ({
         ),
         path.resolve(paths.polymer_dir, "src/util/empty.js")
       ),
-      // See `src/resources/intl-polyfill-legacy.ts` for explanation
-      !latestBuild &&
-        new webpack.NormalModuleReplacementPlugin(
-          new RegExp(
-            path.resolve(paths.polymer_dir, "src/resources/intl-polyfill.ts")
-          ),
-          path.resolve(
-            paths.polymer_dir,
-            "src/resources/intl-polyfill-legacy.ts"
-          )
-        ),
       !isProdBuild && new LogStartCompilePlugin(),
       isProdBuild &&
         new StatsWriterPlugin({
@@ -163,6 +155,8 @@ const createWebpackConfig = ({
           stats: { assets: true, chunks: true, modules: true },
           transform: (stats) => JSON.stringify(filterStats(stats)),
         }),
+      !latestBuild &&
+        new TransformAsyncModulesPlugin({ browserslistEnv: "legacy" }),
     ].filter(Boolean),
     resolve: {
       extensions: [".ts", ".js", ".json"],
@@ -191,11 +185,11 @@ const createWebpackConfig = ({
       filename: ({ chunk }) =>
         !isProdBuild || isStatsBuild || dontHash.has(chunk.name)
           ? "[name].js"
-          : "[name]-[contenthash].js",
+          : "[name].[contenthash].js",
       chunkFilename:
-        isProdBuild && !isStatsBuild ? "[id]-[contenthash].js" : "[name].js",
+        isProdBuild && !isStatsBuild ? "[name].[contenthash].js" : "[name].js",
       assetModuleFilename:
-        isProdBuild && !isStatsBuild ? "[id]-[contenthash][ext]" : "[id][ext]",
+        isProdBuild && !isStatsBuild ? "[id].[contenthash][ext]" : "[id][ext]",
       crossOriginLoading: "use-credentials",
       hashFunction: "xxhash64",
       hashDigest: "base64url",

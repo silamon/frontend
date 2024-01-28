@@ -90,7 +90,7 @@ const renderProgress = (
       return html`❌`;
     }
     return html`
-      <ha-circular-progress size="tiny" active></ha-circular-progress>
+      <ha-circular-progress size="small" indeterminate></ha-circular-progress>
     `;
   }
 
@@ -138,7 +138,7 @@ const dataMinusKeysRender = (
 export class AssistPipelineDebug extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @property() public pipelineRun!: PipelineRun;
+  @property({ attribute: false }) public pipelineRun!: PipelineRun;
 
   protected render(): TemplateResult {
     const lastRunStage: string = this.pipelineRun

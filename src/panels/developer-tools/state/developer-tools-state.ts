@@ -360,15 +360,14 @@ class HaPanelDevState extends LitElement {
   }
 
   private _updateEntity() {
-    if (!this._entityId) {
+    const entityState = this._entityId
+      ? this.hass.states[this._entityId]
+      : undefined;
+    if (!entityState) {
       this._entity = undefined;
       this._state = "";
       this._stateAttributes = {};
       this._updateEditor();
-      return;
-    }
-    const entityState = this.hass.states[this._entityId];
-    if (!entityState) {
       return;
     }
     this._entity = entityState;
@@ -628,9 +627,6 @@ class HaPanelDevState extends LitElement {
         .entities th {
           padding: 0 8px;
           text-align: left;
-          font-size: var(
-            --paper-input-container-shared-input-style_-_font-size
-          );
         }
 
         .filters th {

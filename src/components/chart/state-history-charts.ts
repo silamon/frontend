@@ -52,12 +52,11 @@ export class StateHistoryCharts extends LitElement {
 
   @property({ attribute: false }) public historyData!: HistoryResult;
 
-  @property() public narrow!: boolean;
+  @property({ type: Boolean }) public narrow = false;
 
-  @property() public names?: Record<string, string>;
+  @property({ attribute: false }) public names?: Record<string, string>;
 
-  @property({ type: Boolean, attribute: "virtualize", reflect: true })
-  public virtualize = false;
+  @property({ type: Boolean, reflect: true }) public virtualize = false;
 
   @property({ attribute: false }) public endTime?: Date;
 
@@ -65,13 +64,15 @@ export class StateHistoryCharts extends LitElement {
 
   @property({ type: Boolean, attribute: "up-to-now" }) public upToNow = false;
 
-  @property() public hoursToShow?: number;
+  @property({ type: Number }) public hoursToShow?: number;
 
   @property({ type: Boolean }) public showNames = true;
 
   @property({ type: Boolean }) public clickForMoreInfo = true;
 
   @property({ type: Boolean }) public isLoadingData = false;
+
+  @property({ type: Boolean }) public logarithmicScale = false;
 
   private _computedStartTime!: Date;
 
@@ -159,6 +160,7 @@ export class StateHistoryCharts extends LitElement {
           .names=${this.names}
           .chartIndex=${index}
           .clickForMoreInfo=${this.clickForMoreInfo}
+          .logarithmicScale=${this.logarithmicScale}
           @y-width-changed=${this._yWidthChanged}
         ></state-history-chart-line>
       </div> `;
@@ -298,6 +300,11 @@ export class StateHistoryCharts extends LitElement {
       :host([virtualize]) .entry-container {
         padding-left: 1px;
         padding-right: 1px;
+      }
+
+      .entry-container:not(:first-child) {
+        border-top: 2px solid var(--divider-color);
+        margin-top: 16px;
       }
 
       .container,

@@ -54,7 +54,7 @@ export class StatisticsChart extends LitElement {
     StatisticsMetaData
   >;
 
-  @property() public names?: Record<string, string>;
+  @property({ attribute: false }) public names?: Record<string, string>;
 
   @property() public unit?: string;
 
@@ -70,6 +70,8 @@ export class StatisticsChart extends LitElement {
   @property() public chartType: ChartType = "line";
 
   @property({ type: Boolean }) public hideLegend = false;
+
+  @property({ type: Boolean }) public logarithmicScale = false;
 
   @property({ type: Boolean }) public isLoadingData = false;
 
@@ -98,7 +100,9 @@ export class StatisticsChart extends LitElement {
       !this.hasUpdated ||
       changedProps.has("unit") ||
       changedProps.has("period") ||
-      changedProps.has("chartType")
+      changedProps.has("chartType") ||
+      changedProps.has("logarithmicScale") ||
+      changedProps.has("hideLegend")
     ) {
       this._createOptions();
     }
@@ -198,6 +202,7 @@ export class StatisticsChart extends LitElement {
             display: unit || this.unit,
             text: unit || this.unit,
           },
+          type: this.logarithmicScale ? "logarithmic" : "linear",
         },
       },
       plugins: {
@@ -396,8 +401,8 @@ export class StatisticsChart extends LitElement {
               ? type === "min" && hasMean
                 ? "+1"
                 : type === "max"
-                ? "-1"
-                : false
+                  ? "-1"
+                  : false
               : false,
             borderColor:
               band && hasMean ? color + (this.hideLegend ? "00" : "7F") : color,

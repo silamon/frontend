@@ -29,6 +29,7 @@ class StateInfo extends LitElement {
     const name = computeStateName(this.stateObj);
 
     return html`<state-badge
+        .hass=${this.hass}
         .stateObj=${this.stateObj}
         .stateColor=${true}
         .color=${this.color}
@@ -125,7 +126,7 @@ class StateInfo extends LitElement {
         text-overflow: ellipsis;
       }
 
-      .name[in-dialog],
+      .name[inDialog],
       :host([secondary-line]) .name {
         line-height: 20px;
       }
