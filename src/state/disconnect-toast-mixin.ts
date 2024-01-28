@@ -97,7 +97,7 @@ export default <T extends Constructor<HassBaseEl>>(superClass: T) =>
       }
       showToast(this, {
         message: "",
-        duration: 1,
+        duration: 0,
       });
     }
 

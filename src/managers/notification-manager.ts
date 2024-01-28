@@ -42,22 +42,33 @@ class NotificationManager extends LitElement {
     }
     toast.close("dismiss");
     this._parameters = parameters;
+    if (!this._parameters) {
+      return;
+    }
+
+    if (
+      this._parameters.duration !== undefined &&
+      this._parameters.duration > 0 &&
+      this._parameters.duration <= 4000
+    ) {
+      this._parameters.duration = 4000;
+    }
+
+    if (this._parameters.duration === 0) {
+      return;
+    }
+    toast.labelText = this._parameters.message;
+    toast.timeoutMs = this._parameters.duration!;
     toast.show();
   }
 
+  public shouldUpdate(changedProperties) {
+    return !this._toast || changedProperties.has("_parameters");
+  }
+
   protected render(): TemplateResult {
-    const timeoutMs =
-      this._parameters?.duration === undefined ||
-      (this._parameters?.duration <= 4000 && this._parameters?.duration !== -1)
-        ? 4000
-        : this._parameters?.duration;
     return html`
-      <ha-toast
-        leading
-        dir=${computeRTL(this.hass) ? "rtl" : "ltr"}
-        .timeOutMs=${timeoutMs}
-        .labelText=${this._parameters?.message}
-      >
+      <ha-toast leading dir=${computeRTL(this.hass) ? "rtl" : "ltr"}>
         ${this._parameters?.action
           ? html`
               <mwc-button
@@ -88,8 +99,6 @@ class NotificationManager extends LitElement {
 
   static get styles(): CSSResultGroup {
     return css`
-      ha-toast {
-      }
       mwc-button {
         color: var(--primary-color);
         font-weight: bold;

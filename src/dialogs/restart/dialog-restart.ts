@@ -341,7 +341,7 @@ class DialogRestart extends LitElement {
 
     showToast(this, {
       message: this.hass.localize("ui.dialogs.restart.reboot.rebooting"),
-      duration: 0,
+      duration: 4000,
     });
 
     try {
