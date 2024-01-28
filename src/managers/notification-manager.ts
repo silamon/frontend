@@ -42,7 +42,7 @@ class NotificationManager extends LitElement {
     }
     toast.close("dismiss");
     this._parameters = parameters;
-    if (!this._parameters) {
+    if (!this._parameters || this._parameters.duration === 0) {
       return;
     }
 
@@ -54,9 +54,6 @@ class NotificationManager extends LitElement {
       this._parameters.duration = 4000;
     }
 
-    if (this._parameters.duration === 0) {
-      return;
-    }
     toast.labelText = this._parameters.message;
     toast.timeoutMs = this._parameters.duration!;
     toast.show();
