@@ -1,4 +1,3 @@
-import "@material/mwc-button";
 import {
   css,
   CSSResultGroup,
@@ -13,6 +12,7 @@ import { computeRTL } from "../common/util/compute_rtl";
 import "../components/ha-toast";
 import type { HaToast } from "../components/ha-toast";
 import type { HomeAssistant } from "../types";
+import "../components/ha-button";
 
 export interface ShowToastParams {
   message: string;
@@ -34,13 +34,11 @@ class NotificationManager extends LitElement {
   @query("ha-toast") private _toast!: HaToast;
 
   public async showDialog(parameters: ShowToastParams) {
-    let toast = this._toast;
     // Can happen on initial load
-    if (!toast) {
+    if (!this._toast) {
       await this.updateComplete;
-      toast = this._toast;
     }
-    toast.close("dismiss");
+    this._toast.close("dismiss");
     this._parameters = parameters;
     if (!this._parameters || this._parameters.duration === 0) {
       return;
@@ -54,9 +52,11 @@ class NotificationManager extends LitElement {
       this._parameters.duration = 4000;
     }
 
-    toast.labelText = this._parameters.message;
-    toast.timeoutMs = this._parameters.duration!;
-    toast.show();
+    this._toast.labelText = this._parameters.message;
+    if (this._parameters.duration) {
+      this._toast.timeoutMs = this._parameters.duration;
+    }
+    this._toast.show();
   }
 
   public shouldUpdate(changedProperties) {
@@ -68,11 +68,11 @@ class NotificationManager extends LitElement {
       <ha-toast leading dir=${computeRTL(this.hass) ? "rtl" : "ltr"}>
         ${this._parameters?.action
           ? html`
-              <mwc-button
+              <ha-button
                 slot="action"
                 .label=${this._parameters?.action.text}
                 @click=${this.buttonClicked}
-              ></mwc-button>
+              ></ha-button>
             `
           : nothing}
         ${this._parameters?.dismissable

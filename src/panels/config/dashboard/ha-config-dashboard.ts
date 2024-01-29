@@ -51,6 +51,8 @@ import { configSections } from "../ha-panel-config";
 import "../repairs/ha-config-repairs";
 import "./ha-config-navigation";
 import "./ha-config-updates";
+import "@material/web/button/outlined-button";
+import { showToast } from "../../../util/toast";
 
 const randomTip = (hass: HomeAssistant, narrow: boolean) => {
   const weighted: string[] = [];
@@ -213,6 +215,21 @@ class HaConfigDashboard extends SubscribeMixin(LitElement) {
           .isWide=${this.isWide}
           full-width
         >
+          <md-outlined-button @click=${this.showToast1}>
+            toast with 1s duration
+          </md-outlined-button>
+
+          <md-outlined-button @click=${this.showToast2}>
+            toast with indefinitialy duration
+          </md-outlined-button>
+
+          <md-outlined-button @click=${this.showToast3}>
+            toast with 0s duration (=dismiss)
+          </md-outlined-button>
+          <md-outlined-button @click=${this.showToast4}>
+            toast with action
+          </md-outlined-button>
+
           ${repairsIssues.length || canInstallUpdates.length
             ? html`<ha-card outlined>
                 ${repairsIssues.length
@@ -311,6 +328,44 @@ class HaConfigDashboard extends SubscribeMixin(LitElement) {
     showQuickBar(this, {
       commandMode: true,
       hint: this.hass.localize("ui.dialogs.quick-bar.key_c_hint"),
+    });
+  }
+
+  private showToast1(): void {
+    showToast(this, {
+      message:
+        "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+      duration: 1000,
+    });
+  }
+
+  private showToast2(): void {
+    showToast(this, {
+      message:
+        "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+      duration: -1,
+    });
+  }
+
+  private showToast3(): void {
+    showToast(this, {
+      message:
+        "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+      duration: 0,
+    });
+  }
+
+  private showToast4(): void {
+    showToast(this, {
+      message:
+        "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.",
+      action: {
+        text: "Action",
+        action: () => {
+          console.log("action");
+        },
+      },
+      dismissable: true,
     });
   }
 
