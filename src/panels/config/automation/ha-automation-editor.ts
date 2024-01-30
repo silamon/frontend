@@ -76,7 +76,8 @@ declare global {
     };
     "ui-mode-not-available": Error;
     duplicate: undefined;
-    "re-order": undefined;
+    "move-down": undefined;
+    "move-up": undefined;
   }
 }
 
@@ -780,6 +781,8 @@ export class HaAutomationEditor extends KeyboardShortcutMixin(LitElement) {
         }
         ha-entity-toggle {
           margin-right: 8px;
+          margin-inline-end: 8px;
+          margin-inline-start: initial;
         }
         ha-fab {
           position: relative;
