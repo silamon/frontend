@@ -543,7 +543,7 @@ class DialogAddAutomationElement extends LitElement implements HassDialog {
                   ${this.hass.localize(
                     `ui.panel.config.automation.editor.${this._params.type}s.paste`
                   )}
-                  <span slot="secondary"
+                  <span slot="supporting-text"
                     >${this.hass.localize(
                       // @ts-ignore
                       `ui.panel.config.automation.editor.${this._params.type}s.type.${this._params.clipboardItem}.label`

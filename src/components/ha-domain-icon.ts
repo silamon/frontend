@@ -6,6 +6,7 @@ import { domainIcon } from "../data/icons";
 import { HomeAssistant } from "../types";
 import { brandsUrl } from "../util/brands-url";
 import "./ha-icon";
+import { domainToName } from "../data/integration";
 
 @customElement("ha-domain-icon")
 export class HaDomainIcon extends LitElement {
@@ -54,11 +55,12 @@ export class HaDomainIcon extends LitElement {
       const image = brandsUrl({
         domain: this.domain!,
         type: "icon",
+        useFallback: true,
         darkOptimized: this.hass.themes?.darkMode,
       });
       return html`
         <img
-          alt=""
+          alt=${domainToName(this.hass.localize, this.domain!)}
           src=${image}
           crossorigin="anonymous"
           referrerpolicy="no-referrer"

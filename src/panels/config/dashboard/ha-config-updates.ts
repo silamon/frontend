@@ -1,5 +1,4 @@
 import "@material/mwc-button/mwc-button";
-import "@material/mwc-list/mwc-list";
 import { UnsubscribeFunc } from "home-assistant-js-websocket";
 import { css, CSSResultGroup, html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators";
@@ -10,7 +9,8 @@ import "../../../components/entity/state-badge";
 import "../../../components/ha-alert";
 import "../../../components/ha-circular-progress";
 import "../../../components/ha-icon-next";
-import "../../../components/ha-list-item";
+import "../../../components/ha-list-new";
+import "../../../components/ha-list-item-new";
 import {
   computeDeviceName,
   DeviceRegistryEntry,
@@ -72,7 +72,7 @@ class HaConfigUpdates extends SubscribeMixin(LitElement) {
           count: this.total || this.updateEntities.length,
         })}
       </div>
-      <mwc-list>
+      <ha-list-new>
         ${updates.map((entity) => {
           const entityEntry = this.getEntityEntry(entity.entity_id);
           const deviceEntry =
@@ -81,18 +81,17 @@ class HaConfigUpdates extends SubscribeMixin(LitElement) {
               : undefined;
 
           return html`
-            <ha-list-item
-              twoline
-              graphic="medium"
+            <ha-list-item-new
+              interactive
+              type="button"
               class=${ifDefined(
                 entity.attributes.skipped_version ? "skipped" : undefined
               )}
               .entity_id=${entity.entity_id}
-              .hasMeta=${!this.narrow}
               @click=${this._openMoreInfo}
             >
               <state-badge
-                slot="graphic"
+                slot="start"
                 .title=${entity.attributes.title ||
                 entity.attributes.friendly_name}
                 .hass=${this.hass}
@@ -106,7 +105,7 @@ class HaConfigUpdates extends SubscribeMixin(LitElement) {
               ${this.narrow && entity.attributes.in_progress
                 ? html`<ha-circular-progress
                     indeterminate
-                    slot="graphic"
+                    slot="start"
                     class="absolute"
                     .ariaLabel=${this.hass.localize(
                       "ui.panel.config.updates.update_in_progress"
@@ -118,7 +117,7 @@ class HaConfigUpdates extends SubscribeMixin(LitElement) {
                   ? computeDeviceName(deviceEntry, this.hass)
                   : entity.attributes.friendly_name}</span
               >
-              <span slot="secondary">
+              <span slot="supporting-text">
                 ${entity.attributes.title} ${entity.attributes.latest_version}
                 ${entity.attributes.skipped_version
                   ? `(${this.hass.localize("ui.panel.config.updates.skipped")})`
@@ -129,17 +128,17 @@ class HaConfigUpdates extends SubscribeMixin(LitElement) {
                   ? html`<ha-circular-progress
                       indeterminate
                       size="small"
-                      slot="meta"
+                      slot="end"
                       .ariaLabel=${this.hass.localize(
                         "ui.panel.config.updates.update_in_progress"
                       )}
                     ></ha-circular-progress>`
-                  : html`<ha-icon-next slot="meta"></ha-icon-next>`
+                  : html`<ha-icon-next slot="end"></ha-icon-next>`
                 : ""}
-            </ha-list-item>
+            </ha-list-item-new>
           `;
         })}
-      </mwc-list>
+      </ha-list-new>
     `;
   }
 

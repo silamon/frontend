@@ -1,4 +1,3 @@
-import { ActionDetail } from "@material/mwc-list/mwc-list";
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators";
 import { ifDefined } from "lit/directives/if-defined";
@@ -6,7 +5,8 @@ import { navigate } from "../common/navigate";
 import type { PageNavigation } from "../layouts/hass-tabs-subpage";
 import type { HomeAssistant } from "../types";
 import "./ha-icon-next";
-import "./ha-list-item";
+import "./ha-list-new";
+import "./ha-list-item-new";
 import "./ha-svg-icon";
 
 @customElement("ha-navigation-list")
@@ -23,21 +23,17 @@ class HaNavigationList extends LitElement {
 
   public render(): TemplateResult {
     return html`
-      <mwc-list
-        innerRole="menu"
-        itemRoles="menuitem"
-        innerAriaLabel=${ifDefined(this.label)}
-        @action=${this._handleListAction}
-      >
+      <ha-list-new aria-label=${ifDefined(this.label)}>
         ${this.pages.map(
-          (page) => html`
-            <ha-list-item
-              graphic="avatar"
-              .twoline=${this.hasSecondary}
-              .hasMeta=${!this.narrow}
+          (page, idx) => html`
+            <ha-list-item-new
+              interactive
+              type="button"
+              @click=${this._handleListAction}
+              .idx=${idx}
             >
               <div
-                slot="graphic"
+                slot="start"
                 class=${page.iconColor ? "icon-background" : ""}
                 .style="background-color: ${page.iconColor || "undefined"}"
               >
@@ -45,20 +41,25 @@ class HaNavigationList extends LitElement {
               </div>
               <span>${page.name}</span>
               ${this.hasSecondary
-                ? html`<span slot="secondary">${page.description}</span>`
+                ? html`<span slot="supporting-text">${page.description}</span>`
                 : ""}
               ${!this.narrow
-                ? html`<ha-icon-next slot="meta"></ha-icon-next>`
+                ? html`<ha-icon-next slot="end"></ha-icon-next>`
                 : ""}
-            </ha-list-item>
+            </ha-list-item-new>
           `
         )}
-      </mwc-list>
+      </ha-list-new>
     `;
   }
 
-  private _handleListAction(ev: CustomEvent<ActionDetail>) {
-    const path = this.pages[ev.detail.index].path;
+  private _handleListAction(ev) {
+    const item = ev.currentTarget;
+    if (item.idx === undefined) {
+      return;
+    }
+
+    const path = this.pages[item.idx].path;
     if (path.endsWith("#external-app-configuration")) {
       this.hass.auth.external!.fireMessage({ type: "config_screen/show" });
     } else {
@@ -86,8 +87,7 @@ class HaNavigationList extends LitElement {
     .icon-background ha-svg-icon {
       color: #fff;
     }
-    ha-list-item {
-      cursor: pointer;
+    ha-list-item-new {
       font-size: var(--navigation-list-item-title-font-size);
     }
   `;

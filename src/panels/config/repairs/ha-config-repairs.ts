@@ -1,22 +1,21 @@
-import "@material/mwc-list/mwc-list";
 import { css, html, LitElement, nothing } from "lit";
 import { customElement, property } from "lit/decorators";
 import { relativeTime } from "../../../common/datetime/relative_time";
 import { capitalizeFirstLetter } from "../../../common/string/capitalize-first-letter";
 import "../../../components/ha-alert";
 import "../../../components/ha-card";
-import "../../../components/ha-list-item";
+import "../../../components/ha-list-new";
+import "../../../components/ha-list-item-new";
 import "../../../components/ha-svg-icon";
-import { domainToName } from "../../../data/integration";
 import {
   fetchRepairsIssueData,
   type RepairsIssue,
 } from "../../../data/repairs";
 import type { HomeAssistant } from "../../../types";
-import { brandsUrl } from "../../../util/brands-url";
 import { showRepairsFlowDialog } from "./show-dialog-repair-flow";
 import { showRepairsIssueDialog } from "./show-repair-issue-dialog";
 import { showConfigFlowDialog } from "../../../dialogs/config-flow/show-dialog-config-flow";
+import "../../../components/ha-domain-icon";
 
 @customElement("ha-config-repairs")
 class HaConfigRepairs extends LitElement {
@@ -36,38 +35,29 @@ class HaConfigRepairs extends LitElement {
     }
 
     const issues = this.repairsIssues;
-
     return html`
       <div class="title">
         ${this.hass.localize("ui.panel.config.repairs.title", {
           count: this.total || this.repairsIssues.length,
         })}
       </div>
-      <mwc-list>
+      <ha-list-new>
         ${issues.map(
           (issue) => html`
-            <ha-list-item
-              twoline
-              graphic="medium"
-              .hasMeta=${!this.narrow}
+            <ha-list-item-new
+              interactive
+              type="button"
               .issue=${issue}
               class=${issue.ignored ? "ignored" : ""}
               @click=${this._openShowMoreDialog}
             >
-              <img
-                alt=${domainToName(this.hass.localize, issue.domain)}
-                loading="lazy"
-                src=${brandsUrl({
-                  domain: issue.issue_domain || issue.domain,
-                  type: "icon",
-                  useFallback: true,
-                  darkOptimized: this.hass.themes?.darkMode,
-                })}
-                .title=${domainToName(this.hass.localize, issue.domain)}
-                crossorigin="anonymous"
-                referrerpolicy="no-referrer"
-                slot="graphic"
-              />
+              <span slot="start">
+                <ha-domain-icon
+                  .hass=${this.hass}
+                  .domain=${issue.issue_domain || issue.domain}
+                  brandFallback
+                ></ha-domain-icon>
+              </span>
               <span
                 >${this.hass.localize(
                   `component.${issue.domain}.issues.${
@@ -76,7 +66,7 @@ class HaConfigRepairs extends LitElement {
                   issue.translation_placeholders || {}
                 )}</span
               >
-              <span slot="secondary" class="secondary">
+              <span slot="supporting-text" class="secondary">
                 ${issue.severity === "critical" || issue.severity === "error"
                   ? html`<span class="error"
                       >${this.hass.localize(
@@ -102,12 +92,12 @@ class HaConfigRepairs extends LitElement {
                   : ""}
               </span>
               ${!this.narrow
-                ? html`<ha-icon-next slot="meta"></ha-icon-next>`
+                ? html`<ha-icon-next slot="end"></ha-icon-next>`
                 : ""}
-            </ha-list-item>
+            </ha-list-item-new>
           `
         )}
-      </mwc-list>
+      </ha-list-new>
     `;
   }
 
@@ -148,9 +138,6 @@ class HaConfigRepairs extends LitElement {
     .ignored {
       opacity: var(--light-secondary-opacity);
     }
-    ha-list-item {
-      --mdc-list-item-graphic-size: 40px;
-    }
     button.show-more {
       color: var(--primary-color);
       text-align: left;
@@ -167,9 +154,8 @@ class HaConfigRepairs extends LitElement {
       outline: none;
       text-decoration: underline;
     }
-    ha-list-item {
-      cursor: pointer;
-      font-size: 16px;
+    ha-domain-icon {
+      --mdc-icon-size: 40px;
     }
     .error {
       color: var(--error-color);
