@@ -9,8 +9,8 @@ import {
   CSSResultGroup,
   html,
   LitElement,
-  PropertyValues,
   nothing,
+  PropertyValues,
 } from "lit";
 import { customElement, property, query, state } from "lit/decorators";
 import memoizeOne from "memoize-one";
@@ -19,6 +19,7 @@ import { fireEvent } from "../common/dom/fire_event";
 import { computeDomain } from "../common/entity/compute_domain";
 import { computeObjectId } from "../common/entity/compute_object_id";
 import { supportsFeature } from "../common/entity/supports-feature";
+import { nestedArrayMove } from "../common/util/array-move";
 import {
   fetchIntegrationManifest,
   IntegrationManifest,
@@ -40,8 +41,6 @@ import "./ha-service-picker";
 import "./ha-settings-row";
 import "./ha-yaml-editor";
 import type { HaYamlEditor } from "./ha-yaml-editor";
-import { nestedArrayMove } from "../common/util/array-move";
-import { ReorderModeMixin } from "../state/reorder-mode-mixin";
 
 const attributeFilter = (values: any[], attribute: any) => {
   if (typeof attribute === "object") {
@@ -77,7 +76,7 @@ interface ExtHassService extends Omit<HassService, "fields"> {
 }
 
 @customElement("ha-service-control")
-export class HaServiceControl extends ReorderModeMixin(LitElement) {
+export class HaServiceControl extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
   @property({ attribute: false }) public value?: {
@@ -88,7 +87,7 @@ export class HaServiceControl extends ReorderModeMixin(LitElement) {
 
   @property({ type: Boolean }) public disabled = false;
 
-  @property({ reflect: true, type: Boolean }) public narrow!: boolean;
+  @property({ type: Boolean, reflect: true }) public narrow = false;
 
   @property({ type: Boolean }) public showAdvanced = false;
 
@@ -441,7 +440,6 @@ export class HaServiceControl extends ReorderModeMixin(LitElement) {
               allow-custom-entity
             ></ha-entity-picker>`
           : ""}
-      ${this._renderReorderModeAlert()}
       ${shouldRenderServiceDataYaml
         ? html`<ha-yaml-editor
             .hass=${this.hass}
@@ -520,34 +518,6 @@ export class HaServiceControl extends ReorderModeMixin(LitElement) {
                 </ha-settings-row>`
               : "";
           })}`;
-  }
-
-  private _renderReorderModeAlert() {
-    if (!this._reorderMode.active) {
-      return nothing;
-    }
-    return html`
-      <ha-alert
-        class="re-order"
-        alert-type="info"
-        .title=${this.hass.localize(
-          "ui.panel.config.automation.editor.re_order_mode.title"
-        )}
-      >
-        ${this.hass.localize(
-          "ui.panel.config.automation.editor.re_order_mode.description_all"
-        )}
-        <ha-button slot="action" @click=${this._exitReOrderMode}>
-          ${this.hass.localize(
-            "ui.panel.config.automation.editor.re_order_mode.exit"
-          )}
-        </ha-button>
-      </ha-alert>
-    `;
-  }
-
-  private async _exitReOrderMode() {
-    this._reorderMode.exit();
   }
 
   private _localizeValueCallback = (key: string) => {
@@ -818,6 +788,8 @@ export class HaServiceControl extends ReorderModeMixin(LitElement) {
       }
       ha-checkbox {
         margin-left: -16px;
+        margin-inline-start: -16px;
+        margin-inline-end: initial;
       }
       .help-icon {
         color: var(--secondary-text-color);
@@ -827,6 +799,11 @@ export class HaServiceControl extends ReorderModeMixin(LitElement) {
         display: flex;
         align-items: center;
         padding-right: 2px;
+        padding-inline-end: 2px;
+        padding-inline-start: initial;
+      }
+      .description p {
+        direction: ltr;
       }
     `;
   }

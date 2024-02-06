@@ -29,7 +29,7 @@ import { getIeeeTail } from "./functions";
 class ZHADeviceCard extends SubscribeMixin(LitElement) {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @property() public device?: ZHADevice;
+  @property({ attribute: false }) public device?: ZHADevice;
 
   @property({ type: Boolean }) public narrow = false;
 
@@ -91,6 +91,7 @@ class ZHADeviceCard extends SubscribeMixin(LitElement) {
                     <state-badge
                       @click=${this._openMoreInfo}
                       .title=${entity.stateName!}
+                      .hass=${this.hass}
                       .stateObj=${this.hass!.states[entity.entity_id]}
                       slot="item-icon"
                     ></state-badge>

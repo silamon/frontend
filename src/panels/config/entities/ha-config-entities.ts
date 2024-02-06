@@ -13,7 +13,14 @@ import {
   mdiUndo,
 } from "@mdi/js";
 import { HassEntity } from "home-assistant-js-websocket";
-import { CSSResultGroup, LitElement, css, html, nothing } from "lit";
+import {
+  CSSResultGroup,
+  LitElement,
+  PropertyValues,
+  css,
+  html,
+  nothing,
+} from "lit";
 import { customElement, property, query, state } from "lit/decorators";
 import { classMap } from "lit/directives/class-map";
 import { ifDefined } from "lit/directives/if-defined";
@@ -28,7 +35,6 @@ import {
 } from "../../../common/integrations/protocolIntegrationPicked";
 import { navigate } from "../../../common/navigate";
 import { LocalizeFunc } from "../../../common/translations/localize";
-import { computeRTL } from "../../../common/util/compute_rtl";
 import type {
   DataTableColumnContainer,
   RowClickedEvent,
@@ -91,7 +97,7 @@ export class HaConfigEntities extends LitElement {
 
   @state() private _stateEntities: StateEntity[] = [];
 
-  @property() public _entries?: ConfigEntry[];
+  @state() private _entries?: ConfigEntry[];
 
   @state()
   @consume({ context: fullEntitiesContext, subscribe: true })
@@ -205,7 +211,8 @@ export class HaConfigEntities extends LitElement {
           <ha-state-icon
             title=${ifDefined(entry.entity?.state)}
             slot="item-icon"
-            .state=${entry.entity}
+            .hass=${this.hass}
+            .stateObj=${entry.entity}
           ></ha-state-icon>
         `,
       },
@@ -672,7 +679,6 @@ export class HaConfigEntities extends LitElement {
               extended
               @click=${this._addDevice}
               slot="fab"
-              ?rtl=${computeRTL(this.hass)}
             >
               <ha-svg-icon slot="icon" .path=${mdiPlus}></ha-svg-icon>
             </ha-fab>`
@@ -681,7 +687,7 @@ export class HaConfigEntities extends LitElement {
     `;
   }
 
-  public willUpdate(changedProps): void {
+  public willUpdate(changedProps: PropertyValues<this>): void {
     super.willUpdate(changedProps);
     const oldHass = changedProps.get("hass");
     let changed = false;
@@ -980,6 +986,7 @@ export class HaConfigEntities extends LitElement {
           font-weight: bold;
           padding-left: 16px;
           padding-inline-start: 16px;
+          padding-inline-end: initial;
           direction: var(--direction);
         }
         .table-header .selected-txt {
@@ -991,6 +998,7 @@ export class HaConfigEntities extends LitElement {
         .header-toolbar .header-btns {
           margin-right: -12px;
           margin-inline-end: -12px;
+          margin-inline-start: initial;
           direction: var(--direction);
         }
         .header-btns {
@@ -1002,11 +1010,14 @@ export class HaConfigEntities extends LitElement {
         }
         ha-button-menu {
           margin-left: 8px;
+          margin-inline-start: 8px;
+          margin-inline-end: initial;
         }
         .clear {
           color: var(--primary-color);
           padding-left: 8px;
           padding-inline-start: 8px;
+          padding-inline-end: initial;
           text-transform: uppercase;
           direction: var(--direction);
         }

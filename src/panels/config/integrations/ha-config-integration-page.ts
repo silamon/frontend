@@ -116,7 +116,7 @@ class HaConfigIntegrationPage extends SubscribeMixin(LitElement) {
 
   @property({ type: Boolean }) public showAdvanced = false;
 
-  @property() public configEntries?: ConfigEntry[];
+  @property({ attribute: false }) public configEntries?: ConfigEntry[];
 
   @property({ attribute: false })
   public configEntriesInProgress: DataEntryFlowProgressExtended[] = [];
@@ -1420,8 +1420,12 @@ class HaConfigIntegrationPage extends SubscribeMixin(LitElement) {
         .message div {
           flex: 1;
           margin-left: 8px;
+          margin-inline-start: 8px;
+          margin-inline-end: initial;
           padding-top: 2px;
           padding-right: 2px;
+          padding-inline-end: 2px;
+          padding-inline-start: initial;
           overflow-wrap: break-word;
           display: -webkit-box;
           -webkit-box-orient: vertical;
