@@ -85,7 +85,7 @@ class HaPanelMailbox extends LitElement {
                 @click=${this._openMP3Dialog}
                 twoline
               >
-                <span class="row">
+                <span>
                   <span>${message.caller}</span>
                   <span class="tip">
                     ${formatDuration(this.hass.locale, {
