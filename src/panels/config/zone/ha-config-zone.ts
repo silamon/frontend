@@ -149,7 +149,7 @@ export class HaConfigZone extends SubscribeMixin(LitElement) {
                     .entry=${entry}
                     graphic="icon"
                     hasMeta
-                    selected=${this._activeEntry == entry.id}
+                    selected=${this._activeEntry === entry.id}
                   >
                     <ha-icon .icon=${entry.icon} slot="graphic"></ha-icon>
                     ${entry.name}
@@ -397,6 +397,7 @@ export class HaConfigZone extends SubscribeMixin(LitElement) {
   private _openEditEntry(ev: Event) {
     const entry: Zone = (ev.currentTarget! as any).entry;
     this._openDialog(entry);
+    ev.stopPropagation();
   }
 
   private async _openCoreConfig(ev) {
