@@ -103,6 +103,14 @@ import { documentationUrl } from "../../../util/documentation-url";
 import { fileDownload } from "../../../util/file_download";
 import { DataEntryFlowProgressExtended } from "./ha-config-integrations";
 import { showAddIntegrationDialog } from "./show-add-integration-dialog";
+import {
+  findIntegration,
+  getIntegrationDescriptions,
+} from "../../../data/integrations";
+import {
+  PROTOCOL_INTEGRATIONS,
+  protocolIntegrationPicked,
+} from "../../../common/integrations/protocolIntegrationPicked";
 
 @customElement("ha-config-integration-page")
 class HaConfigIntegrationPage extends SubscribeMixin(LitElement) {
@@ -1286,9 +1294,86 @@ class HaConfigIntegrationPage extends SubscribeMixin(LitElement) {
   }
 
   private async _addIntegration() {
-    showAddIntegrationDialog(this, {
-      domain: this.domain,
-    });
+    const descriptions = await getIntegrationDescriptions(this.hass);
+    const integrations = {
+      ...descriptions.core.integration,
+      ...descriptions.custom.integration,
+    };
+
+    const integration = findIntegration(integrations, this.domain);
+
+    if (integration?.config_flow) {
+      const localize = await this.hass.loadBackendTranslation(
+        "title",
+        this.domain,
+        false
+      );
+      if (
+        await showConfirmationDialog(this, {
+          title: localize("ui.panel.config.integrations.confirm_new", {
+            integration:
+              integration.name || domainToName(localize, this.domain),
+          }),
+        })
+      ) {
+        showAddIntegrationDialog(this, {
+          domain: this.domain,
+        });
+      }
+      return;
+    }
+
+    if (integration?.supported_by) {
+      const localize = await this.hass.loadBackendTranslation(
+        "title",
+        this.domain,
+        false
+      );
+      const supportedIntegration = findIntegration(
+        integrations,
+        integration.supported_by
+      );
+
+      if (!supportedIntegration) {
+        return;
+      }
+
+      showConfirmationDialog(this, {
+        text: this.hass.localize(
+          "ui.panel.config.integrations.config_flow.supported_brand_flow",
+          {
+            supported_brand:
+              integration.name || domainToName(localize, this.domain),
+            flow_domain_name:
+              supportedIntegration.name ||
+              domainToName(localize, integration.supported_by),
+          }
+        ),
+        confirm: async () => {
+          if (
+            (PROTOCOL_INTEGRATIONS as ReadonlyArray<string>).includes(
+              integration.supported_by!
+            )
+          ) {
+            protocolIntegrationPicked(
+              this,
+              this.hass,
+              integration.supported_by!
+            );
+            return;
+          }
+          showConfigFlowDialog(this, {
+            dialogClosedCallback: () => {},
+            startFlowHandler: integration.supported_by,
+            manifest: await fetchIntegrationManifest(
+              this.hass,
+              integration.supported_by!
+            ),
+            showAdvanced: this.hass.userData?.showAdvanced,
+          });
+        },
+      });
+    }
   }
 
   static get styles(): CSSResultGroup {

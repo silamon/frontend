@@ -18,7 +18,8 @@ export type IntegrationType =
   | "service"
   | "hardware"
   | "entity"
-  | "system";
+  | "system"
+  | "virtual";
 
 export interface IntegrationManifest {
   is_built_in: boolean;
