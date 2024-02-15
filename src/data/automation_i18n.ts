@@ -688,6 +688,26 @@ const tryDescribeTrigger = (
     }`;
   }
 
+  // Calendar trigger
+  if (trigger.platform === "calendar" && trigger.entity_id) {
+    let offset = "";
+    let offsetChoice = "other";
+    if (trigger.offset) {
+      offset = describeDuration(hass.locale, trigger.offset) ?? "";
+      offsetChoice = trigger.offset.startsWith("-") ? "before" : "after";
+    }
+
+    return hass.localize(
+      `${triggerTranslationBaseKey}.calendar.description.full`,
+      {
+        calendar: trigger.entity_id,
+        event: trigger.event,
+        offset: offset,
+        offsetChoice: offsetChoice,
+      }
+    );
+  }
+
   return (
     hass.localize(
       `ui.panel.config.automation.editor.triggers.type.${trigger.platform}.label`

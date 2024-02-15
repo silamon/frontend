@@ -2522,6 +2522,7 @@
                   "before": "Before",
                   "after": "After",
                   "description": {
+                    "full": "Trigger {offsetChoice, select, \n before {{offset} before} \n before {{offset} after} \n other {when} \n} an event from calendar '{calendar}' is {event, select, \n start {started}\n end {ended} other {} \n}",
                     "picker": "When a calendar event starts or ends."
                   }
                 },
