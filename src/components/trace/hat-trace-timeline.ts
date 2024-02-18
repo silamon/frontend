@@ -742,6 +742,7 @@ export class HaAutomationTracer extends LitElement {
       };
     } else {
       let isError = false;
+      let extra: TemplateResult | undefined;
 
       switch (this.trace.script_execution) {
         case "failed_conditions":
@@ -750,6 +751,7 @@ export class HaAutomationTracer extends LitElement {
           break;
         case "error":
           isError = true;
+          extra = html`<br /><br />${this.trace.error!}`;
           break;
         default:
           isError = true;
@@ -757,14 +759,14 @@ export class HaAutomationTracer extends LitElement {
 
       entry = {
         description: html`${this.hass.localize(
-            "ui.panel.config.automation.trace.messages.stopped",
-            {
-              reason: this.trace.script_execution,
-              time: renderFinishedAt(),
-              executiontime: renderRuntime(),
-            }
-          )} <br /><br />
-          ${this.trace.error}`,
+          "ui.panel.config.automation.trace.messages.stopped",
+          {
+            reason: this.trace.script_execution,
+            time: renderFinishedAt(),
+            executiontime: renderRuntime(),
+          }
+        )}
+        ${extra || ""}`,
         icon: mdiAlertCircle,
         className: isError ? "error" : undefined,
       };
