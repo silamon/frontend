@@ -270,7 +270,12 @@ class ActionRenderer {
     } catch (err: any) {
       this._renderEntry(
         path,
-        `Unable to extract path ${path}. Download trace and report as bug`
+        this.hass.localize(
+          "ui.panel.config.automation.trace.messages.path_error",
+          {
+            path: path,
+          }
+        )
       );
       return index + 1;
     }
@@ -324,20 +329,21 @@ class ActionRenderer {
   private _handleTrigger(index: number, triggerStep: TriggerTraceStep): number {
     this._renderEntry(
       triggerStep.path,
-      `${
-        triggerStep.changed_variables.trigger.alias
-          ? `${triggerStep.changed_variables.trigger.alias} triggered`
-          : "Triggered"
-      } ${
-        triggerStep.path === "trigger"
-          ? "manually"
-          : `by the ${this.trace.trigger}`
-      } at
-    ${formatDateTimeWithSeconds(
-      new Date(triggerStep.timestamp),
-      this.hass.locale,
-      this.hass.config
-    )}`,
+      this.hass.localize(
+        "ui.panel.config.automation.trace.messages.triggered_by",
+        {
+          triggeredBy: triggerStep.changed_variables.trigger.alias
+            ? "alias"
+            : "other",
+          alias: triggerStep.changed_variables.trigger.alias,
+          triggeredPath: triggerStep.path === "trigger" ? "other" : "trace",
+          time: formatDateTimeWithSeconds(
+            new Date(triggerStep.timestamp),
+            this.hass.locale,
+            this.hass.config
+          ),
+        }
+      ),
       mdiCircle
     );
     return index + 1;
