@@ -332,11 +332,12 @@ class ActionRenderer {
       this.hass.localize(
         "ui.panel.config.automation.trace.messages.triggered_by",
         {
-          triggeredBy: triggerStep.changed_variables.trigger.alias
+          triggeredBy: triggerStep.changed_variables?.trigger.alias
             ? "alias"
             : "other",
-          alias: triggerStep.changed_variables.trigger.alias,
+          alias: triggerStep.changed_variables?.trigger.alias,
           triggeredPath: triggerStep.path === "trigger" ? "other" : "trace",
+          trace: this.trace.trigger,
           time: formatDateTimeWithSeconds(
             new Date(triggerStep.timestamp),
             this.hass.locale,
@@ -746,6 +747,7 @@ export class HaAutomationTracer extends LitElement {
         case "failed_conditions":
         case "failed_single":
         case "failed_max_runs":
+          break;
         case "error":
           isError = true;
           break;
@@ -754,15 +756,15 @@ export class HaAutomationTracer extends LitElement {
       }
 
       entry = {
-        description: this.hass.localize(
-          "ui.panel.config.automation.trace.messages.stopped",
-          {
-            reason: this.trace.script_execution,
-            time: renderFinishedAt(),
-            executiontime: renderRuntime(),
-            error: this.trace.error ?? "",
-          }
-        ),
+        description: html`${this.hass.localize(
+            "ui.panel.config.automation.trace.messages.stopped",
+            {
+              reason: this.trace.script_execution,
+              time: renderFinishedAt(),
+              executiontime: renderRuntime(),
+            }
+          )} <br /><br />
+          ${this.trace.error}`,
         icon: mdiAlertCircle,
         className: isError ? "error" : undefined,
       };
