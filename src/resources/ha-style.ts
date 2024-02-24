@@ -425,6 +425,40 @@ const mainStyles = css`
       line-height: 20px;
     };
 
+    /* Material Design 3 styles */
+    --md-sys-color-primary: #00b1f9;
+    --md-sys-color-on-primary: ##ffffff;
+    --md-sys-color-primary-container: #c1f0ff;
+    --md-sys-color-on-primary-container: #002432;
+    --md-sys-color-secondary: #49616e;
+    --md-sys-color-on-secondary: #ffffff;
+    --md-sys-color-secondary-container: #cde6f5;
+    --md-sys-color-on-secondary-container: #021d29;
+    --md-sys-color-tertiary: #753fa9;
+    --md-sys-color-on-tertiary: #ffffff;
+    --md-sys-color-tertiary-container: #ebdcf6;
+    --md-sys-color-on-tertiary-container: #1e102b;
+    --md-sys-color-error: #cf0000;
+    --md-sys-color-on-error: #ffffff;
+    --md-sys-color-error-container: #ffd9d3;
+    --md-sys-color-on-error-container: #490000;
+    --md-sys-color-outline: var(--secondary-text-color);
+    --md-sys-color-background: var(--primary-text-color);
+    --md-sys-color-on-background: var(--primary-text-color);
+    --md-sys-color-surface: var(--primary-background-color);
+    --md-sys-color-on-surface: var(--primary-background-color);
+    --md-sys-color-surface-variant: var(--card-background-color);
+    --md-sys-color-on-surface-variant: var(--secondary-text-color);
+    --md-sys-color-inverse-surface: var(--md-sys-color-inverse-surface-light);
+    --md-sys-color-inverse-on-surface: var(
+      --md-sys-color-inverse-on-surface-light
+    );
+    --md-sys-color-inverse-primary: var(--md-sys-color-inverse-primary-light);
+    --md-sys-color-shadow: var(--md-sys-color-shadow-light);
+    --md-sys-color-surface-tint: var(--md-sys-color-surface-tint-light);
+    --md-sys-color-outline-variant: var(--divider-color);
+    --md-sys-color-scrim: var(--md-sys-color-scrim-light);
+
     direction: ltr;
     --direction: ltr;
     --float-start: left;
