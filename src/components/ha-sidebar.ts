@@ -2,9 +2,9 @@ import "@material/mwc-button/mwc-button";
 import {
   mdiBell,
   mdiCalendar,
-  mdiCart,
   mdiCellphoneCog,
   mdiChartBox,
+  mdiClipboardList,
   mdiClose,
   mdiCog,
   mdiFormatListBulletedType,
@@ -23,39 +23,37 @@ import "@polymer/paper-item/paper-item";
 import "@polymer/paper-listbox/paper-listbox";
 import { UnsubscribeFunc } from "home-assistant-js-websocket";
 import {
-  css,
   CSSResult,
   CSSResultGroup,
-  html,
   LitElement,
   PropertyValues,
+  css,
+  html,
   nothing,
 } from "lit";
 import { customElement, eventOptions, property, state } from "lit/decorators";
 import { classMap } from "lit/directives/class-map";
-import { guard } from "lit/directives/guard";
 import memoizeOne from "memoize-one";
-import { LocalStorage } from "../common/decorators/local-storage";
+import { storage } from "../common/decorators/storage";
 import { fireEvent } from "../common/dom/fire_event";
 import { toggleAttribute } from "../common/dom/toggle_attribute";
 import { stringCompare } from "../common/string/compare";
-import { computeRTL } from "../common/util/compute_rtl";
 import { throttle } from "../common/util/throttle";
-import { ActionHandlerDetail } from "../data/lovelace";
+import { ActionHandlerDetail } from "../data/lovelace/action_handler";
 import {
   PersistentNotification,
   subscribeNotifications,
 } from "../data/persistent_notification";
 import { subscribeRepairsIssueRegistry } from "../data/repairs";
-import { updateCanInstall, UpdateEntity } from "../data/update";
+import { UpdateEntity, updateCanInstall } from "../data/update";
 import { SubscribeMixin } from "../mixins/subscribe-mixin";
 import { actionHandler } from "../panels/lovelace/common/directives/action-handler-directive";
-import { loadSortable, SortableInstance } from "../resources/sortable.ondemand";
 import { haStyleScrollbar } from "../resources/styles";
 import type { HomeAssistant, PanelInfo, Route } from "../types";
 import "./ha-icon";
 import "./ha-icon-button";
 import "./ha-menu-button";
+import "./ha-sortable";
 import "./ha-svg-icon";
 import "./user/ha-user-badge";
 
@@ -81,7 +79,7 @@ const PANEL_ICONS = {
   lovelace: mdiViewDashboard,
   map: mdiTooltipAccount,
   "media-browser": mdiPlayBoxMultiple,
-  "shopping-list": mdiCart,
+  todo: mdiClipboardList,
 };
 
 const panelSorter = (
@@ -190,9 +188,9 @@ const computePanels = memoizeOne(
 class HaSidebar extends SubscribeMixin(LitElement) {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @property({ type: Boolean, reflect: true }) public narrow!: boolean;
+  @property({ type: Boolean, reflect: true }) public narrow = false;
 
-  @property() public route!: Route;
+  @property({ attribute: false }) public route!: Route;
 
   @property({ type: Boolean }) public alwaysExpand = false;
 
@@ -204,29 +202,27 @@ class HaSidebar extends SubscribeMixin(LitElement) {
 
   @state() private _issuesCount = 0;
 
-  @state() private _renderEmptySortable = false;
-
   private _mouseLeaveTimeout?: number;
 
   private _tooltipHideTimeout?: number;
 
   private _recentKeydownActiveUntil = 0;
 
-  private sortableStyleLoaded = false;
+  private _editStyleLoaded = false;
 
-  // @ts-ignore
-  @LocalStorage("sidebarPanelOrder", true, {
-    attribute: false,
+  @storage({
+    key: "sidebarPanelOrder",
+    state: true,
+    subscribe: true,
   })
   private _panelOrder: string[] = [];
 
-  // @ts-ignore
-  @LocalStorage("sidebarHiddenPanels", true, {
-    attribute: false,
+  @storage({
+    key: "sidebarHiddenPanels",
+    state: true,
+    subscribe: true,
   })
   private _hiddenPanels: string[] = [];
-
-  private _sortable?: SortableInstance;
 
   public hassSubscribe(): UnsubscribeFunc[] {
     return this.hass.user?.is_admin
@@ -262,14 +258,13 @@ class HaSidebar extends SubscribeMixin(LitElement) {
       changedProps.has("expanded") ||
       changedProps.has("narrow") ||
       changedProps.has("alwaysExpand") ||
+      changedProps.has("editMode") ||
       changedProps.has("_externalConfig") ||
       changedProps.has("_updatesCount") ||
       changedProps.has("_issuesCount") ||
       changedProps.has("_notifications") ||
-      changedProps.has("editMode") ||
-      changedProps.has("_renderEmptySortable") ||
       changedProps.has("_hiddenPanels") ||
-      (changedProps.has("_panelOrder") && !this.editMode)
+      changedProps.has("_panelOrder")
     ) {
       return true;
     }
@@ -304,20 +299,11 @@ class HaSidebar extends SubscribeMixin(LitElement) {
     if (changedProps.has("alwaysExpand")) {
       toggleAttribute(this, "expanded", this.alwaysExpand);
     }
-    if (changedProps.has("editMode")) {
-      if (this.editMode) {
-        this._activateEditMode();
-      } else {
-        this._deactivateEditMode();
-      }
+    if (changedProps.has("editMode") && this.editMode) {
+      this._editModeActivated();
     }
     if (!changedProps.has("hass")) {
       return;
-    }
-
-    const oldHass = changedProps.get("hass") as HomeAssistant | undefined;
-    if (!oldHass || oldHass.locale !== this.hass.locale) {
-      toggleAttribute(this, "rtl", computeRTL(this.hass));
     }
 
     this._calculateCounts();
@@ -325,6 +311,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
     if (!SUPPORT_SCROLL_IF_NEEDED) {
       return;
     }
+    const oldHass = changedProps.get("hass") as HomeAssistant | undefined;
     if (!oldHass || oldHass.panelUrl !== this.hass.panelUrl) {
       const selectedEl = this.shadowRoot!.querySelector(".iron-selected");
       if (selectedEl) {
@@ -423,8 +410,8 @@ class HaSidebar extends SubscribeMixin(LitElement) {
         panel.url_path === this.hass.defaultPanel && !panel.icon
           ? PANEL_ICONS.lovelace
           : panel.url_path in PANEL_ICONS
-          ? PANEL_ICONS[panel.url_path]
-          : undefined
+            ? PANEL_ICONS[panel.url_path]
+            : undefined
       )
     );
   }
@@ -468,15 +455,36 @@ class HaSidebar extends SubscribeMixin(LitElement) {
         `;
   }
 
+  private _panelMoved(ev: CustomEvent) {
+    ev.stopPropagation();
+    const { oldIndex, newIndex } = ev.detail;
+
+    const [beforeSpacer] = computePanels(
+      this.hass.panels,
+      this.hass.defaultPanel,
+      this._panelOrder,
+      this._hiddenPanels,
+      this.hass.locale
+    );
+
+    const panelOrder = beforeSpacer.map((panel) => panel.url_path);
+    const panel = panelOrder.splice(oldIndex, 1)[0];
+    panelOrder.splice(newIndex, 0, panel);
+
+    this._panelOrder = panelOrder;
+  }
+
   private _renderPanelsEdit(beforeSpacer: PanelInfo[]) {
-    // prettier-ignore
-    return html`<div id="sortable">
-        ${guard([this._hiddenPanels, this._renderEmptySortable], () =>
-          this._renderEmptySortable ? "" : this._renderPanels(beforeSpacer)
-        )}
-      </div>
-      ${this._renderSpacer()}
-      ${this._renderHiddenPanels()} `;
+    return html`
+      <ha-sortable
+        handle-selector="paper-icon-item"
+        .disabled=${!this.editMode}
+        @item-moved=${this._panelMoved}
+      >
+        <div class="reorder-list">${this._renderPanels(beforeSpacer)}</div>
+      </ha-sortable>
+      ${this._renderSpacer()}${this._renderHiddenPanels()}
+    `;
   }
 
   private _renderHiddenPanels() {
@@ -497,11 +505,14 @@ class HaSidebar extends SubscribeMixin(LitElement) {
                   .path=${PANEL_ICONS.lovelace}
                 ></ha-svg-icon>`
               : panel.url_path in PANEL_ICONS
-              ? html`<ha-svg-icon
-                  slot="item-icon"
-                  .path=${PANEL_ICONS[panel.url_path]}
-                ></ha-svg-icon>`
-              : html`<ha-icon slot="item-icon" .icon=${panel.icon}></ha-icon>`}
+                ? html`<ha-svg-icon
+                    slot="item-icon"
+                    .path=${PANEL_ICONS[panel.url_path]}
+                  ></ha-svg-icon>`
+                : html`<ha-icon
+                    slot="item-icon"
+                    .icon=${panel.icon}
+                  ></ha-icon>`}
             <span class="item-text"
               >${panel.url_path === this.hass.defaultPanel
                 ? this.hass.localize("panel.states")
@@ -669,42 +680,20 @@ class HaSidebar extends SubscribeMixin(LitElement) {
     fireEvent(this, "hass-edit-sidebar", { editMode: true });
   }
 
-  private async _activateEditMode() {
-    await Promise.all([this._loadSortableStyle(), this._createSortable()]);
+  private async _editModeActivated() {
+    await this._loadEditStyle();
   }
 
-  private async _loadSortableStyle() {
-    if (this.sortableStyleLoaded) return;
+  private async _loadEditStyle() {
+    if (this._editStyleLoaded) return;
 
-    const sortStylesImport = await import("../resources/ha-sortable-style");
+    const editStylesImport = await import("../resources/ha-sidebar-edit-style");
 
     const style = document.createElement("style");
-    style.innerHTML = (sortStylesImport.sortableStyles as CSSResult).cssText;
+    style.innerHTML = (editStylesImport.sidebarEditStyle as CSSResult).cssText;
     this.shadowRoot!.appendChild(style);
 
-    this.sortableStyleLoaded = true;
     await this.updateComplete;
-  }
-
-  private async _createSortable() {
-    const Sortable = await loadSortable();
-    this._sortable = new Sortable(
-      this.shadowRoot!.getElementById("sortable")!,
-      {
-        animation: 150,
-        fallbackClass: "sortable-fallback",
-        dataIdAttr: "data-panel",
-        handle: "paper-icon-item",
-        onSort: async () => {
-          this._panelOrder = this._sortable!.toArray();
-        },
-      }
-    );
-  }
-
-  private _deactivateEditMode() {
-    this._sortable?.destroy();
-    this._sortable = undefined;
   }
 
   private _closeEditMode() {
@@ -719,13 +708,8 @@ class HaSidebar extends SubscribeMixin(LitElement) {
     }
     // Make a copy for Memoize
     this._hiddenPanels = [...this._hiddenPanels, panel];
-    this._renderEmptySortable = true;
-    await this.updateComplete;
-    const container = this.shadowRoot!.getElementById("sortable")!;
-    while (container.lastElementChild) {
-      container.removeChild(container.lastElementChild);
-    }
-    this._renderEmptySortable = false;
+    // Remove it from the panel order
+    this._panelOrder = this._panelOrder.filter((order) => order !== panel);
   }
 
   private async _unhidePanel(ev: Event) {
@@ -734,13 +718,6 @@ class HaSidebar extends SubscribeMixin(LitElement) {
     this._hiddenPanels = this._hiddenPanels.filter(
       (hidden) => hidden !== panel
     );
-    this._renderEmptySortable = true;
-    await this.updateComplete;
-    const container = this.shadowRoot!.getElementById("sortable")!;
-    while (container.lastElementChild) {
-      container.removeChild(container.lastElementChild);
-    }
-    this._renderEmptySortable = false;
   }
 
   private _itemMouseEnter(ev: MouseEvent) {
@@ -810,6 +787,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
     }
     tooltip.innerHTML = item.querySelector(".item-text")!.innerHTML;
     tooltip.style.display = "block";
+    tooltip.style.position = "fixed";
     tooltip.style.top = `${top}px`;
     tooltip.style.left = `${item.offsetLeft + item.clientWidth + 4}px`;
   }
@@ -840,6 +818,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
       haStyleScrollbar,
       css`
         :host {
+          overflow: visible;
           height: 100%;
           display: block;
           overflow: hidden;
@@ -867,28 +846,21 @@ class HaSidebar extends SubscribeMixin(LitElement) {
           font-size: 20px;
           align-items: center;
           padding-left: calc(4px + env(safe-area-inset-left));
-        }
-        :host([rtl]) .menu {
-          padding-left: 4px;
-          padding-right: calc(4px + env(safe-area-inset-right));
+          padding-inline-start: calc(4px + env(safe-area-inset-left));
+          padding-inline-end: initial;
         }
         :host([expanded]) .menu {
           width: calc(256px + env(safe-area-inset-left));
-        }
-        :host([rtl][expanded]) .menu {
-          width: calc(256px + env(safe-area-inset-right));
         }
         .menu ha-icon-button {
           color: var(--sidebar-icon-color);
         }
         .title {
           margin-left: 19px;
+          margin-inline-start: 19px;
+          margin-inline-end: initial;
           width: 100%;
           display: none;
-        }
-        :host([rtl]) .title {
-          margin-left: 0;
-          margin-right: 19px;
         }
         :host([narrow]) .title {
           margin: 0;
@@ -903,7 +875,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
         .menu mwc-button {
           width: 100%;
         }
-        #sortable,
+        .reorder-list,
         .hidden-panel {
           display: none;
         }
@@ -920,11 +892,8 @@ class HaSidebar extends SubscribeMixin(LitElement) {
           overflow-x: hidden;
           background: none;
           margin-left: env(safe-area-inset-left);
-        }
-
-        :host([rtl]) paper-listbox {
-          margin-left: initial;
-          margin-right: env(safe-area-inset-right);
+          margin-inline-start: env(safe-area-inset-left);
+          margin-inline-end: initial;
         }
 
         a {
@@ -941,16 +910,14 @@ class HaSidebar extends SubscribeMixin(LitElement) {
           box-sizing: border-box;
           margin: 4px;
           padding-left: 12px;
+          padding-inline-start: 12px;
+          padding-inline-end: initial;
           border-radius: 4px;
           --paper-item-min-height: 40px;
           width: 48px;
         }
         :host([expanded]) paper-icon-item {
           width: 248px;
-        }
-        :host([rtl]) paper-icon-item {
-          padding-left: auto;
-          padding-right: 12px;
         }
 
         ha-icon[slot="item-icon"],
@@ -1026,11 +993,8 @@ class HaSidebar extends SubscribeMixin(LitElement) {
         .configuration-container {
           display: flex;
           margin-left: env(safe-area-inset-left);
-        }
-        :host([rtl]) .notifications-container,
-        :host([rtl]) .configuration-container {
-          margin-left: initial;
-          margin-right: env(safe-area-inset-right);
+          margin-inline-start: env(safe-area-inset-left);
+          margin-inline-end: initial;
         }
         .notifications {
           cursor: pointer;
@@ -1041,29 +1005,26 @@ class HaSidebar extends SubscribeMixin(LitElement) {
         }
         .profile {
           margin-left: env(safe-area-inset-left);
-        }
-        :host([rtl]) .profile {
-          margin-left: initial;
-          margin-right: env(safe-area-inset-right);
+          margin-inline-start: env(safe-area-inset-left);
+          margin-inline-end: initial;
         }
         .profile paper-icon-item {
           padding-left: 4px;
-        }
-        :host([rtl]) .profile paper-icon-item {
-          padding-left: auto;
-          padding-right: 4px;
+          margin-inline-start: 4px;
+          margin-inline-end: auto;
         }
         .profile .item-text {
           margin-left: 8px;
-        }
-        :host([rtl]) .profile .item-text {
-          margin-right: 8px;
+          margin-inline-start: 8px;
+          margin-inline-end: initial;
         }
 
         .notification-badge,
         .configuration-badge {
           position: absolute;
           left: calc(var(--app-drawer-width, 248px) - 42px);
+          inset-inline-start: calc(var(--app-drawer-width, 248px) - 42px);
+          inset-inline-end: initial;
           min-width: 20px;
           box-sizing: border-box;
           border-radius: 50%;
@@ -1071,7 +1032,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
           background-color: var(--accent-color);
           line-height: 20px;
           text-align: center;
-          padding: 0px 6px;
+          padding: 0px 2px;
           color: var(--text-accent-color, var(--text-primary-color));
         }
         ha-svg-icon + .notification-badge,
@@ -1120,9 +1081,9 @@ class HaSidebar extends SubscribeMixin(LitElement) {
           font-weight: 500;
         }
 
-        :host([rtl]) .menu ha-icon-button {
-          -webkit-transform: scaleX(-1);
-          transform: scaleX(-1);
+        .menu ha-icon-button {
+          -webkit-transform: scaleX(var(--scale-direction));
+          transform: scaleX(var(--scale-direction));
         }
       `,
     ];

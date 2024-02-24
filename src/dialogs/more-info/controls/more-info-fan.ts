@@ -1,46 +1,35 @@
-import "@material/web/button/outlined-button";
-import "@material/web/iconbutton/outlined-icon-button";
 import {
-  mdiCreation,
+  mdiArrowOscillating,
+  mdiArrowOscillatingOff,
   mdiFan,
   mdiFanOff,
   mdiPower,
-  mdiRotateLeft,
-  mdiRotateRight,
+  mdiTuneVariant,
 } from "@mdi/js";
-import {
-  css,
-  CSSResultGroup,
-  html,
-  LitElement,
-  nothing,
-  PropertyValues,
-} from "lit";
+import { CSSResultGroup, LitElement, PropertyValues, html, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators";
 import { stopPropagation } from "../../../common/dom/stop_propagation";
-import {
-  computeAttributeNameDisplay,
-  computeAttributeValueDisplay,
-} from "../../../common/entity/compute_attribute_display";
-import { computeStateDisplay } from "../../../common/entity/compute_state_display";
+import { stateActive } from "../../../common/entity/state_active";
 import { supportsFeature } from "../../../common/entity/supports-feature";
-import "../../../components/ha-attributes";
+import "../../../components/ha-attribute-icon";
+import "../../../components/ha-control-select-menu";
+import "../../../components/ha-list-item";
+import "../../../components/ha-outlined-icon-button";
 import { UNAVAILABLE } from "../../../data/entity";
 import {
-  computeFanSpeedStateDisplay,
-  computeFanSpeedCount,
+  FAN_SPEED_COUNT_MAX_FOR_BUTTONS,
   FanEntity,
   FanEntityFeature,
-  FAN_SPEED_COUNT_MAX_FOR_BUTTONS,
+  computeFanSpeedCount,
+  computeFanSpeedStateDisplay,
 } from "../../../data/fan";
 import { forwardHaptic } from "../../../data/haptics";
-import { haOscillating } from "../../../data/icons/haOscillating";
-import { haOscillatingOff } from "../../../data/icons/haOscillatingOff";
+import "../../../state-control/fan/ha-state-control-fan-speed";
+import "../../../state-control/ha-state-control-toggle";
 import type { HomeAssistant } from "../../../types";
-import "../components/fan/ha-more-info-fan-speed";
-import { moreInfoControlStyle } from "../components/ha-more-info-control-style";
+import "../components/ha-more-info-control-select-container";
 import "../components/ha-more-info-state-header";
-import "../components/ha-more-info-toggle";
+import { moreInfoControlStyle } from "../components/more-info-control-style";
 
 @customElement("more-info-fan")
 class MoreInfoFan extends LitElement {
@@ -50,18 +39,6 @@ class MoreInfoFan extends LitElement {
 
   @state() public _presetMode?: string;
 
-  @state() private _liveSpeed?: number;
-
-  private _speedSliderMoved(ev) {
-    const value = (ev.detail as any).value;
-    if (isNaN(value)) return;
-    this._liveSpeed = value;
-  }
-
-  private _speedValueChanged() {
-    this._liveSpeed = undefined;
-  }
-
   private _toggle = () => {
     const service = this.stateObj?.state === "on" ? "turn_off" : "turn_on";
     forwardHaptic("light");
@@ -70,34 +47,20 @@ class MoreInfoFan extends LitElement {
     });
   };
 
-  _setReverseDirection() {
+  _handleDirection(ev) {
+    const newVal = ev.target.value;
+    const oldVal = this.stateObj?.attributes.direction;
+
+    if (!newVal || oldVal === newVal) return;
+
     this.hass.callService("fan", "set_direction", {
       entity_id: this.stateObj!.entity_id,
-      direction: "reverse",
-    });
-  }
-
-  _setForwardDirection() {
-    this.hass.callService("fan", "set_direction", {
-      entity_id: this.stateObj!.entity_id,
-      direction: "forward",
-    });
-  }
-
-  _toggleOscillate() {
-    const oscillating = this.stateObj!.attributes.oscillating;
-    this.hass.callService("fan", "oscillate", {
-      entity_id: this.stateObj!.entity_id,
-      oscillating: !oscillating,
+      direction: newVal,
     });
   }
 
   _handlePresetMode(ev) {
-    ev.stopPropagation();
-    ev.preventDefault();
-
-    const index = ev.detail.index;
-    const newVal = this.stateObj!.attributes.preset_modes![index];
+    const newVal = ev.target.value;
     const oldVal = this._presetMode;
 
     if (!newVal || oldVal === newVal) return;
@@ -109,6 +72,18 @@ class MoreInfoFan extends LitElement {
     });
   }
 
+  _handleOscillating(ev) {
+    const newVal = ev.target.value === "true";
+    const oldVal = this.stateObj?.attributes.oscillating;
+
+    if (oldVal === newVal) return;
+
+    this.hass.callService("fan", "oscillate", {
+      entity_id: this.stateObj!.entity_id,
+      oscillating: newVal,
+    });
+  }
+
   protected updated(changedProps: PropertyValues): void {
     if (changedProps.has("stateObj")) {
       this._presetMode = this.stateObj?.attributes.preset_mode;
@@ -116,26 +91,14 @@ class MoreInfoFan extends LitElement {
   }
 
   private get _stateOverride() {
-    const liveValue = this._liveSpeed;
-
-    const forcedState =
-      this._liveSpeed != null ? (this._liveSpeed ? "on" : "off") : undefined;
-
-    const stateDisplay = computeStateDisplay(
-      this.hass.localize,
-      this.stateObj!,
-      this.hass.locale,
-      this.hass.entities,
-      forcedState
-    );
+    const stateDisplay = this.hass.formatEntityState(this.stateObj!);
 
     const positionStateDisplay = computeFanSpeedStateDisplay(
       this.stateObj!,
-      this.hass.locale,
-      liveValue
+      this.hass
     );
 
-    if (positionStateDisplay) {
+    if (positionStateDisplay && stateActive(this.stateObj!)) {
       return positionStateDisplay;
     }
     return stateDisplay;
@@ -175,168 +138,192 @@ class MoreInfoFan extends LitElement {
         .stateOverride=${this._stateOverride}
       ></ha-more-info-state-header>
       <div class="controls">
-        ${
-          supportsSpeed
-            ? html`
-                <ha-more-info-fan-speed
-                  .stateObj=${this.stateObj}
-                  .hass=${this.hass}
-                  @slider-moved=${this._speedSliderMoved}
-                  @value-changed=${this._speedValueChanged}
-                >
-                </ha-more-info-fan-speed>
-              `
-            : html`
-                <ha-more-info-toggle
-                  .stateObj=${this.stateObj}
-                  .hass=${this.hass}
-                  .iconPathOn=${mdiFan}
-                  .iconPathOff=${mdiFanOff}
-                ></ha-more-info-toggle>
-              `
-        }
-        ${
-          supportSpeedPercentage || supportsDirection || supportsOscillate
-            ? html`<div class="buttons">
+        ${supportsSpeed
+          ? html`
+              <ha-state-control-fan-speed
+                .stateObj=${this.stateObj}
+                .hass=${this.hass}
+              >
+              </ha-state-control-fan-speed>
+            `
+          : html`
+              <ha-state-control-toggle
+                .stateObj=${this.stateObj}
+                .hass=${this.hass}
+                .iconPathOn=${mdiFan}
+                .iconPathOff=${mdiFanOff}
+              ></ha-state-control-toggle>
+            `}
+        ${supportSpeedPercentage
+          ? html`
+              <div class="buttons">
                 ${supportSpeedPercentage
                   ? html`
-                      <md-outlined-icon-button
+                      <ha-outlined-icon-button
                         .disabled=${this.stateObj.state === UNAVAILABLE}
                         @click=${this._toggle}
                       >
                         <ha-svg-icon .path=${mdiPower}></ha-svg-icon>
-                      </md-outlined-icon-button>
+                      </ha-outlined-icon-button>
                     `
                   : nothing}
-                ${supportsDirection
-                  ? html`
-                      <md-outlined-icon-button
-                        .disabled=${this.stateObj.state === UNAVAILABLE ||
-                        this.stateObj.attributes.direction === "reverse"}
-                        .title=${this.hass.localize(
-                          "ui.dialogs.more_info_control.fan.set_reverse_direction"
-                        )}
-                        .ariaLabel=${this.hass.localize(
-                          "ui.dialogs.more_info_control.fan.set_reverse_direction"
-                        )}
-                        @click=${this._setReverseDirection}
-                      >
-                        <ha-svg-icon .path=${mdiRotateLeft}></ha-svg-icon>
-                      </md-outlined-icon-button>
-                      <md-outlined-icon-button
-                        .disabled=${this.stateObj.state === UNAVAILABLE ||
-                        this.stateObj.attributes.direction === "forward"}
-                        .title=${this.hass.localize(
-                          "ui.dialogs.more_info_control.fan.set_forward_direction"
-                        )}
-                        .ariaLabel=${this.hass.localize(
-                          "ui.dialogs.more_info_control.fan.set_forward_direction"
-                        )}
-                        @click=${this._setForwardDirection}
-                      >
-                        <ha-svg-icon .path=${mdiRotateRight}></ha-svg-icon>
-                      </md-outlined-icon-button>
-                    `
-                  : nothing}
-                ${supportsOscillate
-                  ? html`
-                      <md-outlined-icon-button
-                        .disabled=${this.stateObj.state === UNAVAILABLE}
-                        .title=${this.hass.localize(
-                          `ui.dialogs.more_info_control.fan.${
-                            this.stateObj.attributes.oscillating
-                              ? "turn_off_oscillating"
-                              : "turn_on_oscillating"
-                          }`
-                        )}
-                        .ariaLabel=${this.hass.localize(
-                          `ui.dialogs.more_info_control.fan.${
-                            this.stateObj.attributes.oscillating
-                              ? "turn_off_oscillating"
-                              : "turn_on_oscillating"
-                          }`
-                        )}
-                        @click=${this._toggleOscillate}
-                      >
-                        <ha-svg-icon
-                          .path=${this.stateObj.attributes.oscillating
-                            ? haOscillating
-                            : haOscillatingOff}
-                        ></ha-svg-icon>
-                      </md-outlined-icon-button>
-                    `
-                  : nothing}
-              </div> `
-            : nothing
-        }
-          ${
-            supportsPresetMode && this.stateObj.attributes.preset_modes
-              ? html`
-                  <ha-button-menu
-                    corner="BOTTOM_START"
-                    @action=${this._handlePresetMode}
-                    @closed=${stopPropagation}
-                    fixed
-                    .disabled=${this.stateObj.state === UNAVAILABLE}
-                  >
-                    <md-outlined-button
-                      slot="trigger"
-                      .disabled=${this.stateObj.state === UNAVAILABLE}
-                      .label=${this._presetMode ||
-                      computeAttributeNameDisplay(
-                        this.hass.localize,
-                        this.stateObj,
-                        this.hass.entities,
-                        "preset_mode"
-                      )}
-                    >
+              </div>
+            `
+          : nothing}
+      </div>
+      <ha-more-info-control-select-container>
+        ${supportsPresetMode && this.stateObj.attributes.preset_modes
+          ? html`
+              <ha-control-select-menu
+                .label=${this.hass.formatEntityAttributeName(
+                  this.stateObj,
+                  "preset_mode"
+                )}
+                .value=${this.stateObj.attributes.preset_mode}
+                .disabled=${this.stateObj.state === UNAVAILABLE}
+                fixedMenuPosition
+                naturalMenuWidth
+                @selected=${this._handlePresetMode}
+                @closed=${stopPropagation}
+              >
+                ${this.stateObj.attributes.preset_mode
+                  ? html`<ha-attribute-icon
+                      slot="icon"
+                      .hass=${this.hass}
+                      .stateObj=${this.stateObj}
+                      attribute="preset_mode"
+                      .attributeValue=${this.stateObj.attributes.preset_mode}
+                    ></ha-attribute-icon>`
+                  : html`
                       <ha-svg-icon
                         slot="icon"
-                        path=${mdiCreation}
+                        .path=${mdiTuneVariant}
                       ></ha-svg-icon>
-                    </md-outlined-button>
-                    ${this.stateObj.attributes.preset_modes?.map(
-                      (mode) =>
-                        html`
-                          <ha-list-item
-                            .value=${mode}
-                            .activated=${this._presetMode === mode}
-                          >
-                            ${computeAttributeValueDisplay(
-                              this.hass.localize,
-                              this.stateObj!,
-                              this.hass.locale,
-                              this.hass.entities,
-                              "preset_mode",
-                              mode
-                            )}
-                          </ha-list-item>
-                        `
-                    )}
-                  </ha-button-menu>
-                `
-              : nothing
-          }
-        </div>
-        <ha-attributes
-          .hass=${this.hass}
-          .stateObj=${this.stateObj}
-          extra-filters="percentage_step,speed,preset_mode,preset_modes,speed_list,percentage,oscillating,direction"
-        ></ha-attributes>
-      </div>
+                    `}
+                ${this.stateObj.attributes.preset_modes?.map(
+                  (mode) => html`
+                    <ha-list-item .value=${mode} graphic="icon">
+                      <ha-attribute-icon
+                        slot="graphic"
+                        .hass=${this.hass}
+                        .stateObj=${this.stateObj}
+                        attribute="preset_mode"
+                        .attributeValue=${mode}
+                      ></ha-attribute-icon>
+                      ${this.hass.formatEntityAttributeValue(
+                        this.stateObj!,
+                        "preset_mode",
+                        mode
+                      )}
+                    </ha-list-item>
+                  `
+                )}
+              </ha-control-select-menu>
+            `
+          : nothing}
+        ${supportsDirection
+          ? html`
+              <ha-control-select-menu
+                .label=${this.hass.formatEntityAttributeName(
+                  this.stateObj,
+                  "direction"
+                )}
+                .value=${this.stateObj.attributes.direction}
+                .disabled=${this.stateObj.state === UNAVAILABLE}
+                fixedMenuPosition
+                naturalMenuWidth
+                @selected=${this._handleDirection}
+                @closed=${stopPropagation}
+              >
+                <ha-attribute-icon
+                  slot="icon"
+                  .hass=${this.hass}
+                  .stateObj=${this.stateObj}
+                  attribute="direction"
+                  .attributeValue=${this.stateObj.attributes.direction}
+                ></ha-attribute-icon>
+                <ha-list-item value="forward" graphic="icon">
+                  <ha-attribute-icon
+                    slot="graphic"
+                    .hass=${this.hass}
+                    .stateObj=${this.stateObj}
+                    attribute="direction"
+                    attributeValue="forward"
+                  ></ha-attribute-icon>
+                  ${this.hass.formatEntityAttributeValue(
+                    this.stateObj,
+                    "direction",
+                    "forward"
+                  )}
+                </ha-list-item>
+                <ha-list-item value="reverse" graphic="icon">
+                  <ha-attribute-icon
+                    slot="graphic"
+                    .hass=${this.hass}
+                    .stateObj=${this.stateObj}
+                    attribute="direction"
+                    attributeValue="reverse"
+                  ></ha-attribute-icon>
+                  ${this.hass.formatEntityAttributeValue(
+                    this.stateObj,
+                    "direction",
+                    "reverse"
+                  )}
+                </ha-list-item>
+              </ha-control-select-menu>
+            `
+          : nothing}
+        ${supportsOscillate
+          ? html`
+              <ha-control-select-menu
+                .label=${this.hass.formatEntityAttributeName(
+                  this.stateObj,
+                  "oscillating"
+                )}
+                .value=${this.stateObj.attributes.oscillating
+                  ? "true"
+                  : "false"}
+                .disabled=${this.stateObj.state === UNAVAILABLE}
+                fixedMenuPosition
+                naturalMenuWidth
+                @selected=${this._handleOscillating}
+                @closed=${stopPropagation}
+              >
+                <ha-svg-icon
+                  slot="icon"
+                  .path=${mdiArrowOscillatingOff}
+                ></ha-svg-icon>
+                <ha-list-item value="true" graphic="icon">
+                  <ha-svg-icon
+                    slot="graphic"
+                    .path=${mdiArrowOscillating}
+                  ></ha-svg-icon>
+                  ${this.hass.formatEntityAttributeValue(
+                    this.stateObj,
+                    "oscillating",
+                    true
+                  )}
+                </ha-list-item>
+                <ha-list-item value="false" graphic="icon">
+                  <ha-svg-icon
+                    slot="graphic"
+                    .path=${mdiArrowOscillatingOff}
+                  ></ha-svg-icon>
+                  ${this.hass.formatEntityAttributeValue(
+                    this.stateObj,
+                    "oscillating",
+                    false
+                  )}
+                </ha-list-item>
+              </ha-control-select-menu>
+            `
+          : nothing}
+      </ha-more-info-control-select-container>
     `;
   }
 
   static get styles(): CSSResultGroup {
-    return [
-      moreInfoControlStyle,
-      css`
-        md-outlined-button {
-          --ha-icon-display: block;
-          --md-sys-color-primary: var(--primary-text-color);
-        }
-      `,
-    ];
+    return moreInfoControlStyle;
   }
 }
 

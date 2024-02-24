@@ -1,9 +1,14 @@
+import { mdiDotsVertical } from "@mdi/js";
 import "@polymer/paper-tabs/paper-tab";
 import "@polymer/paper-tabs/paper-tabs";
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators";
+import type { ActionDetail } from "@material/mwc-list";
 import { navigate } from "../../common/navigate";
 import "../../components/ha-menu-button";
+import "../../components/ha-button-menu";
+import "../../components/ha-icon-button";
+import "../../components/ha-list-item";
 import { haStyle } from "../../resources/styles";
 import { HomeAssistant, Route } from "../../types";
 import "./developer-tools-router";
@@ -12,9 +17,9 @@ import "./developer-tools-router";
 class PanelDeveloperTools extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @property() public route!: Route;
+  @property({ attribute: false }) public route!: Route;
 
-  @property() public narrow!: boolean;
+  @property({ type: Boolean }) public narrow = false;
 
   protected firstUpdated(changedProps) {
     super.firstUpdated(changedProps);
@@ -34,12 +39,22 @@ class PanelDeveloperTools extends LitElement {
           <div class="main-title">
             ${this.hass.localize("panel.developer_tools")}
           </div>
+          <ha-button-menu slot="actionItems" @action=${this._handleMenuAction}>
+            <ha-icon-button
+              slot="trigger"
+              .label=${this.hass.localize("ui.common.menu")}
+              .path=${mdiDotsVertical}
+            ></ha-icon-button>
+            <ha-list-item>
+              ${this.hass.localize("ui.panel.developer-tools.tabs.debug.title")}
+            </ha-list-item>
+          </ha-button-menu>
         </div>
         <paper-tabs
           scrollable
           attr-for-selected="page-name"
           .selected=${page}
-          @iron-activate=${this.handlePageSelected}
+          @selected-changed=${this.handlePageSelected}
         >
           <paper-tab page-name="yaml">
             ${this.hass.localize("ui.panel.developer-tools.tabs.yaml.title")}
@@ -65,6 +80,7 @@ class PanelDeveloperTools extends LitElement {
               "ui.panel.developer-tools.tabs.statistics.title"
             )}
           </paper-tab>
+          <paper-tab page-name="assist">Assist</paper-tab>
         </paper-tabs>
       </div>
       <developer-tools-router
@@ -76,11 +92,19 @@ class PanelDeveloperTools extends LitElement {
   }
 
   private handlePageSelected(ev) {
-    const newPage = ev.detail.item.getAttribute("page-name");
+    const newPage = ev.detail.value;
     if (newPage !== this._page) {
       navigate(`/developer-tools/${newPage}`);
     } else {
-      scrollTo(0, 0);
+      scrollTo({ behavior: "smooth", top: 0 });
+    }
+  }
+
+  private async _handleMenuAction(ev: CustomEvent<ActionDetail>) {
+    switch (ev.detail.index) {
+      case 0:
+        navigate(`/developer-tools/debug`);
+        break;
     }
   }
 
@@ -93,13 +117,18 @@ class PanelDeveloperTools extends LitElement {
       haStyle,
       css`
         :host {
-          display: block;
-          height: 100%;
           color: var(--primary-text-color);
           --paper-card-header-color: var(--primary-text-color);
+          display: flex;
+          min-height: 100vh;
         }
         .header {
+          position: fixed;
+          top: 0;
+          z-index: 4;
           background-color: var(--app-header-background-color);
+          width: var(--mdc-top-app-bar-width, 100%);
+          padding-top: env(safe-area-inset-top);
           color: var(--app-header-text-color, white);
           border-bottom: var(--app-header-border-bottom, none);
         }
@@ -118,18 +147,24 @@ class PanelDeveloperTools extends LitElement {
           }
         }
         .main-title {
-          margin: 0 0 0 24px;
+          margin: var(--margin-title);
           line-height: 20px;
           flex-grow: 1;
         }
         developer-tools-router {
           display: block;
-          height: calc(100% - var(--header-height) - 48px);
-          overflow: auto;
+          padding-top: calc(
+            var(--header-height) + 48px + env(safe-area-inset-top)
+          );
+          padding-bottom: calc(env(safe-area-inset-bottom));
+          flex: 1 1 100%;
+          max-width: 100%;
         }
         paper-tabs {
           margin-left: max(env(safe-area-inset-left), 24px);
           margin-right: max(env(safe-area-inset-right), 24px);
+          margin-inline-start: max(env(safe-area-inset-left), 24px);
+          margin-inline-end: max(env(safe-area-inset-right), 24px);
           --paper-tabs-selection-bar-color: var(
             --app-header-selection-bar-color,
             var(--app-header-text-color, #fff)

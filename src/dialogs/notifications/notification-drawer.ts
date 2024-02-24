@@ -1,7 +1,7 @@
 import "@material/mwc-button";
 import { UnsubscribeFunc } from "home-assistant-js-websocket";
 import { LitElement, html, css, nothing } from "lit";
-import { customElement, property, state } from "lit/decorators";
+import { customElement, property, query, state } from "lit/decorators";
 import { fireEvent } from "../../common/dom/fire_event";
 import { computeDomain } from "../../common/entity/compute_domain";
 import "../../components/ha-icon-button-prev";
@@ -13,6 +13,8 @@ import { HomeAssistant } from "../../types";
 import "./notification-item";
 import "../../components/ha-header-bar";
 import "../../components/ha-drawer";
+import type { HaDrawer } from "../../components/ha-drawer";
+import { computeRTLDirection } from "../../common/util/compute_rtl";
 
 @customElement("notification-drawer")
 export class HuiNotificationDrawer extends LitElement {
@@ -21,6 +23,8 @@ export class HuiNotificationDrawer extends LitElement {
   @state() private _notifications: PersistentNotification[] = [];
 
   @state() private _open = false;
+
+  @query("ha-drawer") private _drawer?: HaDrawer;
 
   private _unsubNotifications?: UnsubscribeFunc;
 
@@ -31,7 +35,7 @@ export class HuiNotificationDrawer extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    window.addEventListener("location-changed", this.closeDialog);
+    window.removeEventListener("location-changed", this.closeDialog);
   }
 
   showDialog({ narrow }) {
@@ -53,12 +57,14 @@ export class HuiNotificationDrawer extends LitElement {
   }
 
   closeDialog = () => {
+    if (this._drawer) {
+      this._drawer.open = false;
+    }
     if (this._unsubNotifications) {
       this._unsubNotifications();
       this._unsubNotifications = undefined;
     }
     this._notifications = [];
-    this._open = false;
     fireEvent(this, "dialog-closed", { dialog: this.localName });
   };
 
@@ -89,8 +95,9 @@ export class HuiNotificationDrawer extends LitElement {
     return html`
       <ha-drawer
         type="modal"
-        .open=${this._open}
-        @MDCDrawer:closed=${this._closeDrawer}
+        open
+        @MDCDrawer:closed=${this._dialogClosed}
+        .direction=${computeRTLDirection(this.hass)}
       >
         <ha-header-bar>
           <div slot="title">
@@ -99,7 +106,7 @@ export class HuiNotificationDrawer extends LitElement {
           <ha-icon-button-prev
             slot="actionItems"
             .hass=${this.hass}
-            @click=${this._closeDrawer}
+            @click=${this.closeDialog}
             .label=${this.hass.localize("ui.notification_drawer.close")}
           >
           </ha-icon-button-prev>
@@ -107,12 +114,13 @@ export class HuiNotificationDrawer extends LitElement {
         <div class="notifications">
           ${notifications.length
             ? html`${notifications.map(
-                (notification) => html`<div class="notification">
-                  <notification-item
-                    .hass=${this.hass}
-                    .notification=${notification}
-                  ></notification-item>
-                </div>`
+                (notification) =>
+                  html`<div class="notification">
+                    <notification-item
+                      .hass=${this.hass}
+                      .notification=${notification}
+                    ></notification-item>
+                  </div>`
               )}
               ${this._notifications.length > 1
                 ? html`<div class="notification-actions">
@@ -132,17 +140,13 @@ export class HuiNotificationDrawer extends LitElement {
     `;
   }
 
-  private _closeDrawer(ev) {
+  private _dialogClosed(ev: Event) {
     ev.stopPropagation();
-    this.closeDialog();
+    this._open = false;
   }
 
   private _dismissAll() {
-    this._notifications.forEach((notification) => {
-      this.hass.callService("persistent_notification", "dismiss", {
-        notification_id: notification.notification_id,
-      });
-    });
+    this.hass.callService("persistent_notification", "dismiss_all");
     this.closeDialog();
   }
 
@@ -159,6 +163,8 @@ export class HuiNotificationDrawer extends LitElement {
       padding-top: 16px;
       padding-left: env(safe-area-inset-left);
       padding-right: env(safe-area-inset-right);
+      padding-inline-start: env(safe-area-inset-left);
+      padding-inline-end: env(safe-area-inset-right);
       padding-bottom: env(safe-area-inset-bottom);
       height: calc(100% - 1px - var(--header-height));
       box-sizing: border-box;

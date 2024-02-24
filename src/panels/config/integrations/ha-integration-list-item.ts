@@ -58,6 +58,7 @@ export class HaIntegrationListItem extends ListItemBase {
           darkOptimized: this.hass.themes?.darkMode,
           brand: this.brand,
         })}
+        crossorigin="anonymous"
         referrerpolicy="no-referrer"
       />
     </span>`;
@@ -84,7 +85,7 @@ export class HaIntegrationListItem extends ListItemBase {
             ><ha-svg-icon .path=${mdiPackageVariant}></ha-svg-icon
             ><simple-tooltip animation-delay="0" position="left"
               >${this.hass.localize(
-                "ui.panel.config.integrations.config_entry.provided_by_custom_integration"
+                "ui.panel.config.integrations.config_entry.custom_integration"
               )}</simple-tooltip
             ></span
           >`
@@ -141,12 +142,18 @@ export class HaIntegrationListItem extends ListItemBase {
         }
         .mdc-deprecated-list-item__meta > * {
           margin-right: 8px;
+          margin-inline-end: 8px;
+          margin-inline-start: initial;
         }
         .mdc-deprecated-list-item__meta > *:last-child {
           margin-right: 0px;
+          margin-inline-end: 0px;
+          margin-inline-start: initial;
         }
         ha-icon-next {
           margin-right: 8px;
+          margin-inline-end: 8px;
+          margin-inline-start: initial;
         }
         .open-in-new {
           --mdc-icon-size: 22px;

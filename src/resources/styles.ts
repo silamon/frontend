@@ -178,6 +178,8 @@ export const haStyle = css`
 
   app-toolbar [main-title] {
     margin-left: 20px;
+    margin-inline-start: 20px;
+    margin-inline-end: initial;
   }
 
   h1 {
@@ -293,8 +295,7 @@ export const haStyleDialog = css`
   ha-dialog {
     --mdc-dialog-min-width: 400px;
     --mdc-dialog-max-width: 600px;
-    --mdc-dialog-heading-ink-color: var(--primary-text-color);
-    --mdc-dialog-content-ink-color: var(--primary-text-color);
+    --mdc-dialog-max-width: min(600px, 95vw);
     --justify-action-buttons: space-between;
   }
 
@@ -318,7 +319,7 @@ export const haStyleDialog = css`
       --mdc-dialog-min-height: 100%;
       --mdc-dialog-max-height: 100%;
       --vertical-align-dialog: flex-end;
-      --ha-dialog-border-radius: 0px;
+      --ha-dialog-border-radius: 0;
     }
   }
   mwc-button.warning,

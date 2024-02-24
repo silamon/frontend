@@ -9,6 +9,7 @@ import "../../components/ha-card";
 import "../../components/ha-settings-row";
 import "../../components/ha-icon-button";
 import { RefreshToken } from "../../data/refresh_token";
+import { deleteAllRefreshTokens } from "../../data/auth";
 import {
   showAlertDialog,
   showConfirmationDialog,
@@ -50,59 +51,70 @@ class HaRefreshTokens extends LitElement {
         ${this.hass.localize("ui.panel.profile.refresh_tokens.description")}
         ${refreshTokens?.length
           ? refreshTokens!.map(
-              (token) => html`<ha-settings-row three-line>
-                <span slot="heading"
-                  >${this.hass.localize(
-                    "ui.panel.profile.refresh_tokens.token_title",
-                    { clientId: token.client_id }
-                  )}
-                </span>
-                <div slot="description">
-                  ${this.hass.localize(
-                    "ui.panel.profile.refresh_tokens.created_at",
-                    {
-                      date: relativeTime(
-                        new Date(token.created_at),
-                        this.hass.locale
-                      ),
-                    }
-                  )}
-                </div>
-                <div slot="description">
-                  ${token.last_used_at
-                    ? this.hass.localize(
-                        "ui.panel.profile.refresh_tokens.last_used",
-                        {
-                          date: relativeTime(
-                            new Date(token.last_used_at),
-                            this.hass.locale
-                          ),
-                          location: token.last_used_ip,
-                        }
-                      )
-                    : this.hass.localize(
-                        "ui.panel.profile.refresh_tokens.not_used"
-                      )}
-                </div>
-                <div>
-                  ${token.is_current
-                    ? html`<simple-tooltip animation-delay="0" position="left">
-                        ${this.hass.localize(
-                          "ui.panel.profile.refresh_tokens.current_token_tooltip"
+              (token) =>
+                html`<ha-settings-row three-line>
+                  <span slot="heading"
+                    >${this.hass.localize(
+                      "ui.panel.profile.refresh_tokens.token_title",
+                      { clientId: token.client_id }
+                    )}
+                  </span>
+                  <div slot="description">
+                    ${this.hass.localize(
+                      "ui.panel.profile.refresh_tokens.created_at",
+                      {
+                        date: relativeTime(
+                          new Date(token.created_at),
+                          this.hass.locale
+                        ),
+                      }
+                    )}
+                  </div>
+                  <div slot="description">
+                    ${token.last_used_at
+                      ? this.hass.localize(
+                          "ui.panel.profile.refresh_tokens.last_used",
+                          {
+                            date: relativeTime(
+                              new Date(token.last_used_at),
+                              this.hass.locale
+                            ),
+                            location: token.last_used_ip,
+                          }
+                        )
+                      : this.hass.localize(
+                          "ui.panel.profile.refresh_tokens.not_used"
                         )}
-                      </simple-tooltip>`
-                    : ""}
-                  <ha-icon-button
-                    .token=${token}
-                    .disabled=${token.is_current}
-                    .label=${this.hass.localize("ui.common.delete")}
-                    .path=${mdiDelete}
-                    @click=${this._deleteToken}
-                  ></ha-icon-button>
-                </div>
-              </ha-settings-row>`
+                  </div>
+                  <div>
+                    ${token.is_current
+                      ? html`<simple-tooltip
+                          animation-delay="0"
+                          position="left"
+                        >
+                          ${this.hass.localize(
+                            "ui.panel.profile.refresh_tokens.current_token_tooltip"
+                          )}
+                        </simple-tooltip>`
+                      : ""}
+                    <ha-icon-button
+                      .token=${token}
+                      .disabled=${token.is_current}
+                      .label=${this.hass.localize("ui.common.delete")}
+                      .path=${mdiDelete}
+                      @click=${this._deleteToken}
+                    ></ha-icon-button>
+                  </div>
+                </ha-settings-row>`
             )
           : ""}
+      </div>
+      <div class="card-actions">
+        <mwc-button class="warning" @click=${this._deleteAllTokens}>
+          ${this.hass.localize(
+            "ui.panel.profile.refresh_tokens.delete_all_tokens"
+          )}
+        </mwc-button>
       </div>
     </ha-card>`;
   }
@@ -124,6 +136,30 @@ class HaRefreshTokens extends LitElement {
         type: "auth/delete_refresh_token",
         refresh_token_id: token.id,
       });
+      fireEvent(this, "hass-refresh-tokens");
+    } catch (err: any) {
+      await showAlertDialog(this, {
+        title: this.hass.localize(
+          "ui.panel.profile.refresh_tokens.delete_failed"
+        ),
+        text: err.message,
+      });
+    }
+  }
+
+  private async _deleteAllTokens(): Promise<void> {
+    if (
+      !(await showConfirmationDialog(this, {
+        text: this.hass.localize(
+          "ui.panel.profile.refresh_tokens.confirm_delete_all"
+        ),
+        destructive: true,
+      }))
+    ) {
+      return;
+    }
+    try {
+      await deleteAllRefreshTokens(this.hass, "normal", false);
       fireEvent(this, "hass-refresh-tokens");
     } catch (err: any) {
       await showAlertDialog(this, {

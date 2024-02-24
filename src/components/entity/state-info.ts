@@ -3,7 +3,6 @@ import type { HassEntity } from "home-assistant-js-websocket";
 import { css, CSSResultGroup, html, LitElement, nothing } from "lit";
 import { customElement, property } from "lit/decorators";
 import { computeStateName } from "../../common/entity/compute_state_name";
-import { computeRTL } from "../../common/util/compute_rtl";
 import type { HomeAssistant } from "../../types";
 import "../ha-relative-time";
 import "./state-badge";
@@ -16,9 +15,6 @@ class StateInfo extends LitElement {
 
   @property({ type: Boolean }) public inDialog = false;
 
-  // property used only in CSS
-  @property({ type: Boolean, reflect: true }) public rtl = false;
-
   @property() public color?: string;
 
   protected render() {
@@ -29,6 +25,7 @@ class StateInfo extends LitElement {
     const name = computeStateName(this.stateObj);
 
     return html`<state-badge
+        .hass=${this.hass}
         .stateObj=${this.stateObj}
         .stateColor=${true}
         .color=${this.color}
@@ -78,44 +75,29 @@ class StateInfo extends LitElement {
       </div>`;
   }
 
-  protected updated(changedProps) {
-    super.updated(changedProps);
-    if (!changedProps.has("hass")) {
-      return;
-    }
-
-    const oldHass = changedProps.get("hass") as HomeAssistant | undefined;
-    if (!oldHass || oldHass.locale !== this.hass.locale) {
-      this.rtl = computeRTL(this.hass);
-    }
-  }
-
   static get styles(): CSSResultGroup {
     return css`
       :host {
         min-width: 120px;
         white-space: nowrap;
+        display: flex;
+        align-items: center;
       }
 
       state-badge {
-        float: left;
-      }
-      :host([rtl]) state-badge {
-        float: right;
+        flex: none;
       }
 
       .info {
-        margin-left: 56px;
+        margin-left: 8px;
+        margin-inline-start: 8px;
+        margin-inline-end: initial;
         display: flex;
         flex-direction: column;
         justify-content: center;
         height: 100%;
-      }
-
-      :host([rtl]) .info {
-        margin-right: 56px;
-        margin-left: 0;
-        text-align: right;
+        min-width: 0;
+        text-align: var(--float-start);
       }
 
       .name {
@@ -125,7 +107,7 @@ class StateInfo extends LitElement {
         text-overflow: ellipsis;
       }
 
-      .name[in-dialog],
+      .name[inDialog],
       :host([secondary-line]) .name {
         line-height: 20px;
       }

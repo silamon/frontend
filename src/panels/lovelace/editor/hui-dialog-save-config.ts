@@ -3,14 +3,13 @@ import { mdiHelpCircle } from "@mdi/js";
 import { CSSResultGroup, html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators";
 import { fireEvent } from "../../../common/dom/fire_event";
-import { computeRTLDirection } from "../../../common/util/compute_rtl";
 import "../../../components/ha-circular-progress";
 import "../../../components/ha-dialog";
 import "../../../components/ha-formfield";
 import "../../../components/ha-icon-button";
 import "../../../components/ha-switch";
 import "../../../components/ha-yaml-editor";
-import type { LovelaceConfig } from "../../../data/lovelace";
+import { LovelaceConfig } from "../../../data/lovelace/config/types";
 import type { HassDialog } from "../../../dialogs/make-dialog-manager";
 import { haStyleDialog } from "../../../resources/styles";
 import type { HomeAssistant } from "../../../types";
@@ -64,7 +63,6 @@ export class HuiSaveConfig extends LitElement implements HassDialog {
             title=${this.hass!.localize("ui.panel.lovelace.menu.help")}
             target="_blank"
             rel="noreferrer"
-            dir=${computeRTLDirection(this.hass!)}
           >
             <ha-icon-button
               .path=${mdiHelpCircle}
@@ -88,7 +86,6 @@ export class HuiSaveConfig extends LitElement implements HassDialog {
                   .label=${this.hass!.localize(
                     "ui.panel.lovelace.editor.save_config.empty_config"
                   )}
-                  .dir=${computeRTLDirection(this.hass!)}
                 >
                   <ha-switch
                     .checked=${this._emptyConfig}
@@ -132,9 +129,9 @@ export class HuiSaveConfig extends LitElement implements HassDialog {
               >
                 ${this._saving
                   ? html`<ha-circular-progress
-                      active
+                      indeterminate
                       size="small"
-                      title="Saving"
+                      aria-label="Saving"
                     ></ha-circular-progress>`
                   : ""}
                 ${this.hass!.localize(
@@ -174,11 +171,7 @@ export class HuiSaveConfig extends LitElement implements HassDialog {
       await lovelace.saveConfig(
         this._emptyConfig
           ? EMPTY_CONFIG
-          : await expandLovelaceConfigStrategies({
-              config: lovelace.config,
-              hass: this.hass!,
-              narrow: this._params!.narrow,
-            })
+          : await expandLovelaceConfigStrategies(lovelace.config, this.hass)
       );
       lovelace.setEditMode(true);
       this._saving = false;

@@ -1,28 +1,31 @@
 import { mdiMenu, mdiSwapVertical } from "@mdi/js";
 import {
-  css,
   CSSResultGroup,
-  html,
   LitElement,
-  nothing,
   PropertyValues,
+  css,
+  html,
+  nothing,
 } from "lit";
 import { customElement, property, state } from "lit/decorators";
-import { computeStateDisplay } from "../../../common/entity/compute_state_display";
 import { supportsFeature } from "../../../common/entity/supports-feature";
 import "../../../components/ha-attributes";
+import "../../../components/ha-icon-button-group";
+import "../../../components/ha-icon-button-toggle";
 import {
-  computeCoverPositionStateDisplay,
   CoverEntity,
   CoverEntityFeature,
+  computeCoverPositionStateDisplay,
 } from "../../../data/cover";
+import "../../../state-control/cover/ha-state-control-cover-buttons";
+import "../../../state-control/cover/ha-state-control-cover-position";
+import "../../../state-control/cover/ha-state-control-cover-tilt-position";
+import "../../../state-control/cover/ha-state-control-cover-toggle";
 import type { HomeAssistant } from "../../../types";
-import "../components/cover/ha-more-info-cover-buttons";
-import "../components/cover/ha-more-info-cover-position";
-import "../components/cover/ha-more-info-cover-tilt-position";
-import "../components/cover/ha-more-info-cover-toggle";
-import { moreInfoControlStyle } from "../components/ha-more-info-control-style";
 import "../components/ha-more-info-state-header";
+import { moreInfoControlStyle } from "../components/more-info-control-style";
+
+type Mode = "position" | "button";
 
 @customElement("more-info-cover")
 class MoreInfoCover extends LitElement {
@@ -30,40 +33,18 @@ class MoreInfoCover extends LitElement {
 
   @property({ attribute: false }) public stateObj?: CoverEntity;
 
-  @state() private _livePosition?: number;
+  @state() private _mode?: Mode;
 
-  @state() private _liveTilt?: number;
-
-  @state() private _mode?: "position" | "button";
-
-  private _toggleMode() {
-    this._mode = this._mode === "position" ? "button" : "position";
-  }
-
-  private _positionSliderMoved(ev) {
-    const value = (ev.detail as any).value;
-    if (isNaN(value)) return;
-    this._livePosition = value;
-  }
-
-  private _positionValueChanged() {
-    this._livePosition = undefined;
-  }
-
-  private _tiltSliderMoved(ev) {
-    const value = (ev.detail as any).value;
-    if (isNaN(value)) return;
-    this._liveTilt = value;
-  }
-
-  private _tiltValueChanged() {
-    this._liveTilt = undefined;
+  private _setMode(ev) {
+    this._mode = ev.currentTarget.mode;
   }
 
   protected willUpdate(changedProps: PropertyValues): void {
     super.willUpdate(changedProps);
     if (changedProps.has("stateObj") && this.stateObj) {
-      if (!this._mode) {
+      const entityId = this.stateObj.entity_id;
+      const oldEntityId = changedProps.get("stateObj")?.entity_id;
+      if (!this._mode || entityId !== oldEntityId) {
         this._mode =
           supportsFeature(this.stateObj, CoverEntityFeature.SET_POSITION) ||
           supportsFeature(this.stateObj, CoverEntityFeature.SET_TILT_POSITION)
@@ -74,23 +55,11 @@ class MoreInfoCover extends LitElement {
   }
 
   private get _stateOverride() {
-    const liveValue = this._livePosition ?? this._liveTilt;
-
-    const forcedState =
-      liveValue != null ? (liveValue ? "open" : "closed") : undefined;
-
-    const stateDisplay = computeStateDisplay(
-      this.hass.localize,
-      this.stateObj!,
-      this.hass.locale,
-      this.hass.entities,
-      forcedState
-    );
+    const stateDisplay = this.hass.formatEntityState(this.stateObj!);
 
     const positionStateDisplay = computeCoverPositionStateDisplay(
       this.stateObj!,
-      this.hass.locale,
-      liveValue
+      this.hass
     );
 
     if (positionStateDisplay) {
@@ -144,22 +113,18 @@ class MoreInfoCover extends LitElement {
               ? html`
                   ${supportsPosition
                     ? html`
-                        <ha-more-info-cover-position
+                        <ha-state-control-cover-position
                           .stateObj=${this.stateObj}
                           .hass=${this.hass}
-                          @slider-moved=${this._positionSliderMoved}
-                          @value-changed=${this._positionValueChanged}
-                        ></ha-more-info-cover-position>
+                        ></ha-state-control-cover-position>
                       `
                     : nothing}
                   ${supportsTiltPosition
                     ? html`
-                        <ha-more-info-cover-tilt-position
+                        <ha-state-control-cover-tilt-position
                           .stateObj=${this.stateObj}
                           .hass=${this.hass}
-                          @slider-moved=${this._tiltSliderMoved}
-                          @value-changed=${this._tiltValueChanged}
-                        ></ha-more-info-cover-tilt-position>
+                        ></ha-state-control-cover-tilt-position>
                       `
                     : nothing}
                 `
@@ -170,19 +135,19 @@ class MoreInfoCover extends LitElement {
               ? html`
                   ${supportsOpenCloseWithoutStop
                     ? html`
-                        <ha-more-info-cover-toggle
+                        <ha-state-control-cover-toggle
                           .stateObj=${this.stateObj}
                           .hass=${this.hass}
-                        ></ha-more-info-cover-toggle>
+                        ></ha-state-control-cover-toggle>
                       `
                     : supportsOpenClose || supportsTilt
-                    ? html`
-                        <ha-more-info-cover-buttons
-                          .stateObj=${this.stateObj}
-                          .hass=${this.hass}
-                        ></ha-more-info-cover-buttons>
-                      `
-                    : nothing}
+                      ? html`
+                          <ha-state-control-cover-buttons
+                            .stateObj=${this.stateObj}
+                            .hass=${this.hass}
+                          ></ha-state-control-cover-buttons>
+                        `
+                      : nothing}
                 `
               : nothing
           }
@@ -191,19 +156,26 @@ class MoreInfoCover extends LitElement {
             (supportsPosition || supportsTiltPosition) &&
             (supportsOpenClose || supportsTilt)
               ? html`
-                  <div class="actions">
-                    <ha-icon-button
+                  <ha-icon-button-group>
+                    <ha-icon-button-toggle
                       .label=${this.hass.localize(
-                        `ui.dialogs.more_info_control.cover.switch_mode.${
-                          this._mode || "position"
-                        }`
+                        `ui.dialogs.more_info_control.cover.switch_mode.position`
                       )}
-                      .path=${this._mode === "position"
-                        ? mdiSwapVertical
-                        : mdiMenu}
-                      @click=${this._toggleMode}
-                    ></ha-icon-button>
-                  </div>
+                      .selected=${this._mode === "position"}
+                      .path=${mdiMenu}
+                      .mode=${"position"}
+                      @click=${this._setMode}
+                    ></ha-icon-button-toggle>
+                    <ha-icon-button-toggle
+                      .label=${this.hass.localize(
+                        `ui.dialogs.more_info_control.cover.switch_mode.button`
+                      )}
+                      .selected=${this._mode === "button"}
+                      .path=${mdiSwapVertical}
+                      .mode=${"button"}
+                      @click=${this._setMode}
+                    ></ha-icon-button-toggle>
+                  </ha-icon-button-group>
                 `
               : nothing
           }

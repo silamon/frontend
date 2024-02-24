@@ -18,9 +18,6 @@ import {
 } from "superstruct";
 import { fireEvent, HASSDomEvent } from "../../../../common/dom/fire_event";
 import { customType } from "../../../../common/structs/is-custom-type";
-import { entityId } from "../../../../common/structs/is-entity-id";
-import { computeRTLDirection } from "../../../../common/util/compute_rtl";
-import "../../../../components/entity/state-badge";
 import "../../../../components/ha-card";
 import "../../../../components/ha-formfield";
 import "../../../../components/ha-icon";
@@ -184,7 +181,7 @@ const cardConfigStruct = assign(
   baseLovelaceCardConfig,
   object({
     title: optional(union([string(), boolean()])),
-    entity: optional(entityId()),
+    entity: optional(string()),
     theme: optional(string()),
     icon: optional(string()),
     show_header_toggle: optional(boolean()),
@@ -267,7 +264,6 @@ export class HuiEntitiesCardEditor
             .label=${this.hass.localize(
               "ui.panel.lovelace.editor.card.entities.show_header_toggle"
             )}
-            .dir=${computeRTLDirection(this.hass)}
           >
             <ha-switch
               .checked=${this._config!.show_header_toggle !== false}
@@ -279,7 +275,6 @@ export class HuiEntitiesCardEditor
             .label=${this.hass.localize(
               "ui.panel.lovelace.editor.card.generic.state_color"
             )}
-            .dir=${computeRTLDirection(this.hass)}
           >
             <ha-switch
               .checked=${this._config!.state_color}

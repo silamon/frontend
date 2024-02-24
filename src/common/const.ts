@@ -1,6 +1,7 @@
 /** Constants to be used in the frontend. */
 
 import {
+  mdiAccount,
   mdiAirFilter,
   mdiAlert,
   mdiAngleAcute,
@@ -10,12 +11,14 @@ import {
   mdiBookmark,
   mdiBrightness5,
   mdiBullhorn,
+  mdiButtonPointer,
   mdiCalendar,
   mdiCalendarClock,
   mdiCarCoolantLevel,
   mdiCash,
+  mdiChatSleep,
+  mdiClipboardList,
   mdiClock,
-  mdiCloudUpload,
   mdiCog,
   mdiCommentAlert,
   mdiCounter,
@@ -26,13 +29,13 @@ import {
   mdiFlash,
   mdiFlower,
   mdiFormatListBulleted,
+  mdiFormatListCheckbox,
   mdiFormTextbox,
   mdiGauge,
-  mdiGestureTapButton,
   mdiGoogleAssistant,
   mdiGoogleCirclesCommunities,
-  mdiHomeAssistant,
   mdiHomeAutomation,
+  mdiImage,
   mdiImageFilterFrames,
   mdiLightbulb,
   mdiLightningBolt,
@@ -44,60 +47,82 @@ import {
   mdiMoleculeCo,
   mdiMoleculeCo2,
   mdiPalette,
+  mdiPh,
+  mdiPipe,
   mdiProgressClock,
   mdiRayVertex,
   mdiRemote,
+  mdiRobot,
+  mdiRobotMower,
   mdiRobotVacuum,
+  mdiRoomService,
   mdiScriptText,
   mdiSineWave,
+  mdiSpeakerMessage,
   mdiSpeedometer,
   mdiSunWireless,
   mdiThermometer,
   mdiThermometerLines,
   mdiThermostat,
   mdiTimerOutline,
+  mdiToggleSwitch,
   mdiTransmissionTower,
   mdiWater,
   mdiWaterPercent,
+  mdiWeatherPartlyCloudy,
   mdiWeatherPouring,
   mdiWeatherRainy,
   mdiWeatherWindy,
   mdiWeight,
+  mdiWhiteBalanceSunny,
   mdiWifi,
 } from "@mdi/js";
+
+import { mdiHomeAssistant } from "../resources/home-assistant-logo-svg";
 
 // Constants should be alphabetically sorted by name.
 // Arrays with values should be alphabetically sorted if order doesn't matter.
 // Each constant should have a description what it is supposed to be used for.
+
+/** Icon to use when no icon specified for service. */
+export const DEFAULT_SERVICE_ICON = mdiRoomService;
 
 /** Icon to use when no icon specified for domain. */
 export const DEFAULT_DOMAIN_ICON = mdiBookmark;
 
 /** Icons for each domain */
 export const FIXED_DOMAIN_ICONS = {
-  alert: mdiAlert,
   air_quality: mdiAirFilter,
+  alert: mdiAlert,
+  automation: mdiRobot,
   calendar: mdiCalendar,
   climate: mdiThermostat,
   configurator: mdiCog,
   conversation: mdiMicrophoneMessage,
   counter: mdiCounter,
+  date: mdiCalendar,
+  datetime: mdiCalendarClock,
   demo: mdiHomeAssistant,
+  device_tracker: mdiAccount,
   google_assistant: mdiGoogleAssistant,
   group: mdiGoogleCirclesCommunities,
   homeassistant: mdiHomeAssistant,
   homekit: mdiHomeAutomation,
   image_processing: mdiImageFilterFrames,
-  input_button: mdiGestureTapButton,
+  image: mdiImage,
+  input_boolean: mdiToggleSwitch,
+  input_button: mdiButtonPointer,
   input_datetime: mdiCalendarClock,
   input_number: mdiRayVertex,
   input_select: mdiFormatListBulleted,
   input_text: mdiFormTextbox,
+  lawn_mower: mdiRobotMower,
   light: mdiLightbulb,
   mailbox: mdiMailbox,
   notify: mdiCommentAlert,
   number: mdiRayVertex,
   persistent_notification: mdiBell,
+  person: mdiAccount,
   plant: mdiFlower,
   proximity: mdiAppleSafari,
   remote: mdiRemote,
@@ -106,12 +131,18 @@ export const FIXED_DOMAIN_ICONS = {
   script: mdiScriptText,
   select: mdiFormatListBulleted,
   sensor: mdiEye,
-  siren: mdiBullhorn,
   simple_alarm: mdiBell,
+  siren: mdiBullhorn,
+  stt: mdiMicrophoneMessage,
+  sun: mdiWhiteBalanceSunny,
   text: mdiFormTextbox,
+  time: mdiClock,
   timer: mdiTimerOutline,
-  updater: mdiCloudUpload,
+  todo: mdiClipboardList,
+  tts: mdiSpeakerMessage,
   vacuum: mdiRobotVacuum,
+  wake_word: mdiChatSleep,
+  weather: mdiWeatherPartlyCloudy,
   zone: mdiMapMarkerRadius,
 };
 
@@ -140,6 +171,7 @@ export const FIXED_DEVICE_CLASS_ICONS = {
   nitrogen_monoxide: mdiMolecule,
   nitrous_oxide: mdiMolecule,
   ozone: mdiMolecule,
+  ph: mdiPh,
   pm1: mdiMolecule,
   pm10: mdiMolecule,
   pm25: mdiMolecule,
@@ -149,6 +181,7 @@ export const FIXED_DEVICE_CLASS_ICONS = {
   precipitation_intensity: mdiWeatherPouring,
   pressure: mdiGauge,
   reactive_power: mdiFlash,
+  shopping_List: mdiFormatListCheckbox,
   signal_strength: mdiWifi,
   sound_pressure: mdiEarHearing,
   speed: mdiSpeedometer,
@@ -156,8 +189,10 @@ export const FIXED_DEVICE_CLASS_ICONS = {
   temperature: mdiThermometer,
   timestamp: mdiClock,
   volatile_organic_compounds: mdiMolecule,
+  volatile_organic_compounds_parts: mdiMolecule,
   voltage: mdiSineWave,
   volume: mdiCarCoolantLevel,
+  volume_flow_rate: mdiPipe,
   water: mdiWater,
   weight: mdiWeight,
   wind_speed: mdiWeatherWindy,
@@ -165,14 +200,18 @@ export const FIXED_DEVICE_CLASS_ICONS = {
 
 /** Domains that have a state card. */
 export const DOMAINS_WITH_CARD = [
+  "alert",
   "button",
   "climate",
   "cover",
   "configurator",
+  "event",
   "input_button",
   "input_select",
   "input_number",
   "input_text",
+  "humidifier",
+  "lawn_mower",
   "lock",
   "media_player",
   "number",
@@ -181,6 +220,7 @@ export const DOMAINS_WITH_CARD = [
   "select",
   "timer",
   "text",
+  "update",
   "vacuum",
   "water_heater",
 ];
@@ -205,6 +245,8 @@ export const DOMAINS_INPUT_ROW = [
   "automation",
   "button",
   "cover",
+  "date",
+  "datetime",
   "fan",
   "group",
   "humidifier",
@@ -223,7 +265,9 @@ export const DOMAINS_INPUT_ROW = [
   "select",
   "switch",
   "text",
+  "time",
   "vacuum",
+  "valve",
 ];
 
 /** States that we consider "off". */
@@ -242,10 +286,15 @@ export const DOMAINS_TOGGLE = new Set([
   "group",
   "automation",
   "humidifier",
+  "valve",
 ]);
 
 /** Domains that have a dynamic entity image / picture. */
-export const DOMAINS_WITH_DYNAMIC_PICTURE = new Set(["camera", "media_player"]);
+export const DOMAINS_WITH_DYNAMIC_PICTURE = new Set([
+  "camera",
+  "image",
+  "media_player",
+]);
 
 /** Temperature units. */
 export const UNIT_C = "°C";

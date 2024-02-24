@@ -15,6 +15,7 @@ import "../components/ha-drawer";
 import { showNotificationDrawer } from "../dialogs/notifications/show-notification-drawer";
 import type { HomeAssistant, Route } from "../types";
 import "./partial-panel-resolver";
+import { computeRTLDirection } from "../common/util/compute_rtl";
 
 declare global {
   // for fire event
@@ -37,9 +38,9 @@ interface EditSideBarEvent {
 export class HomeAssistantMain extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @property() public route?: Route;
+  @property({ attribute: false }) public route?: Route;
 
-  @property({ type: Boolean }) public narrow!: boolean;
+  @property({ type: Boolean }) public narrow = false;
 
   @state() private _sidebarEditMode = false;
 
@@ -61,6 +62,7 @@ export class HomeAssistantMain extends LitElement {
       <ha-drawer
         .type=${sidebarNarrow ? "modal" : ""}
         .open=${sidebarNarrow ? this._drawerOpen : undefined}
+        .direction=${computeRTLDirection(this.hass)}
         @MDCDrawer:closed=${this._drawerClosed}
       >
         <ha-sidebar
@@ -125,10 +127,10 @@ export class HomeAssistantMain extends LitElement {
           dock: ev.detail?.open
             ? "docked"
             : ev.detail?.open === false
-            ? "auto"
-            : this.hass.dockedSidebar === "auto"
-            ? "docked"
-            : "auto",
+              ? "auto"
+              : this.hass.dockedSidebar === "auto"
+                ? "docked"
+                : "auto",
         });
       }
     });

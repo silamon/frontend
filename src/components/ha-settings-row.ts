@@ -3,7 +3,7 @@ import { customElement, property } from "lit/decorators";
 
 @customElement("ha-settings-row")
 export class HaSettingsRow extends LitElement {
-  @property({ type: Boolean, reflect: true }) public narrow!: boolean;
+  @property({ type: Boolean, reflect: true }) public narrow = false;
 
   @property({ type: Boolean, attribute: "three-line" })
   public threeLine = false;
@@ -35,7 +35,12 @@ export class HaSettingsRow extends LitElement {
         align-items: center;
       }
       .body {
-        padding: 8px 16px 8px 0;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        padding-left: 0;
+        padding-inline-start: 0;
+        padding-right: 16x;
+        padding-inline-end: 16px;
         overflow: hidden;
         display: var(--layout-vertical_-_display);
         flex-direction: var(--layout-vertical_-_flex-direction);
@@ -52,18 +57,17 @@ export class HaSettingsRow extends LitElement {
         white-space: nowrap;
       }
       .body > .secondary {
-        font-family: var(--paper-font-body1_-_font-family);
-        -webkit-font-smoothing: var(
-          --paper-font-body1_-_-webkit-font-smoothing
+        display: block;
+        padding-top: 4px;
+        font-family: var(
+          --mdc-typography-body2-font-family,
+          var(--mdc-typography-font-family, Roboto, sans-serif)
         );
-        font-size: var(--paper-font-body1_-_font-size);
-        font-weight: var(--paper-font-body1_-_font-weight);
-        line-height: var(--paper-font-body1_-_line-height);
-
-        color: var(
-          --paper-item-body-secondary-color,
-          var(--secondary-text-color)
-        );
+        -webkit-font-smoothing: antialiased;
+        font-size: var(--mdc-typography-body2-font-size, 0.875rem);
+        font-weight: var(--mdc-typography-body2-font-weight, 400);
+        line-height: normal;
+        color: var(--secondary-text-color);
       }
       .body[two-line] {
         min-height: calc(

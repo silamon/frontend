@@ -1,16 +1,6 @@
 import { mdiRefresh } from "@mdi/js";
-import {
-  addDays,
-  endOfToday,
-  endOfWeek,
-  endOfYesterday,
-  startOfToday,
-  startOfWeek,
-  startOfYesterday,
-} from "date-fns/esm";
 import { css, html, LitElement, PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators";
-import { firstWeekdayIndex } from "../../common/datetime/first_weekday";
 import { navigate } from "../../common/navigate";
 import { constructUrlCurrentPath } from "../../common/url/construct-url";
 import {
@@ -20,7 +10,6 @@ import {
 } from "../../common/url/search-params";
 import "../../components/entity/ha-entity-picker";
 import "../../components/ha-date-range-picker";
-import type { DateRangePickerRanges } from "../../components/ha-date-range-picker";
 import "../../components/ha-icon-button";
 import "../../components/ha-icon-button-arrow-prev";
 import "../../components/ha-menu-button";
@@ -32,15 +21,13 @@ import "./ha-logbook";
 
 @customElement("ha-panel-logbook")
 export class HaPanelLogbook extends LitElement {
-  @property() hass!: HomeAssistant;
+  @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @property({ reflect: true, type: Boolean }) narrow!: boolean;
+  @property({ type: Boolean, reflect: true }) public narrow = false;
 
   @state() _time: { range: [Date, Date] };
 
   @state() _entityIds?: string[];
-
-  @state() private _ranges?: DateRangePickerRanges;
 
   @state()
   private _showBack?: boolean;
@@ -91,7 +78,6 @@ export class HaPanelLogbook extends LitElement {
             .hass=${this.hass}
             .startDate=${this._time.range[0]}
             .endDate=${this._time.range[1]}
-            .ranges=${this._ranges}
             @change=${this._dateRangeChanged}
           ></ha-date-range-picker>
 
@@ -122,24 +108,6 @@ export class HaPanelLogbook extends LitElement {
     if (this.hasUpdated) {
       return;
     }
-
-    const today = new Date();
-    const weekStartsOn = firstWeekdayIndex(this.hass.locale);
-    const weekStart = startOfWeek(today, { weekStartsOn });
-    const weekEnd = endOfWeek(today, { weekStartsOn });
-
-    this._ranges = {
-      [this.hass.localize("ui.components.date-range-picker.ranges.today")]: [
-        startOfToday(),
-        endOfToday(),
-      ],
-      [this.hass.localize("ui.components.date-range-picker.ranges.yesterday")]:
-        [startOfYesterday(), endOfYesterday()],
-      [this.hass.localize("ui.components.date-range-picker.ranges.this_week")]:
-        [weekStart, weekEnd],
-      [this.hass.localize("ui.components.date-range-picker.ranges.last_week")]:
-        [addDays(weekStart, -7), addDays(weekEnd, -7)],
-    };
 
     this._applyURLParams();
   }
@@ -272,7 +240,6 @@ export class HaPanelLogbook extends LitElement {
           margin-inline-start: initial;
           max-width: 100%;
           direction: var(--direction);
-          margin-bottom: -5px;
         }
 
         :host([narrow]) ha-date-range-picker {
@@ -305,5 +272,11 @@ export class HaPanelLogbook extends LitElement {
         }
       `,
     ];
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "ha-panel-logbook": HaPanelLogbook;
   }
 }

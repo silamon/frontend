@@ -10,6 +10,7 @@ import { mockHassioSupervisor } from "../../../../demo/src/stubs/hassio_supervis
 import { computeInitialHaFormData } from "../../../../src/components/ha-form/compute-initial-ha-form-data";
 import "../../../../src/components/ha-form/ha-form";
 import type { HaFormSchema } from "../../../../src/components/ha-form/types";
+import type { AreaRegistryEntry } from "../../../../src/data/area_registry";
 import { getEntity } from "../../../../src/fake_data/entity";
 import { provideHass } from "../../../../src/fake_data/provide_hass";
 import { HomeAssistant } from "../../../../src/types";
@@ -57,6 +58,7 @@ const DEVICES = [
     sw_version: null,
     hw_version: null,
     via_device_id: null,
+    serial_number: null,
   },
   {
     area_id: "backyard",
@@ -74,6 +76,7 @@ const DEVICES = [
     sw_version: null,
     hw_version: null,
     via_device_id: null,
+    serial_number: null,
   },
   {
     area_id: null,
@@ -91,25 +94,29 @@ const DEVICES = [
     sw_version: null,
     hw_version: null,
     via_device_id: null,
+    serial_number: null,
   },
 ];
 
-const AREAS = [
+const AREAS: AreaRegistryEntry[] = [
   {
     area_id: "backyard",
     name: "Backyard",
+    icon: null,
     picture: null,
     aliases: [],
   },
   {
     area_id: "bedroom",
     name: "Bedroom",
+    icon: "mdi:bed",
     picture: null,
     aliases: [],
   },
   {
     area_id: "livingroom",
     name: "Livingroom",
+    icon: "mdi:sofa",
     picture: null,
     aliases: [],
   },
@@ -336,7 +343,7 @@ const SCHEMAS: {
           ["and", "another_one"],
           ["option", "1000"],
         ],
-        name: "select many otions",
+        name: "select many options",
         default: "default",
       },
     ],
@@ -364,7 +371,7 @@ const SCHEMAS: {
           and: "another_one",
           option: "1000",
         },
-        name: "multi many otions",
+        name: "multi many options",
         default: ["default"],
       },
     ],

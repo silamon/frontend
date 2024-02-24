@@ -6,6 +6,7 @@ import { VacuumEntityFeature } from "../../../../src/data/vacuum";
 import { getEntity } from "../../../../src/fake_data/entity";
 import { provideHass } from "../../../../src/fake_data/provide_hass";
 import "../../components/demo-cards";
+import { mockIcons } from "../../../../demo/src/stubs/icons";
 
 const ENTITIES = [
   getEntity("switch", "tv_outlet", "on", {
@@ -14,7 +15,7 @@ const ENTITIES = [
   }),
   getEntity("light", "bed_light", "on", {
     friendly_name: "Bed Light",
-    supported_color_modes: [LightColorMode.HS],
+    supported_color_modes: [LightColorMode.HS, LightColorMode.COLOR_TEMP],
   }),
   getEntity("light", "unavailable", "unavailable", {
     friendly_name: "Unavailable entity",
@@ -80,6 +81,18 @@ const CONFIGS = [
     `,
   },
   {
+    heading: "Whole tile tap action",
+    config: `
+- type: tile
+  entity: switch.tv_outlet
+  color: pink
+  tap_action:
+    action: toggle
+  icon_tap_action:
+    action: none
+    `,
+  },
+  {
     heading: "Unknown entity",
     config: `
 - type: tile
@@ -114,6 +127,15 @@ const CONFIGS = [
   entity: light.bed_light
   features:
     - type: "light-brightness"
+    `,
+  },
+  {
+    heading: "Light color temperature feature",
+    config: `
+- type: tile
+  entity: light.bed_light
+  features:
+    - type: "color-temp"
     `,
   },
   {
@@ -163,6 +185,7 @@ class DemoTile extends LitElement {
     hass.updateTranslations(null, "en");
     hass.updateTranslations("lovelace", "en");
     hass.addEntities(ENTITIES);
+    mockIcons(hass);
   }
 }
 

@@ -13,7 +13,7 @@ import "./notification-item-template";
 export class HuiPersistentNotificationItem extends LitElement {
   @property({ attribute: false }) public hass?: HomeAssistant;
 
-  @property() public notification?: PersistentNotification;
+  @property({ attribute: false }) public notification?: PersistentNotification;
 
   protected render() {
     if (!this.hass || !this.notification) {
@@ -82,7 +82,7 @@ export class HuiPersistentNotificationItem extends LitElement {
     }
 
     const d = new Date(notification.created_at!);
-    return formatDateTime(d, hass.locale);
+    return formatDateTime(d, hass.locale, hass.config);
   }
 }
 

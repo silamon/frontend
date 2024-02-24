@@ -13,15 +13,10 @@ import { deepEqual } from "../../../../common/util/deep-equal";
 import {
   ActionHandlerDetail,
   ActionHandlerOptions,
-} from "../../../../data/lovelace";
+} from "../../../../data/lovelace/action_handler";
+import { isTouch } from "../../../../util/is_touch";
 
-const isTouch =
-  "ontouchstart" in window ||
-  navigator.maxTouchPoints > 0 ||
-  // @ts-ignore
-  navigator.msMaxTouchPoints > 0;
-
-interface ActionHandler extends HTMLElement {
+interface ActionHandlerType extends HTMLElement {
   holdTime: number;
   bind(element: Element, options?: ActionHandlerOptions): void;
 }
@@ -43,7 +38,7 @@ declare global {
   }
 }
 
-class ActionHandler extends HTMLElement implements ActionHandler {
+class ActionHandler extends HTMLElement implements ActionHandlerType {
   public holdTime = 500;
 
   public ripple: Ripple;
@@ -240,23 +235,23 @@ class ActionHandler extends HTMLElement implements ActionHandler {
 
 customElements.define("action-handler", ActionHandler);
 
-const getActionHandler = (): ActionHandler => {
+const getActionHandler = (): ActionHandlerType => {
   const body = document.body;
   if (body.querySelector("action-handler")) {
-    return body.querySelector("action-handler") as ActionHandler;
+    return body.querySelector("action-handler") as ActionHandlerType;
   }
 
   const actionhandler = document.createElement("action-handler");
   body.appendChild(actionhandler);
 
-  return actionhandler as ActionHandler;
+  return actionhandler as ActionHandlerType;
 };
 
 export const actionHandlerBind = (
   element: ActionHandlerElement,
   options?: ActionHandlerOptions
 ) => {
-  const actionhandler: ActionHandler = getActionHandler();
+  const actionhandler: ActionHandlerType = getActionHandler();
   if (!actionhandler) {
     return;
   }

@@ -23,6 +23,7 @@ export function computeDirectionStyles(isRTL: boolean, element: LitElement) {
 }
 
 export function setDirectionStyles(direction: string, element: LitElement) {
+  document.dir = direction;
   element.style.direction = direction;
   element.style.setProperty("--direction", direction);
   element.style.setProperty(
@@ -32,5 +33,13 @@ export function setDirectionStyles(direction: string, element: LitElement) {
   element.style.setProperty(
     "--float-end",
     direction === "ltr" ? "right" : "left"
+  );
+  element.style.setProperty(
+    "--margin-title",
+    direction === "ltr" ? "var(--margin-title-ltr)" : "var(--margin-title-rtl)"
+  );
+  element.style.setProperty(
+    "--scale-direction",
+    direction === "ltr" ? "1" : "-1"
   );
 }

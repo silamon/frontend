@@ -1,10 +1,10 @@
 import { fireEvent } from "../../../../common/dom/fire_event";
-import { LovelaceConfig } from "../../../../data/lovelace";
+import type { LovelaceConfig } from "../../../../data/lovelace/config/types";
 
 export interface CreateCardDialogParams {
   lovelaceConfig: LovelaceConfig;
   saveConfig: (config: LovelaceConfig) => void;
-  path: [number] | [number, number];
+  path: [number];
   entities?: string[]; // We can pass entity id's that will be added to the config when a card is picked
 }
 

@@ -19,10 +19,14 @@ export const hassioStyle = css`
     letter-spacing: var(--paper-font-headline_-_letter-spacing);
     line-height: var(--paper-font-headline_-_line-height);
     padding-left: 8px;
+    padding-inline-start: 8px;
+    padding-inline-end: initial;
   }
   .description {
     margin-top: 4px;
     padding-left: 8px;
+    padding-inline-start: 8px;
+    padding-inline-end: initial;
   }
   .card-group {
     display: grid;
@@ -43,10 +47,6 @@ export const hassioStyle = css`
     .card-group {
       grid-template-columns: repeat(auto-fit, minmax(300px, 0.25fr));
     }
-  }
-  ha-call-api-button {
-    font-weight: 500;
-    color: var(--primary-color);
   }
   .error {
     color: var(--error-color);

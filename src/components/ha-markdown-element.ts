@@ -3,6 +3,18 @@ import { customElement, property } from "lit/decorators";
 import { fireEvent } from "../common/dom/fire_event";
 import { renderMarkdown } from "../resources/render-markdown";
 
+const _gitHubMarkdownAlerts = {
+  reType:
+    /(?<input>(\[!(?<type>caution|important|note|tip|warning)\])(?:\s|\\n)?)/i,
+  typeToHaAlert: {
+    caution: "error",
+    important: "info",
+    note: "info",
+    tip: "success",
+    warning: "warning",
+  },
+};
+
 @customElement("ha-markdown-element")
 class HaMarkdownElement extends ReactiveElement {
   @property() public content?;
@@ -10,6 +22,9 @@ class HaMarkdownElement extends ReactiveElement {
   @property({ type: Boolean }) public allowSvg = false;
 
   @property({ type: Boolean }) public breaks = false;
+
+  @property({ type: Boolean, attribute: "lazy-images" }) public lazyImages =
+    false;
 
   protected createRenderRoot() {
     return this;
@@ -58,12 +73,53 @@ class HaMarkdownElement extends ReactiveElement {
 
         // Fire a resize event when images loaded to notify content resized
       } else if (node instanceof HTMLImageElement) {
+        if (this.lazyImages) {
+          node.loading = "lazy";
+        }
         node.addEventListener("load", this._resize);
+      } else if (node instanceof HTMLQuoteElement) {
+        /**
+         * Map GitHub blockquote elements to our ha-alert element
+         * https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts
+         */
+        const gitHubAlertMatch =
+          node.firstElementChild?.firstChild?.textContent &&
+          _gitHubMarkdownAlerts.reType.exec(
+            node.firstElementChild.firstChild.textContent
+          );
+
+        if (gitHubAlertMatch) {
+          const { type: alertType } = gitHubAlertMatch.groups!;
+          const haAlertNode = document.createElement("ha-alert");
+          haAlertNode.alertType =
+            _gitHubMarkdownAlerts.typeToHaAlert[alertType.toLowerCase()];
+
+          haAlertNode.append(
+            ...Array.from(node.childNodes)
+              .map((child) => Array.from(child.childNodes))
+              .reduce((acc, val) => acc.concat(val), [])
+              .filter(
+                (childNode) =>
+                  childNode.textContent &&
+                  childNode.textContent !== gitHubAlertMatch.input
+              )
+          );
+          walker.parentNode()!.replaceChild(haAlertNode, node);
+        }
+      } else if (
+        node instanceof HTMLElement &&
+        ["ha-alert", "ha-qr-code", "ha-icon", "ha-svg-icon"].includes(
+          node.localName
+        )
+      ) {
+        import(
+          /* webpackInclude: /(ha-alert)|(ha-qr-code)|(ha-icon)|(ha-svg-icon)/ */ `./${node.localName}`
+        );
       }
     }
   }
 
-  private _resize = () => fireEvent(this, "iron-resize");
+  private _resize = () => fireEvent(this, "content-resize");
 }
 
 declare global {

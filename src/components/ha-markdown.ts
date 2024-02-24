@@ -2,11 +2,6 @@ import { css, CSSResultGroup, html, LitElement, nothing } from "lit";
 import { customElement, property } from "lit/decorators";
 import "./ha-markdown-element";
 
-// Import components that are allwoed to be defined.
-import "./ha-alert";
-import "./ha-icon";
-import "./ha-svg-icon";
-
 @customElement("ha-markdown")
 export class HaMarkdown extends LitElement {
   @property() public content?;
@@ -14,6 +9,9 @@ export class HaMarkdown extends LitElement {
   @property({ type: Boolean }) public allowSvg = false;
 
   @property({ type: Boolean }) public breaks = false;
+
+  @property({ type: Boolean, attribute: "lazy-images" }) public lazyImages =
+    false;
 
   protected render() {
     if (!this.content) {
@@ -24,6 +22,7 @@ export class HaMarkdown extends LitElement {
       .content=${this.content}
       .allowSvg=${this.allowSvg}
       .breaks=${this.breaks}
+      .lazyImages=${this.lazyImages}
     ></ha-markdown-element>`;
   }
 
@@ -42,6 +41,10 @@ export class HaMarkdown extends LitElement {
       }
       ha-markdown-element > *:last-child {
         margin-bottom: 0;
+      }
+      ha-alert {
+        display: block;
+        margin: 4px 0;
       }
       a {
         color: var(--primary-color);

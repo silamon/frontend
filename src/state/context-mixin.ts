@@ -2,6 +2,7 @@ import { ContextProvider } from "@lit-labs/context";
 import {
   areasContext,
   configContext,
+  connectionContext,
   devicesContext,
   entitiesContext,
   localeContext,
@@ -24,6 +25,12 @@ export const contextMixin = <T extends Constructor<HassBaseEl>>(
       string,
       ContextProvider<any> | undefined
     > = {
+      connection: new ContextProvider(this, {
+        context: connectionContext,
+        initialValue: this.hass
+          ? this.hass.connection
+          : this._pendingHass.connection,
+      }),
       states: new ContextProvider(this, {
         context: statesContext,
         initialValue: this.hass ? this.hass.states : this._pendingHass.states,
@@ -81,6 +88,15 @@ export const contextMixin = <T extends Constructor<HassBaseEl>>(
         initialValue: this.hass ? this.hass.panels : this._pendingHass.panels,
       }),
     };
+
+    protected hassConnected() {
+      super.hassConnected();
+      for (const [key, value] of Object.entries(this.hass!)) {
+        if (key in this.__contextProviders) {
+          this.__contextProviders[key]!.setValue(value);
+        }
+      }
+    }
 
     protected _updateHass(obj: Partial<HomeAssistant>) {
       super._updateHass(obj);

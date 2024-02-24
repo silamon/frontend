@@ -17,21 +17,22 @@ class HaMfaModulesCard extends LitElement {
     return html`
       <ha-card .header=${this.hass.localize("ui.panel.profile.mfa.header")}>
         ${this.mfaModules.map(
-          (module) => html`<ha-settings-row two-line>
-            <span slot="heading">${module.name}</span>
-            <span slot="description">${module.id}</span>
-            ${module.enabled
-              ? html`<mwc-button .module=${module} @click=${this._disable}
-                  >${this.hass.localize(
-                    "ui.panel.profile.mfa.disable"
-                  )}</mwc-button
-                >`
-              : html`<mwc-button .module=${module} @click=${this._enable}
-                  >${this.hass.localize(
-                    "ui.panel.profile.mfa.enable"
-                  )}</mwc-button
-                >`}
-          </ha-settings-row>`
+          (module) =>
+            html`<ha-settings-row two-line>
+              <span slot="heading">${module.name}</span>
+              <span slot="description">${module.id}</span>
+              ${module.enabled
+                ? html`<mwc-button .module=${module} @click=${this._disable}
+                    >${this.hass.localize(
+                      "ui.panel.profile.mfa.disable"
+                    )}</mwc-button
+                  >`
+                : html`<mwc-button .module=${module} @click=${this._enable}
+                    >${this.hass.localize(
+                      "ui.panel.profile.mfa.enable"
+                    )}</mwc-button
+                  >`}
+            </ha-settings-row>`
         )}
       </ha-card>
     `;
@@ -41,6 +42,8 @@ class HaMfaModulesCard extends LitElement {
     return css`
       mwc-button {
         margin-right: -0.57em;
+        margin-inline-end: -0.57em;
+        margin-inline-start: initial;
       }
       ha-list-item {
         --mdc-list-item-meta-size: auto;
@@ -59,11 +62,9 @@ class HaMfaModulesCard extends LitElement {
     const mfamodule = ev.currentTarget.module;
     if (
       !(await showConfirmationDialog(this, {
-        text: this.hass.localize(
-          "ui.panel.profile.mfa.confirm_disable",
-          "name",
-          mfamodule.name
-        ),
+        text: this.hass.localize("ui.panel.profile.mfa.confirm_disable", {
+          name: mfamodule.name,
+        }),
       }))
     ) {
       return;
