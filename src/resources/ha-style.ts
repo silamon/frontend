@@ -442,22 +442,20 @@ const mainStyles = css`
     --md-sys-color-on-error: #ffffff;
     --md-sys-color-error-container: #ffd9d3;
     --md-sys-color-on-error-container: #490000;
-    --md-sys-color-outline: var(--secondary-text-color);
-    --md-sys-color-background: var(--primary-text-color);
-    --md-sys-color-on-background: var(--primary-text-color);
-    --md-sys-color-surface: var(--primary-background-color);
-    --md-sys-color-on-surface: var(--primary-background-color);
-    --md-sys-color-surface-variant: var(--card-background-color);
-    --md-sys-color-on-surface-variant: var(--secondary-text-color);
-    --md-sys-color-inverse-surface: var(--md-sys-color-inverse-surface-light);
-    --md-sys-color-inverse-on-surface: var(
-      --md-sys-color-inverse-on-surface-light
-    );
-    --md-sys-color-inverse-primary: var(--md-sys-color-inverse-primary-light);
-    --md-sys-color-shadow: var(--md-sys-color-shadow-light);
-    --md-sys-color-surface-tint: var(--md-sys-color-surface-tint-light);
+    --md-sys-color-outline: #70787e;
+    --md-sys-color-background: #ffffff;
+    --md-sys-color-on-background: #191c1e;
+    --md-sys-color-surface: #fcfcff;
+    --md-sys-color-on-surface: #191c1e;
+    --md-sys-color-surface-variant: #dbe3ea;
+    --md-sys-color-on-surface-variant: #3f474d;
+    --md-sys-color-inverse-surface: #191c1e;
+    --md-sys-color-inverse-on-surface: #fcfcff;
+    // --md-sys-color-inverse-primary: var(--md-sys-color-inverse-primary-light);
+    --md-sys-color-shadow: #000000;
+    // --md-sys-color-surface-tint: var(--md-sys-color-surface-tint-light);
     --md-sys-color-outline-variant: var(--divider-color);
-    --md-sys-color-scrim: var(--md-sys-color-scrim-light);
+    --md-sys-color-scrim: #000000;
 
     direction: ltr;
     --direction: ltr;
