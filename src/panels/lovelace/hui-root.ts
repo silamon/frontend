@@ -15,8 +15,6 @@ import {
   mdiShape,
   mdiViewDashboard,
 } from "@mdi/js";
-import "@polymer/paper-tabs/paper-tab";
-import "@polymer/paper-tabs/paper-tabs";
 import {
   CSSResultGroup,
   LitElement,
@@ -75,6 +73,8 @@ import {
 import { showSaveDialog } from "./editor/show-save-config-dialog";
 import { isLegacyStrategyConfig } from "./strategies/legacy-strategy";
 import { LocalizeKeys } from "../../common/translations/localize";
+import "../../components/ha-tab-bar";
+import "../../components/ha-primary-tab";
 
 @customElement("hui-root")
 class HUIRoot extends LitElement {
@@ -367,7 +367,7 @@ class HUIRoot extends LitElement {
           </div>
           ${this._editMode
             ? html`
-                <paper-tabs
+                <ha-tab-bar
                   scrollable
                   .selected=${this._curView}
                   @iron-activate=${this._handleViewSelected}
@@ -375,7 +375,7 @@ class HUIRoot extends LitElement {
                 >
                   ${views.map(
                     (view) => html`
-                      <paper-tab
+                      <ha-primary-tab
                         aria-label=${ifDefined(view.title)}
                         class=${classMap({
                           "hide-tab": Boolean(
@@ -435,7 +435,7 @@ class HUIRoot extends LitElement {
                               ></ha-icon-button-arrow-next>
                             `
                           : ""}
-                      </paper-tab>
+                      </ha-primary-tab>
                     `
                   )}
                   ${this._editMode
@@ -450,7 +450,7 @@ class HUIRoot extends LitElement {
                         ></ha-icon-button>
                       `
                     : ""}
-                </paper-tabs>
+                </ha-tab-bar>
               `
             : ""}
         </div>

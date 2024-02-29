@@ -1,6 +1,4 @@
 import { mdiDotsVertical } from "@mdi/js";
-import "@polymer/paper-tabs/paper-tab";
-import "@polymer/paper-tabs/paper-tabs";
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators";
 import type { ActionDetail } from "@material/mwc-list";
@@ -12,6 +10,8 @@ import "../../components/ha-list-item";
 import { haStyle } from "../../resources/styles";
 import { HomeAssistant, Route } from "../../types";
 import "./developer-tools-router";
+import "../../components/ha-tab-bar";
+import "../../components/ha-primary-tab";
 
 @customElement("ha-panel-developer-tools")
 class PanelDeveloperTools extends LitElement {
@@ -50,38 +50,45 @@ class PanelDeveloperTools extends LitElement {
             </ha-list-item>
           </ha-button-menu>
         </div>
-        <paper-tabs
-          scrollable
+        <ha-tab-bar
           attr-for-selected="page-name"
           .selected=${page}
-          @selected-changed=${this.handlePageSelected}
+          @click=${this.handlePageSelected}
         >
-          <paper-tab page-name="yaml">
+          <ha-primary-tab @click=${this.handlePageSelected} page-name="yaml">
             ${this.hass.localize("ui.panel.developer-tools.tabs.yaml.title")}
-          </paper-tab>
-          <paper-tab page-name="state">
+          </ha-primary-tab>
+          <ha-primary-tab @click=${this.handlePageSelected} page-name="state">
             ${this.hass.localize("ui.panel.developer-tools.tabs.states.title")}
-          </paper-tab>
-          <paper-tab page-name="service">
+          </ha-primary-tab>
+          <ha-primary-tab @click=${this.handlePageSelected} page-name="service">
             ${this.hass.localize(
               "ui.panel.developer-tools.tabs.services.title"
             )}
-          </paper-tab>
-          <paper-tab page-name="template">
+          </ha-primary-tab>
+          <ha-primary-tab
+            @click=${this.handlePageSelected}
+            page-name="template"
+          >
             ${this.hass.localize(
               "ui.panel.developer-tools.tabs.templates.title"
             )}
-          </paper-tab>
-          <paper-tab page-name="event">
+          </ha-primary-tab>
+          <ha-primary-tab @click=${this.handlePageSelected} page-name="event">
             ${this.hass.localize("ui.panel.developer-tools.tabs.events.title")}
-          </paper-tab>
-          <paper-tab page-name="statistics">
+          </ha-primary-tab>
+          <ha-primary-tab
+            @click=${this.handlePageSelected}
+            page-name="statistics"
+          >
             ${this.hass.localize(
               "ui.panel.developer-tools.tabs.statistics.title"
             )}
-          </paper-tab>
-          <paper-tab page-name="assist">Assist</paper-tab>
-        </paper-tabs>
+          </ha-primary-tab>
+          <ha-primary-tab @click=${this.handlePageSelected} page-name="assist"
+            >Assist</ha-primary-tab
+          >
+        </ha-tab-bar>
       </div>
       <developer-tools-router
         .route=${this.route}
@@ -160,12 +167,12 @@ class PanelDeveloperTools extends LitElement {
           flex: 1 1 100%;
           max-width: 100%;
         }
-        paper-tabs {
+        ha-primary-tabs {
           margin-left: max(env(safe-area-inset-left), 24px);
           margin-right: max(env(safe-area-inset-right), 24px);
           margin-inline-start: max(env(safe-area-inset-left), 24px);
           margin-inline-end: max(env(safe-area-inset-right), 24px);
-          --paper-tabs-selection-bar-color: var(
+          --ha-primary-tabs-selection-bar-color: var(
             --app-header-selection-bar-color,
             var(--app-header-text-color, #fff)
           );

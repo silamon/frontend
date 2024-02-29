@@ -33,6 +33,8 @@ import {
   findLovelaceContainer,
   parseLovelaceContainerPath,
 } from "../lovelace-path";
+import "../../../../components/ha-tab-bar";
+import "../../../../components/ha-primary-tab";
 
 declare global {
   interface HASSDomEvents {
@@ -113,22 +115,21 @@ export class HuiCreateDialogCard
             .path=${mdiClose}
           ></ha-icon-button>
           <span slot="title"> ${title} </span>
-          <mwc-tab-bar
+          <ha-tab-bar
             .activeIndex=${this._currTabIndex}
             @MDCTabBar:activated=${this._handleTabChanged}
           >
-            <mwc-tab
-              .label=${this.hass!.localize(
+            <ha-primary-tab dialogInitialFocus
+              >${this.hass!.localize(
                 "ui.panel.lovelace.editor.cardpicker.by_card"
-              )}
-              dialogInitialFocus
-            ></mwc-tab>
-            <mwc-tab
-              .label=${this.hass!.localize(
+              )}</ha-primary-tab
+            >
+            <ha-primary-tab
+              >${this.hass!.localize(
                 "ui.panel.lovelace.editor.cardpicker.by_entity"
-              )}
-            ></mwc-tab>
-          </mwc-tab-bar>
+              )}</ha-primary-tab
+            >
+          </ha-tab-bar>
         </ha-dialog-header>
         ${cache(
           this._currTabIndex === 0

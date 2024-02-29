@@ -1,4 +1,11 @@
-import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
+import {
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  nothing,
+  TemplateResult,
+} from "lit";
 import { customElement, property, query } from "lit/decorators";
 import "./ha-button";
 import "./ha-tabs";
@@ -12,6 +19,8 @@ import type { HaTabs } from "./ha-tabs";
 export class HaTabBar extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
+  @property({ attribute: false }) public buttons: boolean = false;
+
   @property({ attribute: false }) public activeTabIndex: number = 0;
 
   @query("#tabs", true) private _tabs?: HaTabs;
@@ -19,40 +28,30 @@ export class HaTabBar extends LitElement {
   protected render(): TemplateResult {
     return html`
       <span class="tabbar">
-        <ha-icon-button-prev
-          .label=${this.hass?.localize(
-            "ui.panel.lovelace.components.energy_period_selector.previous"
-          ) || "Prev"}
-          @click=${this._pickPrevious}
-        ></ha-icon-button-prev>
+        ${this.buttons
+          ? html`<ha-icon-button-prev
+              .label=${this.hass?.localize(
+                "ui.panel.lovelace.components.energy_period_selector.previous"
+              ) || "Prev"}
+              @click=${this._pickPrevious}
+            ></ha-icon-button-prev>`
+          : nothing}
         <ha-tabs
           id="tabs"
           class="scrolling"
           .activeTabIndex=${this.activeTabIndex}
         >
-          <ha-primary-tab>Video</ha-primary-tab>
-          <ha-primary-tab>Photos</ha-primary-tab>
-          <ha-primary-tab>Audio</ha-primary-tab>
-          <ha-primary-tab>Video</ha-primary-tab>
-          <ha-primary-tab>Photos</ha-primary-tab>
-          <ha-primary-tab>Audio</ha-primary-tab>
-          <ha-primary-tab>Video</ha-primary-tab>
-          <ha-primary-tab>Photos</ha-primary-tab>
-          <ha-primary-tab>Audio</ha-primary-tab>
-          <ha-primary-tab>Video</ha-primary-tab>
-          <ha-primary-tab>Photos</ha-primary-tab>
-          <ha-primary-tab>Audio</ha-primary-tab>
-          <ha-primary-tab>Video</ha-primary-tab>
-          <ha-primary-tab>Photos</ha-primary-tab>
-          <ha-primary-tab>Audio</ha-primary-tab>
+          <slot></slot>
         </ha-tabs>
-        <ha-icon-button-next
-          .label=${this.hass?.localize(
-            "ui.panel.lovelace.components.energy_period_selector.next"
-          ) || "Next"}
-          @click=${this._pickNext}
-        ></ha-icon-button-next
-      ></span>
+        ${this.buttons
+          ? html`<ha-icon-button-next
+              .label=${this.hass?.localize(
+                "ui.panel.lovelace.components.energy_period_selector.next"
+              ) || "Next"}
+              @click=${this._pickNext}
+            ></ha-icon-button-next>`
+          : nothing}</span
+      >
     `;
   }
 
@@ -67,21 +66,23 @@ export class HaTabBar extends LitElement {
   }
 
   static get styles(): CSSResultGroup {
-    return css`
-      :host {
-        --md-sys-color-primary: var(--primary-text-color);
-        --md-sys-color-secondary: var(--secondary-text-color);
-        --md-sys-color-surface: var(--card-background-color);
-        --md-sys-color-on-surface: var(--primary-text-color);
-        --md-sys-color-on-surface-variant: var(--secondary-text-color);
-      }
-      .tabbar {
-        display: flex;
-      }
-      ha-tabs {
-        flex-grow: 1;
-      }
-    `;
+    return [
+      css`
+        :host {
+          --md-sys-color-primary: var(--primary-color);
+          --md-sys-color-secondary: var(--secondary-color);
+          --md-sys-color-surface: var(--card-background-color);
+          --md-sys-color-on-surface: var(--primary-color);
+          --md-sys-color-on-surface-variant: var(--secondary-color);
+        }
+        .tabbar {
+          display: flex;
+        }
+        ha-tabs {
+          flex-grow: 1;
+        }
+      `,
+    ];
   }
 }
 declare global {

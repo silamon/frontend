@@ -6,8 +6,6 @@ import {
   mdiListBoxOutline,
   mdiPlus,
 } from "@mdi/js";
-import "@polymer/paper-tabs";
-import "@polymer/paper-tabs/paper-tab";
 import deepClone from "deep-clone-simple";
 import { CSSResultGroup, LitElement, css, html, nothing } from "lit";
 import { customElement, property, query, state } from "lit/decorators";
@@ -37,6 +35,8 @@ import type { ConfigChangedEvent } from "../hui-element-editor";
 import { baseLovelaceCardConfig } from "../structs/base-card-struct";
 import { GUIModeChangedEvent } from "../types";
 import { configElementStyle } from "./config-elements-style";
+import "../../../../components/ha-tab-bar";
+import "../../../../components/ha-primary-tab";
 
 const cardConfigStruct = assign(
   baseLovelaceCardConfig,
@@ -95,24 +95,24 @@ export class HuiStackCardEditor
     return html`
       <div class="card-config">
         <div class="toolbar">
-          <paper-tabs
+          <ha-tab-bar
             .selected=${selected}
             scrollable
             @iron-activate=${this._handleSelectedCard}
           >
             ${this._config.cards.map(
-              (_card, i) => html` <paper-tab> ${i + 1} </paper-tab> `
+              (_card, i) => html`<ha-primary-tab>${i + 1}</ha-primary-tab>`
             )}
-          </paper-tabs>
-          <paper-tabs
+          </ha-tab-bar>
+          <ha-tab-bar
             id="add-card"
             .selected=${selected === numcards ? "0" : undefined}
             @iron-activate=${this._handleSelectedCard}
           >
-            <paper-tab>
+            <ha-primary-tab>
               <ha-svg-icon .path=${mdiPlus}></ha-svg-icon>
-            </paper-tab>
-          </paper-tabs>
+            </ha-primary-tab>
+          </ha-tab-bar>
         </div>
 
         <div id="editor">

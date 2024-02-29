@@ -1,8 +1,6 @@
 import "@material/mwc-button";
 import { ActionDetail } from "@material/mwc-list";
 import { mdiCheck, mdiClose, mdiDotsVertical } from "@mdi/js";
-import "@polymer/paper-tabs/paper-tab";
-import "@polymer/paper-tabs/paper-tabs";
 import {
   CSSResultGroup,
   LitElement,
@@ -270,28 +268,28 @@ export class HuiDialogEditView extends LitElement {
             </mwc-list-item>
           </ha-button-menu>
           ${!this._yamlMode
-            ? html`<paper-tabs
+            ? html`<ha-tab-bar
                 scrollable
                 hide-scroll-buttons
                 .selected=${this._curTabIndex}
                 @selected-item-changed=${this._handleTabSelected}
               >
-                <paper-tab id="tab-settings" dialogInitialFocus
+                <ha-primary-tab id="tab-settings" dialogInitialFocus
                   >${this.hass!.localize(
                     "ui.panel.lovelace.editor.edit_view.tab_settings"
-                  )}</paper-tab
+                  )}</ha-primary-tab
                 >
-                <paper-tab id="tab-badges"
+                <ha-primary-tab id="tab-badges"
                   >${this.hass!.localize(
                     "ui.panel.lovelace.editor.edit_view.tab_badges"
-                  )}</paper-tab
+                  )}</ha-primary-tab
                 >
-                <paper-tab id="tab-visibility"
+                <ha-primary-tab id="tab-visibility"
                   >${this.hass!.localize(
                     "ui.panel.lovelace.editor.edit_view.tab_visibility"
-                  )}</paper-tab
+                  )}</ha-primary-tab
                 >
-              </paper-tabs>`
+              </ha-tab-bar>`
             : nothing}
         </ha-dialog-header>
         ${content}
@@ -521,8 +519,8 @@ export class HuiDialogEditView extends LitElement {
           font-size: inherit;
           font-weight: inherit;
         }
-        paper-tabs {
-          --paper-tabs-selection-bar-color: var(--primary-color);
+        ha-primary-tabs {
+          --ha-primary-tabs-selection-bar-color: var(--primary-color);
           color: var(--primary-text-color);
           text-transform: uppercase;
           padding: 0 20px;
