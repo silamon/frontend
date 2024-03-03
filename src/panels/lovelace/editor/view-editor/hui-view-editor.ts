@@ -37,7 +37,7 @@ export class HuiViewEditor extends LitElement {
   private _suggestedPath = false;
 
   private _schema = memoizeOne(
-    (localize: LocalizeFunc, currentType: string, isNew: boolean) =>
+    (localize: LocalizeFunc) =>
       [
         { name: "title", selector: { text: {} } },
         {
@@ -64,11 +64,6 @@ export class HuiViewEditor extends LitElement {
                 label: localize(
                   `ui.panel.lovelace.editor.edit_view.types.${type}`
                 ),
-                disabled:
-                  !isNew &&
-                  (currentType === SECTION_VIEW_LAYOUT
-                    ? type !== SECTION_VIEW_LAYOUT
-                    : type === SECTION_VIEW_LAYOUT),
               })),
             },
           },
@@ -100,7 +95,7 @@ export class HuiViewEditor extends LitElement {
       return nothing;
     }
 
-    const schema = this._schema(this.hass.localize, this._type, this.isNew);
+    const schema = this._schema(this.hass.localize);
 
     const data = {
       ...this._config,
@@ -164,15 +159,6 @@ export class HuiViewEditor extends LitElement {
         return this.hass.localize(
           "ui.panel.lovelace.editor.edit_view.subview_helper"
         );
-      case "type":
-        if (this.isNew) return undefined;
-        return this._type === "sections"
-          ? this.hass.localize(
-              "ui.panel.lovelace.editor.edit_view.type_helper_others"
-            )
-          : this.hass.localize(
-              "ui.panel.lovelace.editor.edit_view.type_helper_sections"
-            );
       default:
         return undefined;
     }
