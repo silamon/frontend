@@ -50,45 +50,37 @@ class PanelDeveloperTools extends LitElement {
             </ha-list-item>
           </ha-button-menu>
         </div>
-        <ha-tab-bar
-          attr-for-selected="page-name"
-          .selected=${page}
-          @click=${this.handlePageSelected}
+        <ha-tabs
+          class="scrolling"
+          .activeTabIndex=${page}
+          @change=${this.handlePageSelected}
         >
-          <ha-primary-tab @click=${this.handlePageSelected} page-name="yaml">
+          <ha-primary-tab page-name="yaml">
             ${this.hass.localize("ui.panel.developer-tools.tabs.yaml.title")}
           </ha-primary-tab>
-          <ha-primary-tab @click=${this.handlePageSelected} page-name="state">
+          <ha-primary-tab page-name="state">
             ${this.hass.localize("ui.panel.developer-tools.tabs.states.title")}
           </ha-primary-tab>
-          <ha-primary-tab @click=${this.handlePageSelected} page-name="service">
+          <ha-primary-tab page-name="service">
             ${this.hass.localize(
               "ui.panel.developer-tools.tabs.services.title"
             )}
           </ha-primary-tab>
-          <ha-primary-tab
-            @click=${this.handlePageSelected}
-            page-name="template"
-          >
+          <ha-primary-tab page-name="template">
             ${this.hass.localize(
               "ui.panel.developer-tools.tabs.templates.title"
             )}
           </ha-primary-tab>
-          <ha-primary-tab @click=${this.handlePageSelected} page-name="event">
+          <ha-primary-tab page-name="event">
             ${this.hass.localize("ui.panel.developer-tools.tabs.events.title")}
           </ha-primary-tab>
-          <ha-primary-tab
-            @click=${this.handlePageSelected}
-            page-name="statistics"
-          >
+          <ha-primary-tab page-name="statistics">
             ${this.hass.localize(
               "ui.panel.developer-tools.tabs.statistics.title"
             )}
           </ha-primary-tab>
-          <ha-primary-tab @click=${this.handlePageSelected} page-name="assist"
-            >Assist</ha-primary-tab
-          >
-        </ha-tab-bar>
+          <ha-primary-tab page-name="assist">Assist</ha-primary-tab>
+        </ha-tabs>
       </div>
       <developer-tools-router
         .route=${this.route}
@@ -99,7 +91,7 @@ class PanelDeveloperTools extends LitElement {
   }
 
   private handlePageSelected(ev) {
-    const newPage = ev.detail.value;
+    const newPage = ev.target.activeIndex;
     if (newPage !== this._page) {
       navigate(`/developer-tools/${newPage}`);
     } else {

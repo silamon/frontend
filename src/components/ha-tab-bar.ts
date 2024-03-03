@@ -40,6 +40,8 @@ export class HaTabBar extends LitElement {
           id="tabs"
           class="scrolling"
           .activeTabIndex=${this.activeTabIndex}
+          @click=${this.onClick}
+          @change=${this.onChange}
         >
           <slot></slot>
         </ha-tabs>
@@ -65,24 +67,16 @@ export class HaTabBar extends LitElement {
     this._tabs?.scrollToTab();
   }
 
+  private onClick(event) {
+    this.dispatchEvent(new CustomEvent("click", { detail: { event } }));
+  }
+
+  private onChange(event) {
+    this.dispatchEvent(new CustomEvent("change", { detail: { event } }));
+  }
+
   static get styles(): CSSResultGroup {
-    return [
-      css`
-        :host {
-          --md-sys-color-primary: var(--primary-color);
-          --md-sys-color-secondary: var(--secondary-color);
-          --md-sys-color-surface: var(--card-background-color);
-          --md-sys-color-on-surface: var(--primary-color);
-          --md-sys-color-on-surface-variant: var(--secondary-color);
-        }
-        .tabbar {
-          display: flex;
-        }
-        ha-tabs {
-          flex-grow: 1;
-        }
-      `,
-    ];
+    return [css``];
   }
 }
 declare global {

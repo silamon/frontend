@@ -18,6 +18,7 @@ import { fireEvent } from "../../common/dom/fire_event";
 import { haStyle } from "../../resources/styles";
 import "../../components/ha-top-app-bar-fixed";
 import { formatDuration } from "../../common/datetime/format_duration";
+import "../../components/ha-primary-tab";
 
 let registeredDialog = false;
 
@@ -58,14 +59,14 @@ class HaPanelMailbox extends LitElement {
           ? html`<div sticky>
               <ha-tabs
                 scrollable
-                .selected=${this._currentPlatform}
-                @iron-activate=${this._handlePlatformSelected}
+                .activeIndex=${this._currentPlatform}
+                @change=${this._handlePlatformSelected}
               >
                 ${this.platforms?.map(
                   (platform) =>
-                    html` <paper-tab data-entity=${platform}>
+                    html`<ha-primary-tab data-entity=${platform}>
                       ${this._getPlatformName(platform)}
-                    </paper-tab>`
+                    </ha-primary-tab>`
                 )}
               </ha-tabs>
             </div>`
@@ -179,7 +180,7 @@ class HaPanelMailbox extends LitElement {
   }
 
   private _handlePlatformSelected(ev) {
-    const newPlatform = ev.detail.selected;
+    const newPlatform = ev.target.activeIndex;
     if (newPlatform !== this._currentPlatform) {
       this._currentPlatform = newPlatform;
       this.hassChanged();

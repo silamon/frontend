@@ -324,17 +324,16 @@ class HUIRoot extends LitElement {
                       ? html`
                           <ha-tabs
                             slot="title"
-                            scrollable
-                            .selected=${this._curView}
-                            @iron-activate=${this._handleViewSelected}
-                            dir=${computeRTLDirection(this.hass!)}
+                            class="scrolling"
+                            .activeTabIndex=${this._curView}
+                            @change=${this._handleViewSelected}
                           >
                             ${views.map(
                               (view) => html`
-                                <paper-tab
+                                <ha-primary-tab
                                   aria-label=${ifDefined(view.title)}
                                   class=${classMap({
-                                    "hide-tab": Boolean(
+                                    hidden: Boolean(
                                       view.subview ||
                                         (view.visible !== undefined &&
                                           ((Array.isArray(view.visible) &&
@@ -354,7 +353,7 @@ class HUIRoot extends LitElement {
                                         ></ha-icon>
                                       `
                                     : view.title || "Unnamed view"}
-                                </paper-tab>
+                                </ha-primary-tab>
                               `
                             )}
                           </ha-tabs>
@@ -807,7 +806,7 @@ class HUIRoot extends LitElement {
 
   private _handleViewSelected(ev) {
     ev.preventDefault();
-    const viewIndex = ev.detail.selected as number;
+    const viewIndex = ev.target.activeTabIndex as number;
     if (viewIndex !== this._curView) {
       const path = this.config.views[viewIndex].path || viewIndex;
       this._navigateToView(path);

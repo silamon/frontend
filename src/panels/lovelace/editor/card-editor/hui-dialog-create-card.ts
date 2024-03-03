@@ -33,7 +33,7 @@ import {
   findLovelaceContainer,
   parseLovelaceContainerPath,
 } from "../lovelace-path";
-import "../../../../components/ha-tab-bar";
+import "../../../../components/ha-tabs";
 import "../../../../components/ha-primary-tab";
 
 declare global {
@@ -115,40 +115,55 @@ export class HuiCreateDialogCard
             .path=${mdiClose}
           ></ha-icon-button>
           <span slot="title"> ${title} </span>
-          <ha-tab-bar
-            .activeIndex=${this._currTabIndex}
-            @MDCTabBar:activated=${this._handleTabChanged}
+          <ha-tabs
+            .activeTabIndex=${this._currTabIndex}
+            @change=${this._handleTabChanged}
           >
-            <ha-primary-tab dialogInitialFocus
+            <ha-primary-tab
+              id="tab-by-card"
+              aria-controls="panel-by-card"
+              dialogInitialFocus
               >${this.hass!.localize(
                 "ui.panel.lovelace.editor.cardpicker.by_card"
               )}</ha-primary-tab
             >
-            <ha-primary-tab
+            <ha-primary-tab id="tab-by-entity" aria-controls="panel-by-entity"
               >${this.hass!.localize(
                 "ui.panel.lovelace.editor.cardpicker.by_entity"
               )}</ha-primary-tab
             >
-          </ha-tab-bar>
+          </ha-tabs>
         </ha-dialog-header>
         ${cache(
           this._currTabIndex === 0
             ? html`
-                <hui-card-picker
-                  .suggestedCards=${this._params.suggestedCards}
-                  .lovelace=${this._params.lovelaceConfig}
-                  .hass=${this.hass}
-                  @config-changed=${this._handleCardPicked}
-                ></hui-card-picker>
+                <div
+                  role="tabpanel"
+                  id="panel-by-card"
+                  aria-labelledby="tab-by-card"
+                >
+                  <hui-card-picker
+                    .suggestedCards=${this._params.suggestedCards}
+                    .lovelace=${this._params.lovelaceConfig}
+                    .hass=${this.hass}
+                    @config-changed=${this._handleCardPicked}
+                  ></hui-card-picker>
+                </div>
               `
             : html`
-                <hui-entity-picker-table
-                  no-label-float
-                  .hass=${this.hass}
-                  .narrow=${true}
-                  .entities=${this._allEntities(this.hass.states)}
-                  @selected-changed=${this._handleSelectedChanged}
-                ></hui-entity-picker-table>
+                <div
+                  role="tabpanel"
+                  id="panel-by-entity"
+                  aria-labelledby="tab-by-entity"
+                >
+                  <hui-entity-picker-table
+                    no-label-float
+                    .hass=${this.hass}
+                    .narrow=${true}
+                    .entities=${this._allEntities(this.hass.states)}
+                    @selected-changed=${this._handleSelectedChanged}
+                  ></hui-entity-picker-table>
+                </div>
               `
         )}
 
@@ -245,13 +260,13 @@ export class HuiCreateDialogCard
     this.closeDialog();
   }
 
-  private _handleTabChanged(ev: CustomEvent): void {
-    const newTab = ev.detail.index;
-    if (newTab === this._currTabIndex) {
+  private _handleTabChanged(ev): void {
+    const newTabIndex = ev.target.activeTabIndex;
+    if (newTabIndex === this._currTabIndex) {
       return;
     }
 
-    this._currTabIndex = ev.detail.index;
+    this._currTabIndex = newTabIndex;
     this._selectedEntities = [];
   }
 

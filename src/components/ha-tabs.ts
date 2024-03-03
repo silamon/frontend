@@ -8,6 +8,14 @@ export class HaTabs extends MdTabs {
     return [
       ...MdTabs.styles,
       css`
+        :host {
+          --md-sys-color-primary: var(--primary-color);
+          --md-sys-color-secondary: var(--secondary-color);
+          --md-sys-color-surface: var(--card-background-color);
+          --md-sys-color-on-surface: var(--primary-color);
+          --md-sys-color-on-surface-variant: var(--secondary-color);
+        }
+
         .tabs::-webkit-scrollbar {
           width: 0.4rem;
           height: 0.4rem;
