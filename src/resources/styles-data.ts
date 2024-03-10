@@ -85,6 +85,11 @@ export const darkStyles = {
   // "md-sys-color-surface-tint": "var("md-sys-color-surface-tint-light)",
   "md-sys-color-outline-variant": "var(--divider-color)",
   "md-sys-color-scrim": "#ffffff",
+  "md-sys-color-surface-container-lowest": "#0a0f12",
+  "md-sys-color-surface-container-low": "#181c20",
+  "md-sys-color-surface-container": "#1c2024",
+  "md-sys-color-surface-container-high": "#262a2e",
+  "md-sys-color-surface-container-highest": "#313539",
 } as const;
 
 export const derivedStyles = {

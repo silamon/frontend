@@ -456,6 +456,11 @@ const mainStyles = css`
     // --md-sys-color-surface-tint: var(--md-sys-color-surface-tint-light);
     --md-sys-color-outline-variant: var(--divider-color);
     --md-sys-color-scrim: #000000;
+    --md-sys-color-surface-container-lowest: #ffffff;
+    --md-sys-color-surface-container-low: #f0f4f9;
+    --md-sys-color-surface-container: #eaeef3;
+    --md-sys-color-surface-container-high: #e5e8ee;
+    --md-sys-color-surface-container-highest: #dfe3e8;
 
     direction: ltr;
     --direction: ltr;
