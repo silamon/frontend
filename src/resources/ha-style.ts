@@ -557,9 +557,7 @@ const mainStyles = css`
     --md-sys-color-on-surface-variant: #3f474d;
     --md-sys-color-inverse-surface: #191c1e;
     --md-sys-color-inverse-on-surface: #fcfcff;
-    // --md-sys-color-inverse-primary: var(--md-sys-color-inverse-primary-light);
     --md-sys-color-shadow: #000000;
-    // --md-sys-color-surface-tint: var(--md-sys-color-surface-tint-light);
     --md-sys-color-outline-variant: var(--divider-color);
     --md-sys-color-scrim: #000000;
     --md-sys-color-surface-container-lowest: #ffffff;
