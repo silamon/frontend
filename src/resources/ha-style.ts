@@ -597,13 +597,13 @@ const mainStyles = css`
     --md-ref-palette-secondary100: #ffffff;
     /* tertiary */
     --md-ref-palette-tertiary0: #000000;
-    --md-ref-palette-tertiary10: #2c0051;
-    --md-ref-palette-tertiary20: #48077c;
-    --md-ref-palette-tertiary30: #602994;
-    --md-ref-palette-tertiary40: #7a44ae;
-    --md-ref-palette-tertiary50: #945ec9;
-    --md-ref-palette-tertiary60: #af78e5;
-    --md-ref-palette-tertiary70: #ca93ff;
+    --md-ref-palette-tertiary10: #1e102b;
+    --md-ref-palette-tertiary20: #3b1f55;
+    --md-ref-palette-tertiary30: #582f7f;
+    --md-ref-palette-tertiary40: #753fa9;
+    --md-ref-palette-tertiary50: #934ed4;
+    --md-ref-palette-tertiary60: #a972dc;
+    --md-ref-palette-tertiary70: #c096e4;
     --md-ref-palette-tertiary80: #d5b8ee;
     --md-ref-palette-tertiary90: #ebdcf6;
     --md-ref-palette-tertiary95: #f4eefb;
@@ -612,11 +612,11 @@ const mainStyles = css`
     /* neutral */
     --md-ref-palette-neutral0: #000000;
     --md-ref-palette-neutral10: #191c1e;
-    --md-ref-palette-neutral20: #2e3133;
-    --md-ref-palette-neutral30: #454749;
-    --md-ref-palette-neutral40: #5d5e61;
-    --md-ref-palette-neutral50: #75777a;
-    --md-ref-palette-neutral60: #8f9193;
+    --md-ref-palette-neutral20: #2f3032;
+    --md-ref-palette-neutral30: #444749;
+    --md-ref-palette-neutral40: #5b5e61;
+    --md-ref-palette-neutral50: #74777a;
+    --md-ref-palette-neutral60: #909194;
     --md-ref-palette-neutral70: #aaabae;
     --md-ref-palette-neutral80: #c5c6c9;
     --md-ref-palette-neutral90: #e2e2e5;
@@ -625,17 +625,17 @@ const mainStyles = css`
     --md-ref-palette-neutral100: #ffffff;
     /* neutral-variant */
     --md-ref-palette-neutral-variant0: #000000;
-    --md-ref-palette-neutral-variant10: #161c21;
-    --md-ref-palette-neutral-variant20: #2b3136;
-    --md-ref-palette-neutral-variant30: #41484d;
-    --md-ref-palette-neutral-variant40: #595f65;
-    --md-ref-palette-neutral-variant50: #71787e;
-    --md-ref-palette-neutral-variant60: #8b9198;
-    --md-ref-palette-neutral-variant70: #a6acb2;
-    --md-ref-palette-neutral-variant80: #c1c7ce;
-    --md-ref-palette-neutral-variant90: #dde3ea;
-    --md-ref-palette-neutral-variant95: #ebf1f8;
-    --md-ref-palette-neutral-variant99: #fbfcff;
+    --md-ref-palette-neutral-variant10: #141c21;
+    --md-ref-palette-neutral-variant20: #293137;
+    --md-ref-palette-neutral-variant30: #3f474d;
+    --md-ref-palette-neutral-variant40: #575f65;
+    --md-ref-palette-neutral-variant50: #70787e;
+    --md-ref-palette-neutral-variant60: #899197;
+    --md-ref-palette-neutral-variant70: #a4acb2;
+    --md-ref-palette-neutral-variant80: #bfc7ce;
+    --md-ref-palette-neutral-variant90: #dbe3ea;
+    --md-ref-palette-neutral-variant95: #e9f1f8;
+    --md-ref-palette-neutral-variant99: #f9fcff;
     --md-ref-palette-neutral-variant100: #ffffff;
     /* error */
     --md-ref-palette-error0: #000000;
