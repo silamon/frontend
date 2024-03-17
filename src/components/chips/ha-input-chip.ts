@@ -9,6 +9,10 @@ export class HaInputChip extends MdInputChip {
     ...super.styles,
     css`
       :host {
+        --md-sys-color-primary: var(--primary-text-color);
+        --md-sys-color-on-surface: var(--primary-text-color);
+        --md-sys-color-on-surface-variant: var(--primary-text-color);
+        --md-sys-color-on-secondary-container: var(--primary-text-color);
         --md-input-chip-container-shape: 16px;
         --md-input-chip-outline-color: var(--outline-color);
         --md-input-chip-selected-container-color: rgba(

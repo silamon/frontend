@@ -11,6 +11,8 @@ export class HaAssistChip extends MdAssistChip {
     ...super.styles,
     css`
       :host {
+        --md-sys-color-primary: var(--primary-text-color);
+        --md-sys-color-on-surface: var(--primary-text-color);
         --md-assist-chip-container-shape: 16px;
         --md-assist-chip-outline-color: var(--outline-color);
         --md-assist-chip-label-text-weight: 400;
