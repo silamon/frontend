@@ -11,7 +11,7 @@ import { haStyle } from "../../resources/styles";
 import { HomeAssistant, Route } from "../../types";
 import "./developer-tools-router";
 import "../../components/ha-tab-bar";
-import "../../components/ha-primary-tab";
+import "../../components/ha-secondary-tab";
 
 @customElement("ha-panel-developer-tools")
 class PanelDeveloperTools extends LitElement {
@@ -55,31 +55,31 @@ class PanelDeveloperTools extends LitElement {
           .activeTabIndex=${page}
           @change=${this.handlePageSelected}
         >
-          <ha-primary-tab page-name="yaml">
+          <ha-secondary-tab page-name="yaml">
             ${this.hass.localize("ui.panel.developer-tools.tabs.yaml.title")}
-          </ha-primary-tab>
-          <ha-primary-tab page-name="state">
+          </ha-secondary-tab>
+          <ha-secondary-tab page-name="state">
             ${this.hass.localize("ui.panel.developer-tools.tabs.states.title")}
-          </ha-primary-tab>
-          <ha-primary-tab page-name="service">
+          </ha-secondary-tab>
+          <ha-secondary-tab page-name="service">
             ${this.hass.localize(
               "ui.panel.developer-tools.tabs.services.title"
             )}
-          </ha-primary-tab>
-          <ha-primary-tab page-name="template">
+          </ha-secondary-tab>
+          <ha-secondary-tab page-name="template">
             ${this.hass.localize(
               "ui.panel.developer-tools.tabs.templates.title"
             )}
-          </ha-primary-tab>
-          <ha-primary-tab page-name="event">
+          </ha-secondary-tab>
+          <ha-secondary-tab page-name="event">
             ${this.hass.localize("ui.panel.developer-tools.tabs.events.title")}
-          </ha-primary-tab>
-          <ha-primary-tab page-name="statistics">
+          </ha-secondary-tab>
+          <ha-secondary-tab page-name="statistics">
             ${this.hass.localize(
               "ui.panel.developer-tools.tabs.statistics.title"
             )}
-          </ha-primary-tab>
-          <ha-primary-tab page-name="assist">Assist</ha-primary-tab>
+          </ha-secondary-tab>
+          <ha-secondary-tab page-name="assist">Assist</ha-secondary-tab>
         </ha-tabs>
       </div>
       <developer-tools-router
@@ -116,8 +116,8 @@ class PanelDeveloperTools extends LitElement {
       haStyle,
       css`
         :host {
-          color: var(--primary-text-color);
-          --paper-card-header-color: var(--primary-text-color);
+          color: var(--secondary-text-color);
+          --paper-card-header-color: var(--secondary-text-color);
           display: flex;
           min-height: 100vh;
         }
@@ -159,12 +159,12 @@ class PanelDeveloperTools extends LitElement {
           flex: 1 1 100%;
           max-width: 100%;
         }
-        ha-primary-tabs {
+        ha-secondary-tabs {
           margin-left: max(env(safe-area-inset-left), 24px);
           margin-right: max(env(safe-area-inset-right), 24px);
           margin-inline-start: max(env(safe-area-inset-left), 24px);
           margin-inline-end: max(env(safe-area-inset-right), 24px);
-          --ha-primary-tabs-selection-bar-color: var(
+          --ha-secondary-tabs-selection-bar-color: var(
             --app-header-selection-bar-color,
             var(--app-header-text-color, #fff)
           );

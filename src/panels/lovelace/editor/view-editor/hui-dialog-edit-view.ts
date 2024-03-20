@@ -285,20 +285,20 @@ export class HuiDialogEditView extends LitElement {
                 .selected=${this._curTabIndex}
                 @selected-item-changed=${this._handleTabSelected}
               >
-                <ha-primary-tab id="tab-settings" dialogInitialFocus
+                <ha-secondary-tab id="tab-settings" dialogInitialFocus
                   >${this.hass!.localize(
                     "ui.panel.lovelace.editor.edit_view.tab_settings"
-                  )}</ha-primary-tab
+                  )}</ha-secondary-tab
                 >
-                <ha-primary-tab id="tab-badges"
+                <ha-secondary-tab id="tab-badges"
                   >${this.hass!.localize(
                     "ui.panel.lovelace.editor.edit_view.tab_badges"
-                  )}</ha-primary-tab
+                  )}</ha-secondary-tab
                 >
-                <ha-primary-tab id="tab-visibility"
+                <ha-secondary-tab id="tab-visibility"
                   >${this.hass!.localize(
                     "ui.panel.lovelace.editor.edit_view.tab_visibility"
-                  )}</ha-primary-tab
+                  )}</ha-secondary-tab
                 >
               </ha-tab-bar>`
             : nothing}
@@ -536,8 +536,8 @@ export class HuiDialogEditView extends LitElement {
           font-size: inherit;
           font-weight: inherit;
         }
-        ha-primary-tabs {
-          --ha-primary-tabs-selection-bar-color: var(--primary-color);
+        ha-secondary-tabs {
+          --ha-secondary-tabs-selection-bar-color: var(--primary-color);
           color: var(--primary-text-color);
           text-transform: uppercase;
           padding: 0 20px;
