@@ -31,3 +31,5 @@ export const fullEntitiesContext =
 export const floorsContext = createContext<FloorRegistryEntry[]>("floors");
 
 export const labelsContext = createContext<LabelRegistryEntry[]>("labels");
+
+export const unsavedChangesContext = createContext<boolean>("unsavedChanges");

@@ -45,12 +45,18 @@ import {
   entityRegistryById,
   subscribeEntityRegistry,
 } from "../../data/entity_registry";
-import { HassRouterPage, RouterOptions } from "../../layouts/hass-router-page";
+import {
+  HassRouterPage,
+  RouterOptions,
+  UnloadGuard,
+} from "../../layouts/hass-router-page";
 import { PageNavigation } from "../../layouts/hass-tabs-subpage";
 import { SubscribeMixin } from "../../mixins/subscribe-mixin";
 import { HomeAssistant, Route } from "../../types";
 import { subscribeLabelRegistry } from "../../data/label_registry";
 import { subscribeFloorRegistry } from "../../data/floor_registry";
+import { showConfirmationDialog } from "../../dialogs/generic/show-dialog-box";
+import { storage } from "../../common/decorators/storage";
 
 declare global {
   // for fire event
@@ -373,12 +379,24 @@ export const configSections: { [name: string]: PageNavigation[] } = {
 };
 
 @customElement("ha-panel-config")
-class HaPanelConfig extends SubscribeMixin(HassRouterPage) {
+class HaPanelConfig
+  extends SubscribeMixin(HassRouterPage)
+  implements UnloadGuard
+{
   @property({ attribute: false }) public hass!: HomeAssistant;
 
   @property({ type: Boolean }) public narrow = false;
 
   @property({ attribute: false }) public route!: Route;
+
+  @storage({
+    key: "pageDirty",
+    state: false,
+    subscribe: true,
+  })
+  private _hasUnsavedChanges: boolean = false;
+
+  private _returning: boolean = false;
 
   private _entitiesContext = new ContextProvider(this, {
     context: fullEntitiesContext,
@@ -394,6 +412,37 @@ class HaPanelConfig extends SubscribeMixin(HassRouterPage) {
     context: floorsContext,
     initialValue: [],
   });
+
+  isDirty(): boolean {
+    return this._hasUnsavedChanges && !this._returning;
+  }
+
+  async closeEditor(): Promise<boolean> {
+    await this.hass.loadFragmentTranslation("lovelace");
+    const shouldDiscardChanges = showConfirmationDialog(this, {
+      text: this.hass.localize(
+        "ui.panel.lovelace.editor.raw_editor.confirm_unsaved_changes"
+      ),
+      dismissText: this.hass!.localize("ui.common.stay"),
+      confirmText: this.hass!.localize("ui.common.leave"),
+    });
+
+    shouldDiscardChanges.then(async (onfulfilled) => {
+      if (!onfulfilled) {
+        this._returning = true;
+        await this.updateComplete;
+        history.back();
+        await this.updateComplete;
+        setTimeout(() => {
+          this._returning = false;
+        }, 1);
+      } else {
+        this._hasUnsavedChanges = false;
+      }
+    });
+
+    return shouldDiscardChanges;
+  }
 
   public hassSubscribe(): UnsubscribeFunc[] {
     return [

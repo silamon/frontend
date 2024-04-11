@@ -14,6 +14,11 @@ const extractPage = (path: string, defaultPage: string) => {
     : path.substr(1, subpathStart - 1);
 };
 
+export interface UnloadGuard {
+  isDirty(): boolean;
+  closeEditor(): Promise<boolean>;
+}
+
 export interface RouteOptions {
   // HTML tag of the route page.
   tag: string;
@@ -75,8 +80,23 @@ export class HassRouterPage extends ReactiveElement {
     return this;
   }
 
-  protected update(changedProps: PropertyValues) {
+  isCanUnloadGuard(instance: any): instance is UnloadGuard {
+    return "isDirty" in instance;
+  }
+
+  protected async update(changedProps: PropertyValues) {
     super.update(changedProps);
+
+    if (
+      this.firstChild &&
+      this.isCanUnloadGuard(this.firstChild) &&
+      this.firstChild.isDirty()
+    ) {
+      const shouldClose = await this.firstChild.closeEditor();
+      if (!shouldClose) {
+        return;
+      }
+    }
 
     const routerOptions = this.routerOptions || { routes: {} };
 

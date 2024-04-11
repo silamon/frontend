@@ -13,6 +13,7 @@ import {
   themesContext,
   userContext,
   userDataContext,
+  unsavedChangesContext,
 } from "../data/context";
 import { Constructor, HomeAssistant } from "../types";
 import { HassBaseEl } from "./hass-base-mixin";
@@ -86,6 +87,10 @@ export const contextMixin = <T extends Constructor<HassBaseEl>>(
       panels: new ContextProvider(this, {
         context: panelsContext,
         initialValue: this.hass ? this.hass.panels : this._pendingHass.panels,
+      }),
+      unsavedChanges: new ContextProvider(this, {
+        context: unsavedChangesContext,
+        initialValue: true,
       }),
     };
 

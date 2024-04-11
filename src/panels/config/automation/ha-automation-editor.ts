@@ -63,6 +63,7 @@ import { showAutomationModeDialog } from "./automation-mode-dialog/show-dialog-a
 import { showAutomationRenameDialog } from "./automation-rename-dialog/show-dialog-automation-rename";
 import "./blueprint-automation-editor";
 import "./manual-automation-editor";
+import { storage } from "../../../common/decorators/storage";
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -98,7 +99,12 @@ export class HaAutomationEditor extends KeyboardShortcutMixin(LitElement) {
 
   @state() private _config?: AutomationConfig;
 
-  @state() private _dirty = false;
+  @storage({
+    key: "pageDirty",
+    state: true,
+    subscribe: false,
+  })
+  private _dirty = false;
 
   @state() private _errors?: string;
 
