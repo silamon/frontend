@@ -29,6 +29,7 @@ class HaSidebarPanelUser extends LitElement {
   protected render() {
     return html`<ha-list-item-new
       interactive
+      type="button"
       href="/profile"
       aria-current=${this.selected ? "page" : "false"}
       class="item ${this.expanded ? "expanded" : ""}"

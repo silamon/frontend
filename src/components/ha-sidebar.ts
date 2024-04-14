@@ -38,10 +38,6 @@ import { toggleAttribute } from "../common/dom/toggle_attribute";
 import { stringCompare } from "../common/string/compare";
 import { throttle } from "../common/util/throttle";
 import { ActionHandlerDetail } from "../data/lovelace/action_handler";
-import {
-  PersistentNotification,
-  subscribeNotifications,
-} from "../data/persistent_notification";
 import { subscribeRepairsIssueRegistry } from "../data/repairs";
 import { UpdateEntity, updateCanInstall } from "../data/update";
 import { SubscribeMixin } from "../mixins/subscribe-mixin";
@@ -56,6 +52,8 @@ import "./ha-svg-icon";
 import "./user/ha-user-badge";
 import "./ha-sidebar-panel-notifications";
 import "./ha-sidebar-panel-user";
+import "./ha-sidebar-panel-ext-config";
+import "./ha-sidebar-panel-config";
 
 const SHOW_AFTER_SPACER = ["config", "developer-tools"];
 
@@ -196,8 +194,6 @@ class HaSidebar extends SubscribeMixin(LitElement) {
 
   @property({ type: Boolean }) public editMode = false;
 
-  @state() private _notifications?: PersistentNotification[];
-
   @state() private _updatesCount = 0;
 
   @state() private _issuesCount = 0;
@@ -262,7 +258,6 @@ class HaSidebar extends SubscribeMixin(LitElement) {
       changedProps.has("_externalConfig") ||
       changedProps.has("_updatesCount") ||
       changedProps.has("_issuesCount") ||
-      changedProps.has("_notifications") ||
       changedProps.has("_hiddenPanels") ||
       changedProps.has("_panelOrder")
     ) {
@@ -285,13 +280,6 @@ class HaSidebar extends SubscribeMixin(LitElement) {
       hass.states !== oldHass.states ||
       hass.defaultPanel !== oldHass.defaultPanel
     );
-  }
-
-  protected firstUpdated(changedProps: PropertyValues) {
-    super.firstUpdated(changedProps);
-    subscribeNotifications(this.hass.connection, (notifications) => {
-      this._notifications = notifications;
-    });
   }
 
   protected updated(changedProps) {
@@ -389,9 +377,10 @@ class HaSidebar extends SubscribeMixin(LitElement) {
         @scroll=${this._listboxScroll}
         @keydown=${this._listboxKeydown}
       >
-        ${this.editMode
+        <!--${this.editMode
           ? this._renderPanelsEdit(beforeSpacer)
-          : this._renderPanels(beforeSpacer)}
+      : this._renderPanels(beforeSpacer)}-->
+          ${this._renderPanels(beforeSpacer)}
         ${this._renderSpacer()}
         ${this._renderPanels(afterSpacer)}
         ${this._renderExternalConfiguration()}
@@ -474,7 +463,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
     this._panelOrder = panelOrder;
   }
 
-  private _renderPanelsEdit(beforeSpacer: PanelInfo[]) {
+  /*private _renderPanelsEdit(beforeSpacer: PanelInfo[]) {
     return html`
       <ha-sortable
         handle-selector="paper-icon-item"
@@ -485,9 +474,9 @@ class HaSidebar extends SubscribeMixin(LitElement) {
       </ha-sortable>
       ${this._renderSpacer()}${this._renderHiddenPanels()}
     `;
-  }
+  }*/
 
-  private _renderHiddenPanels() {
+  /* private _renderHiddenPanels() {
     return html`${this._hiddenPanels.length
       ? html`${this._hiddenPanels.map((url) => {
           const panel = this.hass.panels[url];
@@ -528,7 +517,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
         })}
         ${this._renderSpacer()}`
       : ""}`;
-  }
+  }*/
 
   private _renderDivider() {
     return html`<div class="divider"></div>`;
@@ -538,36 +527,15 @@ class HaSidebar extends SubscribeMixin(LitElement) {
     return html`<div class="spacer" disabled></div>`;
   }
 
-  private _renderConfiguration(title: string | null) {
-    return html`<a
-      class="configuration-container"
-      role="option"
-      href="/config"
-      data-panel="config"
-      tabindex="-1"
+  private _renderConfiguration(panel: PanelInfo) {
+    return html`<ha-sidebar-panel-config
+      .hass=${this.hass}
+      .expanded=${this.alwaysExpand}
+      .selected=${this.hass.panelUrl === "config"}
+      .name=${this.hass.localize(`panel.${panel.title}`) || panel.title || ""}
       @mouseenter=${this._itemMouseEnter}
       @mouseleave=${this._itemMouseLeave}
-    >
-      <paper-icon-item class="configuration" role="option">
-        <ha-svg-icon slot="item-icon" .path=${mdiCog}></ha-svg-icon>
-        ${!this.alwaysExpand &&
-        (this._updatesCount > 0 || this._issuesCount > 0)
-          ? html`
-              <span class="configuration-badge" slot="item-icon">
-                ${this._updatesCount + this._issuesCount}
-              </span>
-            `
-          : ""}
-        <span class="item-text">${title}</span>
-        ${this.alwaysExpand && (this._updatesCount > 0 || this._issuesCount > 0)
-          ? html`
-              <span class="configuration-badge"
-                >${this._updatesCount + this._issuesCount}</span
-              >
-            `
-          : ""}
-      </paper-icon-item>
-    </a>`;
+    ></ha-sidebar-panel-config>`;
   }
 
   private _renderNotifications() {
@@ -593,36 +561,15 @@ class HaSidebar extends SubscribeMixin(LitElement) {
     return html`${!this.hass.user?.is_admin &&
     this.hass.auth.external?.config.hasSettingsScreen
       ? html`
-          <a
-            role="option"
-            aria-label=${this.hass.localize(
-              "ui.sidebar.external_app_configuration"
-            )}
-            href="#external-app-configuration"
-            tabindex="-1"
-            @click=${this._handleExternalAppConfiguration}
+          <ha-sidebar-panel-ext-config
+            .hass=${this.hass}
+            .expanded=${this.alwaysExpand}
+            .name=${this.hass.localize("ui.sidebar.external_app_configuration")}
             @mouseenter=${this._itemMouseEnter}
             @mouseleave=${this._itemMouseLeave}
-          >
-            <paper-icon-item>
-              <ha-svg-icon
-                slot="item-icon"
-                .path=${mdiCellphoneCog}
-              ></ha-svg-icon>
-              <span class="item-text">
-                ${this.hass.localize("ui.sidebar.external_app_configuration")}
-              </span>
-            </paper-icon-item>
-          </a>
+          ></ha-sidebar-panel-ext-config>
         `
       : ""}`;
-  }
-
-  private _handleExternalAppConfiguration(ev: Event) {
-    ev.preventDefault();
-    this.hass.auth.external!.fireMessage({
-      type: "config_screen/show",
-    });
   }
 
   private get _tooltip() {
