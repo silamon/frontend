@@ -1,6 +1,5 @@
 import "@material/mwc-button/mwc-button";
 import {
-  mdiBell,
   mdiCalendar,
   mdiCellphoneCog,
   mdiChartBox,
@@ -32,7 +31,6 @@ import {
   nothing,
 } from "lit";
 import { customElement, eventOptions, property, state } from "lit/decorators";
-import { classMap } from "lit/directives/class-map";
 import memoizeOne from "memoize-one";
 import { storage } from "../common/decorators/storage";
 import { fireEvent } from "../common/dom/fire_event";
@@ -56,6 +54,8 @@ import "./ha-menu-button";
 import "./ha-sortable";
 import "./ha-svg-icon";
 import "./user/ha-user-badge";
+import "./ha-sidebar-panel-notifications";
+import "./ha-sidebar-panel-user";
 
 const SHOW_AFTER_SPACER = ["config", "developer-tools"];
 
@@ -571,65 +571,22 @@ class HaSidebar extends SubscribeMixin(LitElement) {
   }
 
   private _renderNotifications() {
-    const notificationCount = this._notifications
-      ? this._notifications.length
-      : 0;
-
-    return html`<div
-      class="notifications-container"
+    return html`<ha-sidebar-panel-notifications
+      .hass=${this.hass}
+      .expanded=${this.alwaysExpand}
       @mouseenter=${this._itemMouseEnter}
       @mouseleave=${this._itemMouseLeave}
-    >
-      <paper-icon-item
-        class="notifications"
-        role="option"
-        @click=${this._handleShowNotificationDrawer}
-      >
-        <ha-svg-icon slot="item-icon" .path=${mdiBell}></ha-svg-icon>
-        ${!this.alwaysExpand && notificationCount > 0
-          ? html`
-              <span class="notification-badge" slot="item-icon">
-                ${notificationCount}
-              </span>
-            `
-          : ""}
-        <span class="item-text">
-          ${this.hass.localize("ui.notification_drawer.title")}
-        </span>
-        ${this.alwaysExpand && notificationCount > 0
-          ? html` <span class="notification-badge">${notificationCount}</span> `
-          : ""}
-      </paper-icon-item>
-    </div>`;
+    ></ha-sidebar-panel-notifications>`;
   }
 
   private _renderUserItem() {
-    return html`<a
-      class=${classMap({
-        profile: true,
-        // Mimick behavior that paper-listbox provides
-        "iron-selected": this.hass.panelUrl === "profile",
-      })}
-      href="/profile"
-      data-panel="panel"
-      tabindex="-1"
-      role="option"
-      aria-label=${this.hass.localize("panel.profile")}
+    return html`<ha-sidebar-panel-user
+      .hass=${this.hass}
+      .expanded=${this.alwaysExpand}
+      .selected=${this.hass.panelUrl === "profile"}
       @mouseenter=${this._itemMouseEnter}
       @mouseleave=${this._itemMouseLeave}
-    >
-      <paper-icon-item>
-        <ha-user-badge
-          slot="item-icon"
-          .user=${this.hass.user}
-          .hass=${this.hass}
-        ></ha-user-badge>
-
-        <span class="item-text">
-          ${this.hass.user ? this.hass.user.name : ""}
-        </span>
-      </paper-icon-item>
-    </a>`;
+    ></ha-sidebar-panel-user>`;
   }
 
   private _renderExternalConfiguration() {
@@ -800,10 +757,6 @@ class HaSidebar extends SubscribeMixin(LitElement) {
         this._tooltip.style.display = "none";
       }, 10);
     }
-  }
-
-  private _handleShowNotificationDrawer() {
-    fireEvent(this, "hass-show-notifications");
   }
 
   private _toggleSidebar(ev: CustomEvent) {
