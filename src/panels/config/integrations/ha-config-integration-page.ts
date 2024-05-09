@@ -726,7 +726,7 @@ class HaConfigIntegrationPage extends SubscribeMixin(LitElement) {
                 </mwc-button>
               `
             : ""}
-      <ha-button-menu-new slot="end">
+      <ha-button-menu-new positioning="popover" slot="end">
         <ha-icon-button
           slot="trigger"
           .label=${this.hass.localize("ui.common.menu")}
