@@ -695,8 +695,9 @@ class HaConfigIntegrationPage extends SubscribeMixin(LitElement) {
               <div class="message">
                 <ha-svg-icon .path=${icon}></ha-svg-icon>
                 <div>
-                  ${this.hass.localize(...stateText)}
-                  ${stateTextExtra ? html`: ${stateTextExtra}` : ""}
+                  ${this.hass.localize(...stateText)}${stateTextExtra
+                    ? html`: ${stateTextExtra}`
+                    : ""}
                 </div>
               </div>
             `
