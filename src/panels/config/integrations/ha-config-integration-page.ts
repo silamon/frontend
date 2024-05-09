@@ -507,9 +507,9 @@ class HaConfigIntegrationPage extends SubscribeMixin(LitElement) {
                     )}
                   </div>`
                 : nothing}
-              <mwc-list>
+              <ha-list-new>
                 ${normalEntries.map((item) => this._renderConfigEntry(item))}
-              </mwc-list>
+              </ha-list-new>
               <div class="card-actions">
                 <ha-button @click=${this._addIntegration}>
                   ${this._manifest?.integration_type
@@ -676,12 +676,13 @@ class HaConfigIntegrationPage extends SubscribeMixin(LitElement) {
     return html`<ha-list-item-new
       noninteractive
       type="button"
-      class="config_entry ${classMap({
+      class=${classMap({
+        config_entry: true,
         "state-not-loaded": item!.state === "not_loaded",
         "state-failed-unload": item!.state === "failed_unload",
         "state-setup": item!.state === "setup_in_progress",
         "state-error": ERROR_STATES.includes(item!.state),
-      })}"
+      })}
       data-entry-id=${item.entry_id}
       .disabled=${item.disabled_by}
       .configEntry=${item}
@@ -1449,9 +1450,9 @@ class HaConfigIntegrationPage extends SubscribeMixin(LitElement) {
         }
         ha-list-item-new.config_entry::after {
           position: absolute;
-          top: 0;
+          top: 8px;
           right: 0;
-          bottom: 0;
+          bottom: 8px;
           left: 0;
           opacity: 0.12;
           pointer-events: none;
@@ -1476,8 +1477,8 @@ class HaConfigIntegrationPage extends SubscribeMixin(LitElement) {
           --state-message-color: var(--error-color);
           --text-on-state-color: var(--text-primary-color);
         }
-        .state-error {
-          background-color: var(--error-color) 0.12;
+        .state-error::after {
+          background-color: var(--error-color);
         }
         .state-failed-unload {
           --state-message-color: var(--warning-color);
@@ -1515,6 +1516,10 @@ class HaConfigIntegrationPage extends SubscribeMixin(LitElement) {
           -webkit-line-clamp: 7;
           overflow: hidden;
           text-overflow: ellipsis;
+        }
+        ha-list-new {
+          margin-top: 8px;
+          margin-bottom: 8px;
         }
       `,
     ];
