@@ -3,26 +3,25 @@ import { html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators";
 import memoizeOne from "memoize-one";
 import { fireEvent } from "../../../../common/dom/fire_event";
-import type { LocalizeFunc } from "../../../../common/translations/localize";
+import { FormatEntityStateFunc } from "../../../../common/translations/entity-state";
 import "../../../../components/ha-form/ha-form";
 import type {
   HaFormSchema,
   SchemaUnion,
 } from "../../../../components/ha-form/types";
-import { supportedAlarmModes } from "../../../../data/alarm_control_panel";
 import type { HomeAssistant } from "../../../../types";
 import {
-  AlarmModesCardFeatureConfig,
   LovelaceCardFeatureContext,
+  SelectOptionsCardFeatureConfig,
 } from "../../card-features/types";
 import type { LovelaceCardFeatureEditor } from "../../types";
 
-type AlarmModesCardFeatureData = AlarmModesCardFeatureConfig & {
-  customize_modes: boolean;
+type SelectOptionsCardFeatureData = SelectOptionsCardFeatureConfig & {
+  customize_options: boolean;
 };
 
-@customElement("hui-alarm-modes-card-feature-editor")
-export class HuiAlarmModesCardFeatureEditor
+@customElement("hui-select-options-card-feature-editor")
+export class HuiSelectOptionsCardFeatureEditor
   extends LitElement
   implements LovelaceCardFeatureEditor
 {
@@ -30,41 +29,38 @@ export class HuiAlarmModesCardFeatureEditor
 
   @property({ attribute: false }) public context?: LovelaceCardFeatureContext;
 
-  @state() private _config?: AlarmModesCardFeatureConfig;
+  @state() private _config?: SelectOptionsCardFeatureConfig;
 
-  public setConfig(config: AlarmModesCardFeatureConfig): void {
+  public setConfig(config: SelectOptionsCardFeatureConfig): void {
     this._config = config;
   }
 
   private _schema = memoizeOne(
     (
-      localize: LocalizeFunc,
+      formatEntityState: FormatEntityStateFunc,
       stateObj: HassEntity | undefined,
-      customizeModes: boolean
+      customizeOptions: boolean
     ) =>
       [
         {
-          name: "customize_modes",
+          name: "customize_options",
           selector: {
             boolean: {},
           },
         },
-        ...(customizeModes
+        ...(customizeOptions
           ? ([
               {
-                name: "modes",
+                name: "options",
                 selector: {
                   select: {
                     multiple: true,
                     reorder: true,
-                    options: stateObj
-                      ? supportedAlarmModes(stateObj).map((mode) => ({
-                          value: mode,
-                          label: `${localize(
-                            `ui.panel.lovelace.editor.features.types.alarm-modes.modes_list.${mode}`
-                          )}`,
-                        }))
-                      : [],
+                    options:
+                      stateObj?.attributes.options?.map((option) => ({
+                        value: option,
+                        label: formatEntityState(stateObj, option),
+                      })) || [],
                   },
                 },
               },
@@ -78,19 +74,19 @@ export class HuiAlarmModesCardFeatureEditor
       return nothing;
     }
 
-    const data: AlarmModesCardFeatureData = {
-      ...this._config,
-      customize_modes: this._config.modes !== undefined,
-    };
-
     const stateObj = this.context?.entity_id
       ? this.hass.states[this.context?.entity_id]
       : undefined;
 
+    const data: SelectOptionsCardFeatureData = {
+      ...this._config,
+      customize_options: this._config.options !== undefined,
+    };
+
     const schema = this._schema(
-      this.hass.localize,
+      this.hass.formatEntityState,
       stateObj,
-      data.customize_modes
+      data.customize_options
     );
 
     return html`
@@ -105,18 +101,18 @@ export class HuiAlarmModesCardFeatureEditor
   }
 
   private _valueChanged(ev: CustomEvent): void {
-    const { customize_modes, ...config } = ev.detail
-      .value as AlarmModesCardFeatureData;
+    const { customize_options, ...config } = ev.detail
+      .value as SelectOptionsCardFeatureData;
 
     const stateObj = this.context?.entity_id
       ? this.hass!.states[this.context?.entity_id]
       : undefined;
 
-    if (customize_modes && !config.modes) {
-      config.modes = stateObj ? supportedAlarmModes(stateObj) : [];
+    if (customize_options && !config.options) {
+      config.options = stateObj?.attributes.options || [];
     }
-    if (!customize_modes && config.modes) {
-      delete config.modes;
+    if (!customize_options && config.options) {
+      delete config.options;
     }
 
     fireEvent(this, "config-changed", { config: config });
@@ -126,10 +122,10 @@ export class HuiAlarmModesCardFeatureEditor
     schema: SchemaUnion<ReturnType<typeof this._schema>>
   ) => {
     switch (schema.name) {
-      case "modes":
-      case "customize_modes":
+      case "options":
+      case "customize_options":
         return this.hass!.localize(
-          `ui.panel.lovelace.editor.features.types.alarm-modes.${schema.name}`
+          `ui.panel.lovelace.editor.features.types.select-options.${schema.name}`
         );
       default:
         return "";
@@ -139,6 +135,6 @@ export class HuiAlarmModesCardFeatureEditor
 
 declare global {
   interface HTMLElementTagNameMap {
-    "hui-alarm-modes-card-feature-editor": HuiAlarmModesCardFeatureEditor;
+    "hui-select-options-card-feature-editor": HuiSelectOptionsCardFeatureEditor;
   }
 }
