@@ -1,10 +1,11 @@
 import "@material/mwc-button";
-import { mdiClose, mdiHelpCircle } from "@mdi/js";
+import { mdiHelpCircle } from "@mdi/js";
 import type { UnsubscribeFunc } from "home-assistant-js-websocket";
 import {
   CSSResultGroup,
   LitElement,
   PropertyValues,
+  TemplateResult,
   css,
   html,
   nothing,
@@ -14,10 +15,6 @@ import { HASSDomEvent, fireEvent } from "../../common/dom/fire_event";
 import "../../components/ha-circular-progress";
 import "../../components/ha-dialog";
 import "../../components/ha-icon-button";
-import {
-  AreaRegistryEntry,
-  subscribeAreaRegistry,
-} from "../../data/area_registry";
 import {
   DataEntryFlowStep,
   subscribeDataEntryFlowProgressed,
@@ -78,11 +75,7 @@ class DataEntryFlowDialog extends LitElement {
 
   @state() private _devices?: DeviceRegistryEntry[];
 
-  @state() private _areas?: AreaRegistryEntry[];
-
   @state() private _handler?: string;
-
-  private _unsubAreas?: UnsubscribeFunc;
 
   private _unsubDevices?: UnsubscribeFunc;
 
@@ -185,10 +178,6 @@ class DataEntryFlowDialog extends LitElement {
     this._params = undefined;
     this._devices = undefined;
     this._handler = undefined;
-    if (this._unsubAreas) {
-      this._unsubAreas();
-      this._unsubAreas = undefined;
-    }
     if (this._unsubDevices) {
       this._unsubDevices();
       this._unsubDevices = undefined;
@@ -207,131 +196,121 @@ class DataEntryFlowDialog extends LitElement {
       return nothing;
     }
 
-    return html`
-      <ha-dialog
-        open
-        @closed=${this.closeDialog}
-        scrimClickAction
-        escapeKeyAction
-        hideActions
-      >
-        <div>
-          ${this._loading || this._step === null
-            ? html`
-                <step-flow-loading
-                  .flowConfig=${this._params.flowConfig}
-                  .hass=${this.hass}
-                  .loadingReason=${this._loading}
-                  .handler=${this._handler}
-                  .step=${this._step}
-                ></step-flow-loading>
-              `
-            : this._step === undefined
-              ? // When we are going to next step, we render 1 round of empty
-                // to reset the element.
-                ""
-              : html`
-                  <div class="dialog-actions">
-                    ${([
-                      "form",
-                      "menu",
-                      "external",
-                      "progress",
-                      "data_entry_flow_progressed",
-                    ].includes(this._step?.type as any) &&
-                      this._params.manifest?.is_built_in) ||
-                    this._params.manifest?.documentation
-                      ? html`
-                          <a
-                            href=${this._params.manifest.is_built_in
-                              ? documentationUrl(
-                                  this.hass,
-                                  `/integrations/${this._params.manifest.domain}`
-                                )
-                              : this._params?.manifest?.documentation}
-                            target="_blank"
-                            rel="noreferrer noopener"
-                          >
-                            <ha-icon-button
-                              .label=${this.hass.localize("ui.common.help")}
-                              .path=${mdiHelpCircle}
-                            >
-                            </ha-icon-button
-                          ></a>
-                        `
-                      : ""}
-                    <ha-icon-button
-                      .label=${this.hass.localize(
-                        "ui.panel.config.integrations.config_flow.dismiss"
-                      )}
-                      .path=${mdiClose}
-                      dialogAction="close"
-                    ></ha-icon-button>
-                  </div>
-                  ${this._step.type === "form"
-                    ? html`
-                        <step-flow-form
-                          .flowConfig=${this._params.flowConfig}
-                          .step=${this._step}
-                          .hass=${this.hass}
-                        ></step-flow-form>
-                      `
-                    : this._step.type === "external"
-                      ? html`
-                          <step-flow-external
-                            .flowConfig=${this._params.flowConfig}
-                            .step=${this._step}
-                            .hass=${this.hass}
-                          ></step-flow-external>
-                        `
-                      : this._step.type === "abort"
-                        ? html`
-                            <step-flow-abort
-                              .params=${this._params}
-                              .step=${this._step}
-                              .hass=${this.hass}
-                              .domain=${this._step.handler}
-                            ></step-flow-abort>
-                          `
-                        : this._step.type === "progress"
-                          ? html`
-                              <step-flow-progress
-                                .flowConfig=${this._params.flowConfig}
-                                .step=${this._step}
-                                .hass=${this.hass}
-                              ></step-flow-progress>
-                            `
-                          : this._step.type === "menu"
-                            ? html`
-                                <step-flow-menu
-                                  .flowConfig=${this._params.flowConfig}
-                                  .step=${this._step}
-                                  .hass=${this.hass}
-                                ></step-flow-menu>
-                              `
-                            : this._devices === undefined ||
-                                this._areas === undefined
-                              ? // When it's a create entry result, we will fetch device & area registry
-                                html`
-                                  <step-flow-loading
-                                    .flowConfig=${this._params.flowConfig}
-                                    .hass=${this.hass}
-                                    loadingReason="loading_devices_areas"
-                                  ></step-flow-loading>
-                                `
-                              : html`
-                                  <step-flow-create-entry
-                                    .flowConfig=${this._params.flowConfig}
-                                    .step=${this._step}
-                                    .hass=${this.hass}
-                                    .devices=${this._devices}
-                                    .areas=${this._areas}
-                                  ></step-flow-create-entry>
-                                `}
-                `}
-        </div>
-      </ha-dialog>
-    `;
+    let documentation_button: TemplateResult | typeof nothing = nothing;
+    if (
+      ([
+        "form",
+        "menu",
+        "external",
+        "progress",
+        "data_entry_flow_progressed",
+      ].includes(this._step?.type as any) &&
+        this._params.manifest?.is_built_in) ||
+      this._params.manifest?.documentation
+    ) {
+      documentation_button = html`
+        <span slot="documentationButton">
+          <a
+            href=${this._params.manifest.is_built_in
+              ? documentationUrl(
+                  this.hass,
+                  `/integrations/${this._params.manifest.domain}`
+                )
+              : this._params?.manifest?.documentation}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            <ha-icon-button
+              .label=${this.hass.localize("ui.common.help")}
+              .path=${mdiHelpCircle}
+            >
+            </ha-icon-button
+          ></a>
+        </span>
+      `;
+    }
+
+    let dialog: TemplateResult | typeof nothing = nothing;
+    if (this._loading || this._step === null) {
+      dialog = html`<step-flow-loading
+        .flowConfig=${this._params.flowConfig}
+        .hass=${this.hass}
+        .loadingReason=${this._loading}
+        .handler=${this._handler}
+        .step=${this._step}
+      ></step-flow-loading>`;
+    } else if (!this._step) {
+      // When we are going to next step, we render 1 round of empty
+      // to reset the element.
+      dialog = nothing;
+    } else if (this._step.type === "form") {
+      dialog = html`
+        <step-flow-form
+          .flowConfig=${this._params.flowConfig}
+          .step=${this._step}
+          .hass=${this.hass}
+          >${documentation_button}</step-flow-form
+        >
+      `;
+    } else if (this._step.type === "external") {
+      dialog = html`
+        <step-flow-external
+          .flowConfig=${this._params.flowConfig}
+          .step=${this._step}
+          .hass=${this.hass}
+          >${documentation_button}</step-flow-external
+        >
+      `;
+    } else if (this._step.type === "abort") {
+      dialog = html`
+        <step-flow-abort
+          .params=${this._params}
+          .step=${this._step}
+          .hass=${this.hass}
+          .domain=${this._step.handler}
+          >${documentation_button}</step-flow-abort
+        >
+      `;
+    } else if (this._step.type === "progress") {
+      dialog = html`
+        <step-flow-progress
+          .flowConfig=${this._params.flowConfig}
+          .step=${this._step}
+          .hass=${this.hass}
+          >${documentation_button}</step-flow-progress
+        >
+      `;
+    } else if (this._step.type === "menu") {
+      dialog = html`
+        <step-flow-menu
+          .flowConfig=${this._params.flowConfig}
+          .step=${this._step}
+          .hass=${this.hass}
+          >${documentation_button}</step-flow-menu
+        >
+      `;
+    } else if (this._devices === undefined) {
+      // When it's a create entry result, we will fetch device registry
+      dialog = html`
+        <step-flow-loading
+          .flowConfig=${this._params.flowConfig}
+          .hass=${this.hass}
+          loadingReason="loading_devices_areas"
+        ></step-flow-loading>
+      `;
+    } else {
+      dialog = html`
+        <step-flow-create-entry
+          .flowConfig=${this._params.flowConfig}
+          .step=${this._step}
+          .hass=${this.hass}
+          .devices=${this._devices}
+          >${documentation_button}</step-flow-create-entry
+        >
+      `;
+    }
+
+    return dialog;
   }
 
   protected firstUpdated(changedProps: PropertyValues) {
@@ -354,10 +333,8 @@ class DataEntryFlowDialog extends LitElement {
     if (this._step.type === "create_entry") {
       if (this._step.result && this._params!.flowConfig.loadDevicesAndAreas) {
         this._fetchDevices(this._step.result.entry_id);
-        this._fetchAreas();
       } else {
         this._devices = [];
-        this._areas = [];
       }
     }
   }
@@ -371,12 +348,6 @@ class DataEntryFlowDialog extends LitElement {
         );
       }
     );
-  }
-
-  private async _fetchAreas() {
-    this._unsubAreas = subscribeAreaRegistry(this.hass.connection, (areas) => {
-      this._areas = areas;
-    });
   }
 
   private async _processStep(
@@ -428,26 +399,7 @@ class DataEntryFlowDialog extends LitElement {
   }
 
   static get styles(): CSSResultGroup {
-    return [
-      haStyleDialog,
-      css`
-        ha-dialog {
-          --dialog-content-padding: 0;
-        }
-        .dialog-actions {
-          padding: 16px;
-          position: absolute;
-          top: 0;
-          right: 0;
-          inset-inline-start: initial;
-          inset-inline-end: 0px;
-          direction: var(--direction);
-        }
-        .dialog-actions > * {
-          color: var(--secondary-text-color);
-        }
-      `,
-    ];
+    return [];
   }
 }
 

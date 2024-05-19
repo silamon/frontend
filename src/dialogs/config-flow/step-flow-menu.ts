@@ -1,4 +1,5 @@
 import "@material/mwc-list/mwc-list-item";
+import { mdiClose } from "@mdi/js";
 import { css, html, LitElement, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators";
 import type { DataEntryFlowStepMenu } from "../../data/data_entry_flow";
@@ -7,6 +8,11 @@ import type { FlowConfig } from "./show-dialog-data-entry-flow";
 import "../../components/ha-icon-next";
 import { configFlowContentStyles } from "./styles";
 import { fireEvent } from "../../common/dom/fire_event";
+import "../../components/ha-dialog";
+import "../../components/ha-dialog-header";
+import "../../components/ha-icon-button";
+import { computeRTLDirection } from "../../common/util/compute_rtl";
+
 
 @customElement("step-flow-menu")
 class StepFlowMenu extends LitElement {
@@ -41,19 +47,45 @@ class StepFlowMenu extends LitElement {
     );
 
     return html`
-      <h2>${this.flowConfig.renderMenuHeader(this.hass, this.step)}</h2>
-      ${description ? html`<div class="content">${description}</div>` : ""}
-      <div class="options">
-        ${options.map(
-          (option) => html`
-            <mwc-list-item hasMeta .step=${option} @click=${this._handleStep}>
-              <span>${translations[option]}</span>
-              <ha-icon-next slot="meta"></ha-icon-next>
-            </mwc-list-item>
-          `
-        )}
-      </div>
+      <ha-dialog
+        open
+        @closed=${this.closeDialog}
+        scrimClickAction
+        escapeKeyAction
+        hideActions
+      >
+        <ha-dialog-header slot="heading">
+          <ha-icon-button
+            .label=${this.hass.localize("ui.dialogs.generic.close")}
+            .path=${mdiClose}
+            dialogAction="close"
+            slot="navigationIcon"
+            dir=${computeRTLDirection(this.hass)}
+          ></ha-icon-button>
+          <span slot="title">
+            ${this.flowConfig.renderMenuHeader(this.hass, this.step)}
+          </span>
+          <span slot="actionItems">
+            <slot name="documentationButton"></slot>
+          </span>
+        </ha-dialog-header>
+        ${description ? html`<div class="content">${description}</div>` : ""}
+        <div class="options">
+          ${options.map(
+            (option) => html`
+              <mwc-list-item hasMeta .step=${option} @click=${this._handleStep}>
+                <span>${translations[option]}</span>
+                <ha-icon-next slot="meta"></ha-icon-next>
+              </mwc-list-item>
+            `
+          )}
+        </div>
+      </ha-dialog>
     `;
+  }
+
+  public closeDialog(): void {
+    fireEvent(this, "dialog-closed", { dialog: this.localName });
   }
 
   private _handleStep(ev) {

@@ -9,6 +9,7 @@ import {
   PropertyValues,
   TemplateResult,
 } from "lit";
+import { mdiClose } from "@mdi/js";
 import { customElement, property, state } from "lit/decorators";
 import { dynamicElement } from "../../common/dom/dynamic-element-directive";
 import { fireEvent } from "../../common/dom/fire_event";
@@ -24,7 +25,10 @@ import type { DataEntryFlowStepForm } from "../../data/data_entry_flow";
 import type { HomeAssistant } from "../../types";
 import type { FlowConfig } from "./show-dialog-data-entry-flow";
 import { configFlowContentStyles } from "./styles";
-import { haStyle } from "../../resources/styles";
+import { haStyle, haStyleDialog } from "../../resources/styles";
+import { computeRTLDirection } from "../../common/util/compute_rtl";
+import "../../components/ha-dialog";
+import "../../components/ha-dialog-header";
 
 @customElement("step-flow-form")
 class StepFlowForm extends LitElement {
@@ -50,61 +54,84 @@ class StepFlowForm extends LitElement {
     const stepData = this._stepDataProcessed;
 
     return html`
-      <h2>${this.flowConfig.renderShowFormStepHeader(this.hass, this.step)}</h2>
-      <div class="content" @click=${this._clickHandler}>
-        ${this.flowConfig.renderShowFormStepDescription(this.hass, this.step)}
-        ${this._errorMsg
-          ? html`<ha-alert alert-type="error">${this._errorMsg}</ha-alert>`
-          : ""}
-        <ha-form
-          .hass=${this.hass}
-          .data=${stepData}
-          .disabled=${this._loading}
-          @value-changed=${this._stepDataChanged}
-          .schema=${autocompleteLoginFields(step.data_schema)}
-          .error=${step.errors}
-          .computeLabel=${this._labelCallback}
-          .computeHelper=${this._helperCallback}
-          .computeError=${this._errorCallback}
-          .localizeValue=${this._localizeValueCallback}
-        ></ha-form>
-      </div>
-      ${step.preview
-        ? html`<div class="preview" @set-flow-errors=${this._setError}>
-            <h3>
-              ${this.hass.localize(
-                "ui.panel.config.integrations.config_flow.preview"
-              )}:
-            </h3>
-            ${dynamicElement(`flow-preview-${this.step.preview}`, {
-              hass: this.hass,
-              flowType: this.flowConfig.flowType,
-              handler: step.handler,
-              stepId: step.step_id,
-              flowId: step.flow_id,
-              stepData,
-            })}
-          </div>`
-        : nothing}
-      <div class="buttons">
+      <ha-dialog
+        open
+        @closed=${this.closeDialog}
+        scrimClickAction
+        escapeKeyAction
+        hideActions
+        flexContent
+      >
+        <ha-dialog-header slot="heading">
+          <ha-icon-button
+            .label=${this.hass.localize("ui.dialogs.generic.close")}
+            .path=${mdiClose}
+            dialogAction="close"
+            slot="navigationIcon"
+            dir=${computeRTLDirection(this.hass)}
+          ></ha-icon-button>
+          <span slot="title">
+            ${this.flowConfig.renderShowFormStepHeader(this.hass, this.step)}
+          </span>
+          <span slot="actionItems">
+            <slot name="documentationButton"></slot>
+          </span>
+        </ha-dialog-header>
+        <div @click=${this._clickHandler}>
+          ${this.flowConfig.renderShowFormStepDescription(this.hass, this.step)}
+          ${this._errorMsg
+            ? html`<ha-alert alert-type="error">${this._errorMsg}</ha-alert>`
+            : ""}
+          <ha-form
+            .hass=${this.hass}
+            .data=${stepData}
+            .disabled=${this._loading}
+            @value-changed=${this._stepDataChanged}
+            .schema=${autocompleteLoginFields(step.data_schema)}
+            .error=${step.errors}
+            .computeLabel=${this._labelCallback}
+            .computeHelper=${this._helperCallback}
+            .computeError=${this._errorCallback}
+            .localizeValue=${this._localizeValueCallback}
+          ></ha-form>
+        </div>
+        ${step.preview
+          ? html`<div @set-flow-errors=${this._setError}>
+              <h3>
+                ${this.hass.localize(
+                  "ui.panel.config.integrations.config_flow.preview"
+                )}:
+              </h3>
+              ${dynamicElement(`flow-preview-${this.step.preview}`, {
+                hass: this.hass,
+                flowType: this.flowConfig.flowType,
+                handler: step.handler,
+                stepId: step.step_id,
+                flowId: step.flow_id,
+                stepData,
+              })}
+            </div>`
+          : nothing}
         ${this._loading
           ? html`
-              <div class="submit-spinner">
+              <div slot="primaryAction" class="submit-spinner">
                 <ha-circular-progress indeterminate></ha-circular-progress>
               </div>
             `
           : html`
-              <div>
-                <mwc-button @click=${this._submitStep}>
-                  ${this.flowConfig.renderShowFormStepSubmitButton(
-                    this.hass,
-                    this.step
-                  )}
-                </mwc-button>
-              </div>
+              <mwc-button slot="primaryAction" @click=${this._submitStep}>
+                ${this.flowConfig.renderShowFormStepSubmitButton(
+                  this.hass,
+                  this.step
+                )}
+              </mwc-button>
             `}
-      </div>
+      </ha-dialog>
     `;
+  }
+
+  public closeDialog(): void {
+    fireEvent(this, "dialog-closed", { dialog: this.localName });
   }
 
   private _setError(ev: CustomEvent) {
@@ -242,6 +269,7 @@ class StepFlowForm extends LitElement {
   static get styles(): CSSResultGroup {
     return [
       haStyle,
+      haStyleDialog,
       configFlowContentStyles,
       css`
         .error {

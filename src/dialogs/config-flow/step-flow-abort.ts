@@ -1,4 +1,5 @@
 import "@material/mwc-button";
+import { mdiClose } from "@mdi/js";
 import { CSSResultGroup, html, LitElement, PropertyValues, nothing } from "lit";
 import { customElement, property } from "lit/decorators";
 import { fireEvent } from "../../common/dom/fire_event";
@@ -8,6 +9,9 @@ import { HomeAssistant } from "../../types";
 import { showConfigFlowDialog } from "./show-dialog-config-flow";
 import { DataEntryFlowDialogParams } from "./show-dialog-data-entry-flow";
 import { configFlowContentStyles } from "./styles";
+import { computeRTLDirection } from "../../common/util/compute_rtl";
+import "../../components/ha-dialog";
+import "../../components/ha-dialog-header";
 
 @customElement("step-flow-abort")
 class StepFlowAbort extends LitElement {
@@ -31,18 +35,39 @@ class StepFlowAbort extends LitElement {
       return nothing;
     }
     return html`
-      <h2>${this.hass.localize(`component.${this.domain}.title`)}</h2>
-      <div class="content">
-        ${this.params.flowConfig.renderAbortDescription(this.hass, this.step)}
-      </div>
-      <div class="buttons">
-        <mwc-button @click=${this._flowDone}
-          >${this.hass.localize(
-            "ui.panel.config.integrations.config_flow.close"
-          )}</mwc-button
-        >
-      </div>
+      <ha-dialog
+        open
+        @closed=${this.closeDialog}
+        scrimClickAction
+        escapeKeyAction
+        hideActions
+        flexContent
+        .heading=${this.hass.localize(`component.${this.domain}.title`)}
+      >
+        <ha-dialog-header slot="heading">
+          <ha-icon-button
+            .label=${this.hass.localize("ui.dialogs.generic.close")}
+            .path=${mdiClose}
+            dialogAction="close"
+            slot="navigationIcon"
+            dir=${computeRTLDirection(this.hass)}
+          ></ha-icon-button>
+          <span slot="title">
+            ${this.hass.localize(`component.${this.domain}.title`)}
+          </span>
+          <span slot="actionItems">
+            <slot name="documentationButton"></slot>
+          </span>
+        </ha-dialog-header>
+        <div>
+          ${this.params.flowConfig.renderAbortDescription(this.hass, this.step)}
+        </div>
+      </ha-dialog>
     `;
+  }
+
+  public closeDialog(): void {
+    fireEvent(this, "dialog-closed", { dialog: this.localName });
   }
 
   private async _handleMissingCreds() {

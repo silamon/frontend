@@ -1,4 +1,5 @@
 import "@material/mwc-button";
+import { mdiClose } from "@mdi/js";
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators";
 import { fireEvent } from "../../common/dom/fire_event";
@@ -13,6 +14,9 @@ import { HomeAssistant } from "../../types";
 import { showAlertDialog } from "../generic/show-dialog-box";
 import { FlowConfig } from "./show-dialog-data-entry-flow";
 import { configFlowContentStyles } from "./styles";
+import { computeRTLDirection } from "../../common/util/compute_rtl";
+import "../../components/ha-dialog";
+import "../../components/ha-dialog-header";
 
 @customElement("step-flow-create-entry")
 class StepFlowCreateEntry extends LitElement {
@@ -28,57 +32,81 @@ class StepFlowCreateEntry extends LitElement {
     const localize = this.hass.localize;
 
     return html`
-      <h2>${localize("ui.panel.config.integrations.config_flow.success")}!</h2>
-      <div class="content">
-        ${this.flowConfig.renderCreateEntryDescription(this.hass, this.step)}
-        ${this.step.result?.state === "not_loaded"
-          ? html`<span class="error"
-              >${localize(
-                "ui.panel.config.integrations.config_flow.not_loaded"
-              )}</span
-            >`
-          : ""}
-        ${this.devices.length === 0
-          ? ""
-          : html`
-              <p>
-                ${localize(
-                  "ui.panel.config.integrations.config_flow.found_following_devices"
-                )}:
-              </p>
-              <div class="devices">
-                ${this.devices.map(
-                  (device) => html`
-                    <div class="device">
-                      <div>
-                        <b>${computeDeviceName(device, this.hass)}</b><br />
-                        ${!device.model && !device.manufacturer
-                          ? html`&nbsp;`
-                          : html`${device.model}
-                            ${device.manufacturer
-                              ? html`(${device.manufacturer})`
-                              : ""}`}
+      <ha-dialog
+        open
+        @closed=${this.closeDialog}
+        scrimClickAction
+        escapeKeyAction
+        hideActions
+      >
+        <ha-dialog-header slot="heading">
+          <ha-icon-button
+            .label=${this.hass.localize("ui.dialogs.generic.close")}
+            .path=${mdiClose}
+            dialogAction="close"
+            slot="navigationIcon"
+            dir=${computeRTLDirection(this.hass)}
+          ></ha-icon-button>
+          <span slot="title">
+            ${localize("ui.panel.config.integrations.config_flow.success")}!
+          </span>
+          <span slot="actionItems">
+            <slot name="documentationButton"></slot>
+          </span>
+        </ha-dialog-header>
+        <div class="content">
+          ${this.flowConfig.renderCreateEntryDescription(this.hass, this.step)}
+          ${this.step.result?.state === "not_loaded"
+            ? html`<span class="error"
+                >${localize(
+                  "ui.panel.config.integrations.config_flow.not_loaded"
+                )}</span
+              >`
+            : ""}
+          ${this.devices.length === 0
+            ? ""
+            : html`
+                <p>
+                  ${localize(
+                    "ui.panel.config.integrations.config_flow.found_following_devices"
+                  )}:
+                </p>
+                <div class="devices">
+                  ${this.devices.map(
+                    (device) => html`
+                      <div class="device">
+                        <div>
+                          <b>${computeDeviceName(device, this.hass)}</b><br />
+                          ${!device.model && !device.manufacturer
+                            ? html`&nbsp;`
+                            : html`${device.model}
+                              ${device.manufacturer
+                                ? html`(${device.manufacturer})`
+                                : ""}`}
+                        </div>
+                        <ha-area-picker
+                          .hass=${this.hass}
+                          .device=${device.id}
+                          .value=${device.area_id ?? undefined}
+                          @value-changed=${this._areaPicked}
+                        ></ha-area-picker>
                       </div>
-                      <ha-area-picker
-                        .hass=${this.hass}
-                        .device=${device.id}
-                        .value=${device.area_id ?? undefined}
-                        @value-changed=${this._areaPicked}
-                      ></ha-area-picker>
-                    </div>
-                  `
-                )}
-              </div>
-            `}
-      </div>
-      <div class="buttons">
-        <mwc-button @click=${this._flowDone}
+                    `
+                  )}
+                </div>
+              `}
+        </div>
+        <mwc-button slot="primaryAction" @click=${this._flowDone}
           >${localize(
             "ui.panel.config.integrations.config_flow.finish"
           )}</mwc-button
         >
-      </div>
+      </ha-dialog>
     `;
+  }
+
+  public closeDialog(): void {
+    fireEvent(this, "dialog-closed", { dialog: this.localName });
   }
 
   private _flowDone(): void {

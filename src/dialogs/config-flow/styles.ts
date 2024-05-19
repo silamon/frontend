@@ -23,21 +23,6 @@ export const configFlowContentStyles = css`
     box-sizing: border-box;
   }
 
-  .content,
-  .preview {
-    margin-top: 20px;
-    padding: 0 24px;
-  }
-
-  .buttons {
-    position: relative;
-    padding: 8px 16px 8px 24px;
-    margin: 8px 0 0;
-    color: var(--primary-color);
-    display: flex;
-    justify-content: flex-end;
-  }
-
   ha-markdown {
     overflow-wrap: break-word;
   }

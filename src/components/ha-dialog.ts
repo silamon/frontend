@@ -159,11 +159,6 @@ export class HaDialog extends DialogBase {
         inset-inline-end: -12px;
         direction: var(--direction);
       }
-      .dialog-actions {
-        inset-inline-start: initial !important;
-        inset-inline-end: 0px !important;
-        direction: var(--direction);
-      }
     `,
   ];
 }
