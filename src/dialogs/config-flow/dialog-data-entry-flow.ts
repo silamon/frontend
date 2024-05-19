@@ -6,7 +6,6 @@ import {
   LitElement,
   PropertyValues,
   TemplateResult,
-  css,
   html,
   nothing,
 } from "lit";
@@ -23,7 +22,6 @@ import {
   DeviceRegistryEntry,
   subscribeDeviceRegistry,
 } from "../../data/device_registry";
-import { haStyleDialog } from "../../resources/styles";
 import type { HomeAssistant } from "../../types";
 import { documentationUrl } from "../../util/documentation-url";
 import { showAlertDialog } from "../generic/show-dialog-box";

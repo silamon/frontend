@@ -13,7 +13,6 @@ import "../../components/ha-dialog-header";
 import "../../components/ha-icon-button";
 import { computeRTLDirection } from "../../common/util/compute_rtl";
 
-
 @customElement("step-flow-menu")
 class StepFlowMenu extends LitElement {
   @property({ attribute: false }) public flowConfig!: FlowConfig;
