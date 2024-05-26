@@ -18,7 +18,6 @@ import {
   mdiViewDashboard,
 } from "@mdi/js";
 import "@polymer/paper-item/paper-icon-item";
-import type { PaperIconItemElement } from "@polymer/paper-item/paper-icon-item";
 import "@polymer/paper-item/paper-item";
 import "@polymer/paper-listbox/paper-listbox";
 import { UnsubscribeFunc } from "home-assistant-js-websocket";
@@ -55,7 +54,10 @@ import "./ha-icon-button";
 import "./ha-menu-button";
 import "./ha-sortable";
 import "./ha-svg-icon";
+import "./ha-list-new";
+import "./ha-list-item-new";
 import "./user/ha-user-badge";
+import type { HaListItemNew } from "./ha-list-item-new";
 
 const SHOW_AFTER_SPACER = ["config", "developer-tools"];
 
@@ -380,7 +382,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
 
     // prettier-ignore
     return html`
-      <paper-listbox
+      <ha-list-new
         attr-for-selected="data-panel"
         class="ha-scrollbar"
         .selected=${selectedPanel}
@@ -395,7 +397,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
         ${this._renderSpacer()}
         ${this._renderPanels(afterSpacer)}
         ${this._renderExternalConfiguration()}
-      </paper-listbox>
+        </ha-list-new>
     `;
   }
 
@@ -425,25 +427,19 @@ class HaSidebar extends SubscribeMixin(LitElement) {
     return urlPath === "config"
       ? this._renderConfiguration(title)
       : html`
-          <a
-            role="option"
+          <ha-list-item-new
+            interactive
             href=${`/${urlPath}`}
-            data-panel=${urlPath}
-            tabindex="-1"
             @mouseenter=${this._itemMouseEnter}
             @mouseleave=${this._itemMouseLeave}
           >
-            <paper-icon-item>
-              ${iconPath
-                ? html`<ha-svg-icon
-                    slot="item-icon"
-                    .path=${iconPath}
-                  ></ha-svg-icon>`
-                : html`<ha-icon slot="item-icon" .icon=${icon}></ha-icon>`}
-              <span class="item-text">${title}</span>
-            </paper-icon-item>
+            ${iconPath
+              ? html`<ha-svg-icon slot="start" .path=${iconPath}></ha-svg-icon>`
+              : html`<ha-icon slot="start" .icon=${icon}></ha-icon>`}
+            <div slot="headline" class="item-text">${title}</div>
             ${this.editMode
               ? html`<ha-icon-button
+                  slot="end"
                   .label=${this.hass.localize("ui.sidebar.hide_panel")}
                   .path=${mdiClose}
                   class="hide-panel"
@@ -451,7 +447,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
                   @click=${this._hidePanel}
                 ></ha-icon-button>`
               : ""}
-          </a>
+          </ha-list-item-new>
         `;
   }
 
@@ -477,7 +473,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
   private _renderPanelsEdit(beforeSpacer: PanelInfo[]) {
     return html`
       <ha-sortable
-        handle-selector="paper-icon-item"
+        handle-selector="ha-list-item-new"
         .disabled=${!this.editMode}
         @item-moved=${this._panelMoved}
       >
@@ -494,37 +490,36 @@ class HaSidebar extends SubscribeMixin(LitElement) {
           if (!panel) {
             return "";
           }
-          return html`<paper-icon-item
+          return html`<ha-list-item-new
+            interactive
             @click=${this._unhidePanel}
             class="hidden-panel"
             .panel=${url}
           >
             ${panel.url_path === this.hass.defaultPanel && !panel.icon
               ? html`<ha-svg-icon
-                  slot="item-icon"
+                  slot="start"
                   .path=${PANEL_ICONS.lovelace}
                 ></ha-svg-icon>`
               : panel.url_path in PANEL_ICONS
                 ? html`<ha-svg-icon
-                    slot="item-icon"
+                    slot="start"
                     .path=${PANEL_ICONS[panel.url_path]}
                   ></ha-svg-icon>`
-                : html`<ha-icon
-                    slot="item-icon"
-                    .icon=${panel.icon}
-                  ></ha-icon>`}
-            <span class="item-text"
+                : html`<ha-icon slot="start" .icon=${panel.icon}></ha-icon>`}
+            <span slot="headline" class="item-text"
               >${panel.url_path === this.hass.defaultPanel
                 ? this.hass.localize("panel.states")
                 : this.hass.localize(`panel.${panel.title}`) ||
                   panel.title}</span
             >
             <ha-icon-button
+              slot="end"
               .label=${this.hass.localize("ui.sidebar.show_panel")}
               .path=${mdiPlus}
               class="show-panel"
             ></ha-icon-button>
-          </paper-icon-item>`;
+          </ha-list-item-new>`;
         })}
         ${this._renderSpacer()}`
       : ""}`;
@@ -539,35 +534,29 @@ class HaSidebar extends SubscribeMixin(LitElement) {
   }
 
   private _renderConfiguration(title: string | null) {
-    return html`<a
-      class="configuration-container"
-      role="option"
-      href="/config"
-      data-panel="config"
-      tabindex="-1"
+    return html`<ha-list-item-new
+      interactive
+      href=${`/config`}
       @mouseenter=${this._itemMouseEnter}
       @mouseleave=${this._itemMouseLeave}
     >
-      <paper-icon-item class="configuration" role="option">
-        <ha-svg-icon slot="item-icon" .path=${mdiCog}></ha-svg-icon>
-        ${!this.alwaysExpand &&
-        (this._updatesCount > 0 || this._issuesCount > 0)
-          ? html`
-              <span class="configuration-badge" slot="item-icon">
-                ${this._updatesCount + this._issuesCount}
-              </span>
-            `
-          : ""}
-        <span class="item-text">${title}</span>
-        ${this.alwaysExpand && (this._updatesCount > 0 || this._issuesCount > 0)
-          ? html`
-              <span class="configuration-badge"
-                >${this._updatesCount + this._issuesCount}</span
-              >
-            `
-          : ""}
-      </paper-icon-item>
-    </a>`;
+      <ha-svg-icon slot="start" .path=${mdiCog}></ha-svg-icon>
+      ${!this.alwaysExpand && (this._updatesCount > 0 || this._issuesCount > 0)
+        ? html`
+            <span class="configuration-badge" slot="start">
+              ${this._updatesCount + this._issuesCount}
+            </span>
+          `
+        : ""}
+      <div slot="headline" class="item-text">${title}</div>
+      ${this.alwaysExpand && (this._updatesCount > 0 || this._issuesCount > 0)
+        ? html`
+            <span class="configuration-badge" slot="end"
+              >${this._updatesCount + this._issuesCount}</span
+            >
+          `
+        : ""}
+    </ha-list-item-new>`;
   }
 
   private _renderNotifications() {
@@ -734,7 +723,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
       clearTimeout(this._mouseLeaveTimeout);
       this._mouseLeaveTimeout = undefined;
     }
-    this._showTooltip(ev.currentTarget as PaperIconItemElement);
+    this._showTooltip(ev.currentTarget as HaListItemNew);
   }
 
   private _itemMouseLeave() {
@@ -774,14 +763,14 @@ class HaSidebar extends SubscribeMixin(LitElement) {
     this._recentKeydownActiveUntil = new Date().getTime() + 100;
   }
 
-  private _showTooltip(item: PaperIconItemElement) {
+  private _showTooltip(item: HaListItemNew) {
     if (this._tooltipHideTimeout) {
       clearTimeout(this._tooltipHideTimeout);
       this._tooltipHideTimeout = undefined;
     }
     const tooltip = this._tooltip;
-    const listbox = this.shadowRoot!.querySelector("paper-listbox")!;
-    let top = item.offsetTop + 11;
+    const listbox = this.shadowRoot!.querySelector("ha-list-new")!;
+    let top = item.offsetTop + listbox.offsetTop + 11;
     if (listbox.contains(item)) {
       top -= listbox.scrollTop;
     }
@@ -789,7 +778,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
     tooltip.style.display = "block";
     tooltip.style.position = "fixed";
     tooltip.style.top = `${top}px`;
-    tooltip.style.left = `${item.offsetLeft + item.clientWidth + 4}px`;
+    tooltip.style.left = `${item.offsetLeft + listbox.offsetLeft + listbox.clientWidth + 4}px`;
   }
 
   private _hideTooltip() {
@@ -866,6 +855,9 @@ class HaSidebar extends SubscribeMixin(LitElement) {
           margin: 0;
           padding: 0 16px;
         }
+        :host(:not([expanded])) ha-list-new ha-list-item-new .item-text {
+          display: none;
+        }
         :host([expanded]) .title {
           display: initial;
         }
@@ -880,7 +872,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
           display: none;
         }
 
-        paper-listbox {
+        ha-list-new {
           padding: 4px 0;
           display: flex;
           flex-direction: column;
@@ -920,8 +912,8 @@ class HaSidebar extends SubscribeMixin(LitElement) {
           width: 248px;
         }
 
-        ha-icon[slot="item-icon"],
-        ha-svg-icon[slot="item-icon"] {
+        ha-icon[slot="start"],
+        ha-svg-icon[slot="start"] {
           color: var(--sidebar-icon-color);
         }
 
