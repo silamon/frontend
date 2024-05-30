@@ -1,5 +1,6 @@
 import { ResizeController } from "@lit-labs/observers/resize-controller";
 import "@material/mwc-list";
+import "@material/web/divider/divider";
 import {
   mdiChevronDown,
   mdiCommentProcessingOutline,
@@ -54,6 +55,8 @@ import { createCardElement } from "../lovelace/create-element/create-card-elemen
 import { LovelaceCard } from "../lovelace/types";
 import { showTodoItemEditDialog } from "./show-dialog-todo-item-editor";
 import { supportsFeature } from "../../common/entity/supports-feature";
+import "../../components/ha-button-menu-new";
+import "../../components/ha-menu-item";
 
 @customElement("ha-panel-todo")
 class PanelTodo extends LitElement {
@@ -184,7 +187,7 @@ class PanelTodo extends LitElement {
         ></ha-menu-button>
         <div slot="title">
           ${!showPane
-            ? html`<ha-button-menu
+            ? html`<ha-button-menu-new
                 class="lists"
                 activatable
                 fixed
@@ -209,16 +212,19 @@ class PanelTodo extends LitElement {
                 </ha-button>
                 ${listItems}
                 ${this.hass.user?.is_admin
-                  ? html`<li divider role="separator"></li>
-                      <ha-list-item graphic="icon" @click=${this._addList}>
+                  ? html` <md-divider
+                        role="separator"
+                        tabindex="-1"
+                      ></md-divider>
+                      <ha-list-item @click=${this._addList}>
                         <ha-svg-icon
                           .path=${mdiPlus}
-                          slot="graphic"
+                          slot="start"
                         ></ha-svg-icon>
                         ${this.hass.localize("ui.panel.todo.create_list")}
                       </ha-list-item>`
                   : nothing}
-              </ha-button-menu>`
+              </ha-button-menu-new>`
             : this.hass.localize("panel.todo")}
         </div>
         <mwc-list slot="pane" activatable>${listItems}</mwc-list>
@@ -232,47 +238,41 @@ class PanelTodo extends LitElement {
               ${this.hass.localize("ui.panel.todo.create_list")}
             </ha-list-item>`
           : nothing}
-        <ha-button-menu slot="actionItems">
+        <ha-button-menu-new slot="actionItems">
           <ha-icon-button
             slot="trigger"
             .label=${""}
             .path=${mdiDotsVertical}
           ></ha-icon-button>
           ${this._conversation(this.hass.config.components)
-            ? html`<ha-list-item
-                graphic="icon"
+            ? html`<ha-menu-item
                 @click=${this._showMoreInfoDialog}
                 .disabled=${!this._entityId}
               >
-                <ha-svg-icon .path=${mdiInformationOutline} slot="graphic">
+                <ha-svg-icon .path=${mdiInformationOutline} slot="start">
                 </ha-svg-icon>
                 ${this.hass.localize("ui.panel.todo.information")}
-              </ha-list-item>`
+              </ha-menu-item>`
             : nothing}
-          <li divider role="separator"></li>
-          <ha-list-item graphic="icon" @click=${this._showVoiceCommandDialog}>
-            <ha-svg-icon .path=${mdiCommentProcessingOutline} slot="graphic">
+          <md-divider role="separator" tabindex="-1"></md-divider>
+          <ha-menu-item @click=${this._showVoiceCommandDialog}>
+            <ha-svg-icon .path=${mdiCommentProcessingOutline} slot="start">
             </ha-svg-icon>
             ${this.hass.localize("ui.panel.todo.assist")}
-          </ha-list-item>
+          </ha-menu-item>
           ${entityRegistryEntry?.platform === "local_todo"
-            ? html` <li divider role="separator"></li>
-                <ha-list-item
-                  graphic="icon"
+            ? html`<md-divider role="separator" tabindex="-1"></md-divider>
+                <ha-menu-item
                   @click=${this._deleteList}
                   class="warning"
                   .disabled=${!this._entityId}
                 >
-                  <ha-svg-icon
-                    .path=${mdiDelete}
-                    slot="graphic"
-                    class="warning"
-                  >
+                  <ha-svg-icon .path=${mdiDelete} slot="start" class="warning">
                   </ha-svg-icon>
                   ${this.hass.localize("ui.panel.todo.delete_list")}
-                </ha-list-item>`
+                </ha-menu-item>`
             : nothing}
-        </ha-button-menu>
+        </ha-button-menu-new>
         <div id="columns">
           <div class="column">${this._card}</div>
         </div>

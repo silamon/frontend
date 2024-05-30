@@ -56,6 +56,8 @@ import { findEntities } from "../common/find-entities";
 import { createEntityNotFoundWarning } from "../components/hui-warning";
 import { LovelaceCard, LovelaceCardEditor } from "../types";
 import { TodoListCardConfig } from "./types";
+import "../../../components/ha-button-menu-new";
+import "../../../components/ha-menu-item";
 
 @customElement("hui-todo-list-card")
 export class HuiTodoListCard extends LitElement implements LovelaceCard {
@@ -242,28 +244,25 @@ export class HuiTodoListCard extends LitElement implements LovelaceCard {
                     ${this.todoListSupportsFeature(
                       TodoListEntityFeature.MOVE_TODO_ITEM
                     )
-                      ? html`<ha-button-menu>
+                      ? html`<ha-button-menu-new>
                           <ha-icon-button
                             slot="trigger"
                             .path=${mdiDotsVertical}
                           ></ha-icon-button>
-                          <ha-list-item
-                            @click=${this._toggleReorder}
-                            graphic="icon"
-                          >
+                          <ha-menu-item @click=${this._toggleReorder}>
                             ${this.hass!.localize(
                               this._reordering
                                 ? "ui.panel.lovelace.cards.todo-list.exit_reorder_items"
                                 : "ui.panel.lovelace.cards.todo-list.reorder_items"
                             )}
                             <ha-svg-icon
-                              slot="graphic"
+                              slot="start"
                               .path=${mdiSort}
                               .disabled=${unavailable}
                             >
                             </ha-svg-icon>
-                          </ha-list-item>
-                        </ha-button-menu>`
+                          </ha-menu-item>
+                        </ha-button-menu-new>`
                       : nothing}
                   </div>
                   ${this._renderItems(uncheckedItems, unavailable)}
@@ -286,14 +285,13 @@ export class HuiTodoListCard extends LitElement implements LovelaceCard {
                       ${this.todoListSupportsFeature(
                         TodoListEntityFeature.DELETE_TODO_ITEM
                       )
-                        ? html`<ha-button-menu>
+                        ? html`<ha-button-menu-new>
                             <ha-icon-button
                               slot="trigger"
                               .path=${mdiDotsVertical}
                             ></ha-icon-button>
-                            <ha-list-item
+                            <ha-menu-item
                               @click=${this._clearCompletedItems}
-                              graphic="icon"
                               class="warning"
                             >
                               ${this.hass!.localize(
@@ -301,13 +299,13 @@ export class HuiTodoListCard extends LitElement implements LovelaceCard {
                               )}
                               <ha-svg-icon
                                 class="warning"
-                                slot="graphic"
+                                slot="start"
                                 .path=${mdiDeleteSweep}
                                 .disabled=${unavailable}
                               >
                               </ha-svg-icon>
-                            </ha-list-item>
-                          </ha-button-menu>`
+                            </ha-menu-item>
+                          </ha-button-menu-new>`
                         : nothing}
                     </div>
                   </div>
