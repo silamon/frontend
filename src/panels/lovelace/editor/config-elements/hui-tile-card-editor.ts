@@ -155,7 +155,7 @@ export class HuiTileCardEditor
                 {
                   name: "color",
                   selector: {
-                    ui_color: {},
+                    ui_color: { default_color: true },
                   },
                 },
                 {
@@ -200,6 +200,12 @@ export class HuiTileCardEditor
                               `ui.panel.lovelace.editor.card.tile.state_content_options.last-changed`
                             ),
                             value: "last-changed",
+                          },
+                          {
+                            label: localize(
+                              `ui.panel.lovelace.editor.card.tile.state_content_options.last-updated`
+                            ),
+                            value: "last-updated",
                           },
                           ...Object.keys(stateObj?.attributes ?? {})
                             .filter((a) => !HIDDEN_ATTRIBUTES.includes(a))
@@ -401,7 +407,6 @@ export class HuiTileCardEditor
         return this.hass!.localize(
           `ui.panel.lovelace.editor.card.tile.${schema.name}`
         );
-
       default:
         return this.hass!.localize(
           `ui.panel.lovelace.editor.card.generic.${schema.name}`

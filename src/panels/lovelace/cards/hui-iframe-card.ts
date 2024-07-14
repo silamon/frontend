@@ -6,7 +6,12 @@ import parseAspectRatio from "../../../common/util/parse-aspect-ratio";
 import "../../../components/ha-alert";
 import "../../../components/ha-card";
 import type { HomeAssistant } from "../../../types";
-import { LovelaceCard, LovelaceCardEditor } from "../types";
+import { IFRAME_SANDBOX } from "../../../util/iframe";
+import {
+  LovelaceCard,
+  LovelaceCardEditor,
+  LovelaceLayoutOptions,
+} from "../types";
 import { IframeCardConfig } from "./types";
 
 @customElement("hui-iframe-card")
@@ -26,6 +31,9 @@ export class HuiIframeCard extends LitElement implements LovelaceCard {
 
   @property({ type: Boolean, reflect: true })
   public isPanel = false;
+
+  @property({ attribute: false })
+  public layout?: string;
 
   @property({ attribute: false }) public hass?: HomeAssistant;
 
@@ -55,13 +63,16 @@ export class HuiIframeCard extends LitElement implements LovelaceCard {
     }
 
     let padding = "";
-    if (!this.isPanel && this._config.aspect_ratio) {
-      const ratio = parseAspectRatio(this._config.aspect_ratio);
-      if (ratio && ratio.w > 0 && ratio.h > 0) {
-        padding = `${((100 * ratio.h) / ratio.w).toFixed(2)}%`;
+    const ignoreAspectRatio = this.isPanel || this.layout === "grid";
+    if (!ignoreAspectRatio) {
+      if (this._config.aspect_ratio) {
+        const ratio = parseAspectRatio(this._config.aspect_ratio);
+        if (ratio && ratio.w > 0 && ratio.h > 0) {
+          padding = `${((100 * ratio.h) / ratio.w).toFixed(2)}%`;
+        }
+      } else {
+        padding = "50%";
       }
-    } else if (!this.isPanel) {
-      padding = "50%";
     }
 
     const target_protocol = new URL(this._config.url, location.toString())
@@ -96,32 +107,36 @@ export class HuiIframeCard extends LitElement implements LovelaceCard {
           <iframe
             title=${ifDefined(this._config.title)}
             src=${this._config.url}
-            sandbox="${sandbox_user_params} allow-forms allow-modals allow-popups allow-pointer-lock allow-same-origin allow-scripts"
-            allow="fullscreen"
+            .sandbox=${`${sandbox_user_params} ${IFRAME_SANDBOX}`}
+            allow=${this._config.allow ?? "fullscreen"}
           ></iframe>
         </div>
       </ha-card>
     `;
   }
 
+  public getLayoutOptions(): LovelaceLayoutOptions {
+    return {
+      grid_columns: 4,
+      grid_rows: 4,
+      grid_min_rows: 2,
+    };
+  }
+
   static get styles(): CSSResultGroup {
     return css`
-      :host([ispanel]) ha-card {
-        width: 100%;
-        height: 100%;
-      }
-
       ha-card {
         overflow: hidden;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
       }
 
       #root {
         width: 100%;
-        position: relative;
-      }
-
-      :host([ispanel]) #root {
         height: 100%;
+        position: relative;
       }
 
       iframe {

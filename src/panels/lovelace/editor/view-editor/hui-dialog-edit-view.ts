@@ -47,6 +47,7 @@ import {
   ViewVisibilityChangeEvent,
 } from "../types";
 import "./hui-view-editor";
+import "./hui-view-background-editor";
 import "./hui-view-visibility-editor";
 import { EditViewDialogParams } from "./show-edit-view-dialog";
 
@@ -151,6 +152,15 @@ export class HuiDialogEditView extends LitElement {
               .config=${this._config}
               @view-config-changed=${this._viewConfigChanged}
             ></hui-view-editor>
+          `;
+          break;
+        case "tab-background":
+          content = html`
+            <hui-view-background-editor
+              .hass=${this.hass}
+              .config=${this._config}
+              @view-config-changed=${this._viewConfigChanged}
+            ></hui-view-background-editor>
           `;
           break;
         case "tab-badges":
@@ -288,6 +298,11 @@ export class HuiDialogEditView extends LitElement {
                 <ha-secondary-tab id="tab-settings" dialogInitialFocus
                   >${this.hass!.localize(
                     "ui.panel.lovelace.editor.edit_view.tab_settings"
+                  )}</ha-secondary-tab
+                >
+                <ha-secondary-tab id="tab-background"
+                  >${this.hass!.localize(
+                    "ui.panel.lovelace.editor.edit_view.tab_background"
                   )}</ha-secondary-tab
                 >
                 <ha-secondary-tab id="tab-badges"

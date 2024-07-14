@@ -1,25 +1,27 @@
 import { ActionDetail } from "@material/mwc-list";
 import { mdiFilterVariant, mdiPlus } from "@mdi/js";
-import Fuse from "fuse.js";
 import type { IFuseOptions } from "fuse.js";
+import Fuse from "fuse.js";
 import type { UnsubscribeFunc } from "home-assistant-js-websocket";
 import {
-  css,
   CSSResultGroup,
-  html,
   LitElement,
-  nothing,
   PropertyValues,
+  css,
+  html,
+  nothing,
 } from "lit";
 import { customElement, property, state } from "lit/decorators";
 import { ifDefined } from "lit/directives/if-defined";
 import memoizeOne from "memoize-one";
 import { isComponentLoaded } from "../../../common/config/is_component_loaded";
 import {
-  protocolIntegrationPicked,
   PROTOCOL_INTEGRATIONS,
+  protocolIntegrationPicked,
 } from "../../../common/integrations/protocolIntegrationPicked";
 import { navigate } from "../../../common/navigate";
+import { caseInsensitiveStringCompare } from "../../../common/string/compare";
+import { stripDiacritics } from "../../../common/string/strip-diacritics";
 import { extractSearchParam } from "../../../common/url/search-params";
 import { nextRender } from "../../../common/util/render-status";
 import "../../../components/ha-button-menu";
@@ -29,6 +31,7 @@ import "../../../components/ha-fab";
 import "../../../components/ha-icon-button";
 import "../../../components/ha-svg-icon";
 import "../../../components/search-input";
+import "../../../components/search-input-outlined";
 import { ConfigEntry, getConfigEntries } from "../../../data/config_entries";
 import { getConfigFlowInProgressCollection } from "../../../data/config_flow";
 import { fetchDiagnosticHandlers } from "../../../data/diagnostics";
@@ -37,11 +40,11 @@ import {
   subscribeEntityRegistry,
 } from "../../../data/entity_registry";
 import {
+  IntegrationLogInfo,
+  IntegrationManifest,
   domainToName,
   fetchIntegrationManifest,
   fetchIntegrationManifests,
-  IntegrationLogInfo,
-  IntegrationManifest,
   subscribeLogInfo,
 } from "../../../data/integration";
 import {
@@ -59,17 +62,17 @@ import "../../../layouts/hass-tabs-subpage";
 import { SubscribeMixin } from "../../../mixins/subscribe-mixin";
 import { haStyle } from "../../../resources/styles";
 import type { HomeAssistant, Route } from "../../../types";
+import { getStripDiacriticsFn } from "../../../util/fuse";
 import { configSections } from "../ha-panel-config";
 import { isHelperDomain } from "../helpers/const";
 import "./ha-config-flow-card";
 import { DataEntryFlowProgressExtended } from "./ha-config-integrations";
+import "./ha-disabled-config-entry-card";
 import "./ha-ignored-config-entry-card";
 import "./ha-integration-card";
 import type { HaIntegrationCard } from "./ha-integration-card";
 import "./ha-integration-overflow-menu";
 import { showAddIntegrationDialog } from "./show-add-integration-dialog";
-import "./ha-disabled-config-entry-card";
-import { caseInsensitiveStringCompare } from "../../../common/string/compare";
 
 export interface ConfigEntryExtended extends ConfigEntry {
   localized_domain_name?: string;
@@ -207,9 +210,12 @@ class HaConfigIntegrationsDashboard extends SubscribeMixin(LitElement) {
           isCaseSensitive: false,
           minMatchCharLength: Math.min(filter.length, 2),
           threshold: 0.2,
+          getFn: getStripDiacriticsFn,
         };
         const fuse = new Fuse(configEntriesInProgress, options);
-        filteredEntries = fuse.search(filter).map((result) => result.item);
+        filteredEntries = fuse
+          .search(stripDiacritics(filter))
+          .map((result) => result.item);
       } else {
         filteredEntries = configEntriesInProgress;
       }
@@ -327,15 +333,16 @@ class HaConfigIntegrationsDashboard extends SubscribeMixin(LitElement) {
         ${this.narrow
           ? html`
               <div slot="header">
-                <search-input
+                <search-input-outlined
+                  class="header"
                   .hass=${this.hass}
                   .filter=${this._filter}
-                  class="header"
                   @value-changed=${this._handleSearchChange}
                   .label=${this.hass.localize(
                     "ui.panel.config.integrations.search"
                   )}
-                ></search-input>
+                >
+                </search-input-outlined>
               </div>
               ${filterMenu}
             `
@@ -345,36 +352,36 @@ class HaConfigIntegrationsDashboard extends SubscribeMixin(LitElement) {
                 slot="toolbar-icon"
               ></ha-integration-overflow-menu>
               <div class="search">
-                <search-input
+                <search-input-outlined
+                  class="header"
                   .hass=${this.hass}
-                  suffix
                   .filter=${this._filter}
                   @value-changed=${this._handleSearchChange}
                   .label=${this.hass.localize(
                     "ui.panel.config.integrations.search"
                   )}
                 >
-                  <div class="filters" slot="suffix">
-                    ${!this._showDisabled && disabledConfigEntries.length
-                      ? html`<div
-                          class="active-filters"
-                          @click=${this._preventDefault}
-                        >
-                          ${this.hass.localize(
-                            "ui.panel.config.integrations.disable.disabled_integrations",
-                            { number: disabledConfigEntries.length }
+                </search-input-outlined>
+                <div class="filters">
+                  ${!this._showDisabled && disabledConfigEntries.length
+                    ? html`<div
+                        class="active-filters"
+                        @click=${this._preventDefault}
+                      >
+                        ${this.hass.localize(
+                          "ui.panel.config.integrations.disable.disabled_integrations",
+                          { number: disabledConfigEntries.length }
+                        )}
+                        <mwc-button
+                          @click=${this._toggleShowDisabled}
+                          .label=${this.hass.localize(
+                            "ui.panel.config.integrations.disable.show"
                           )}
-                          <mwc-button
-                            @click=${this._toggleShowDisabled}
-                            .label=${this.hass.localize(
-                              "ui.panel.config.integrations.disable.show"
-                            )}
-                          ></mwc-button>
-                        </div>`
-                      : ""}
-                    ${filterMenu}
-                  </div>
-                </search-input>
+                        ></mwc-button>
+                      </div>`
+                    : ""}
+                  ${filterMenu}
+                </div>
               </div>
             `}
         ${this._showIgnored
@@ -810,36 +817,23 @@ class HaConfigIntegrationsDashboard extends SubscribeMixin(LitElement) {
         .empty-message h1 {
           margin: 0;
         }
-        search-input {
-          --mdc-text-field-fill-color: var(--sidebar-background-color);
-          --mdc-text-field-idle-line-color: var(--divider-color);
-          --text-field-overflow: visible;
-        }
-        search-input.header {
-          display: block;
-          color: var(--secondary-text-color);
-          margin-left: 8px;
-          margin-inline-start: 8px;
-          margin-inline-end: initial;
-          direction: var(--direction);
-          --mdc-ripple-color: transparant;
+        search-input-outlined {
+          flex: 1;
         }
         .search {
           display: flex;
-          justify-content: flex-end;
+          justify-content: space-between;
           width: 100%;
           align-items: center;
           height: 56px;
           position: sticky;
           top: 0;
           z-index: 2;
-        }
-        .search search-input {
-          display: block;
-          position: absolute;
-          top: 0;
-          right: 0;
-          left: 0;
+          background-color: var(--primary-background-color);
+          padding: 0 16px;
+          gap: 16px;
+          box-sizing: border-box;
+          border-bottom: 1px solid var(--divider-color);
         }
         .filters {
           --mdc-text-field-fill-color: var(--input-fill-color);
@@ -848,6 +842,7 @@ class HaConfigIntegrationsDashboard extends SubscribeMixin(LitElement) {
           --text-field-overflow: initial;
           display: flex;
           justify-content: flex-end;
+          align-items: center;
           color: var(--primary-text-color);
         }
         .active-filters {
@@ -865,6 +860,7 @@ class HaConfigIntegrationsDashboard extends SubscribeMixin(LitElement) {
           width: max-content;
           cursor: initial;
           direction: var(--direction);
+          height: 32px;
         }
         .active-filters mwc-button {
           margin-left: 8px;

@@ -219,8 +219,8 @@ export interface NumericStateCondition extends BaseCondition {
   condition: "numeric_state";
   entity_id: string;
   attribute?: string;
-  above?: number;
-  below?: number;
+  above?: string | number;
+  below?: string | number;
   value_template?: string;
 }
 
@@ -351,6 +351,22 @@ export const saveAutomationConfig = (
   id: string,
   config: AutomationConfig
 ) => hass.callApi<void>("POST", `config/automation/config/${id}`, config);
+
+export const normalizeAutomationConfig = <
+  T extends Partial<AutomationConfig> | AutomationConfig,
+>(
+  config: T
+): T => {
+  // Normalize data: ensure trigger, action and condition are lists
+  // Happens when people copy paste their automations into the config
+  for (const key of ["trigger", "condition", "action"]) {
+    const value = config[key];
+    if (value && !Array.isArray(value)) {
+      config[key] = [value];
+    }
+  }
+  return config;
+};
 
 export const showAutomationEditor = (data?: Partial<AutomationConfig>) => {
   initialAutomationEditorData = data;

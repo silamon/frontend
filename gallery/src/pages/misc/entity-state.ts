@@ -140,6 +140,9 @@ const ENTITIES: HassEntity[] = [
   createEntity("climate.auto_preheating", "auto", undefined, {
     hvac_action: "preheating",
   }),
+  createEntity("climate.auto_defrosting", "auto", undefined, {
+    hvac_action: "defrosting",
+  }),
   createEntity("climate.auto_heating", "auto", undefined, {
     hvac_action: "heating",
   }),
@@ -368,6 +371,7 @@ export class DemoEntityState extends LitElement {
               hass.localize,
               entry.stateObj,
               hass.locale,
+              [], // numericDeviceClasses
               hass.config,
               hass.entities
             )}`,
@@ -406,6 +410,7 @@ export class DemoEntityState extends LitElement {
           entity_id: "select.speed",
           translation_key: "speed",
           platform: "demo",
+          labels: [],
         },
       },
     });

@@ -61,10 +61,8 @@ class PanelDeveloperTools extends LitElement {
           <ha-secondary-tab page-name="state">
             ${this.hass.localize("ui.panel.developer-tools.tabs.states.title")}
           </ha-secondary-tab>
-          <ha-secondary-tab page-name="service">
-            ${this.hass.localize(
-              "ui.panel.developer-tools.tabs.services.title"
-            )}
+          <ha-secondary-tab page-name="action">
+            ${this.hass.localize("ui.panel.developer-tools.tabs.actions.title")}
           </ha-secondary-tab>
           <ha-secondary-tab page-name="template">
             ${this.hass.localize(
@@ -130,6 +128,8 @@ class PanelDeveloperTools extends LitElement {
           padding-top: env(safe-area-inset-top);
           color: var(--app-header-text-color, white);
           border-bottom: var(--app-header-border-bottom, none);
+          -webkit-backdrop-filter: var(--app-header-backdrop-filter, none);
+          backdrop-filter: var(--app-header-backdrop-filter, none);
         }
         .toolbar {
           height: var(--header-height);

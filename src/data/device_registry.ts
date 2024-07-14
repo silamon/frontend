@@ -5,6 +5,7 @@ import type {
   EntityRegistryDisplayEntry,
   EntityRegistryEntry,
 } from "./entity_registry";
+import { ConfigEntry } from "./config_entries";
 import type { EntitySources } from "./entity_sources";
 
 export {
@@ -20,6 +21,7 @@ export interface DeviceRegistryEntry {
   manufacturer: string | null;
   model: string | null;
   name: string | null;
+  labels: string[];
   sw_version: string | null;
   hw_version: string | null;
   serial_number: string | null;
@@ -43,6 +45,7 @@ export interface DeviceRegistryEntryMutableParams {
   area_id?: string | null;
   name_by_user?: string | null;
   disabled_by?: string | null;
+  labels?: string[];
 }
 
 export const fallbackDeviceName = (
@@ -140,9 +143,11 @@ export const getDeviceEntityDisplayLookup = (
 
 export const getDeviceIntegrationLookup = (
   entitySources: EntitySources,
-  entities: EntityRegistryDisplayEntry[]
-): Record<string, string[]> => {
-  const deviceIntegrations: Record<string, string[]> = {};
+  entities: EntityRegistryDisplayEntry[] | EntityRegistryEntry[],
+  devices?: DeviceRegistryEntry[],
+  configEntries?: ConfigEntry[]
+): Record<string, Set<string>> => {
+  const deviceIntegrations: Record<string, Set<string>> = {};
 
   for (const entity of entities) {
     const source = entitySources[entity.entity_id];
@@ -150,10 +155,22 @@ export const getDeviceIntegrationLookup = (
       continue;
     }
 
-    if (!deviceIntegrations[entity.device_id!]) {
-      deviceIntegrations[entity.device_id!] = [];
+    deviceIntegrations[entity.device_id!] =
+      deviceIntegrations[entity.device_id!] || new Set<string>();
+    deviceIntegrations[entity.device_id!].add(source.domain);
+  }
+  // Lookup devices that have no entities
+  if (devices && configEntries) {
+    for (const device of devices) {
+      for (const config_entry_id of device.config_entries) {
+        const entry = configEntries.find((e) => e.entry_id === config_entry_id);
+        if (entry?.domain) {
+          deviceIntegrations[device.id] =
+            deviceIntegrations[device.id] || new Set<string>();
+          deviceIntegrations[device.id].add(entry.domain);
+        }
+      }
     }
-    deviceIntegrations[entity.device_id!].push(source.domain);
   }
   return deviceIntegrations;
 };

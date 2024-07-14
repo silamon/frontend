@@ -16,6 +16,7 @@ import memoizeOne from "memoize-one";
 import { storage } from "../../../../common/decorators/storage";
 import { fireEvent } from "../../../../common/dom/fire_event";
 import { stringCompare } from "../../../../common/string/compare";
+import { stripDiacritics } from "../../../../common/string/strip-diacritics";
 import "../../../../components/ha-circular-progress";
 import "../../../../components/search-input";
 import { isUnavailableState } from "../../../../data/entity";
@@ -28,6 +29,7 @@ import {
   getCustomCardEntry,
 } from "../../../../data/lovelace_custom_cards";
 import type { HomeAssistant } from "../../../../types";
+import { getStripDiacriticsFn } from "../../../../util/fuse";
 import {
   calcUnusedEntities,
   computeUsedEntities,
@@ -86,9 +88,10 @@ export class HuiCardPicker extends LitElement {
         isCaseSensitive: false,
         minMatchCharLength: Math.min(filter.length, 2),
         threshold: 0.2,
+        getFn: getStripDiacriticsFn,
       };
       const fuse = new Fuse(cards, options);
-      cards = fuse.search(filter).map((result) => result.item);
+      cards = fuse.search(stripDiacritics(filter)).map((result) => result.item);
       return cardElements.filter((cardElement: CardElement) =>
         cards.includes(cardElement.card)
       );
@@ -278,13 +281,21 @@ export class HuiCardPicker extends LitElement {
 
     if (customCards.length > 0) {
       cards = cards.concat(
-        customCards.map((ccard: CustomCardEntry) => ({
-          type: ccard.type,
-          name: ccard.name,
-          description: ccard.description,
-          showElement: ccard.preview,
-          isCustom: true,
-        }))
+        customCards
+          .map((ccard: CustomCardEntry) => ({
+            type: ccard.type,
+            name: ccard.name,
+            description: ccard.description,
+            showElement: ccard.preview,
+            isCustom: true,
+          }))
+          .sort((a, b) =>
+            stringCompare(
+              a.name || a.type,
+              b.name || b.type,
+              this.hass?.language
+            )
+          )
       );
     }
     this._cards = cards.map((card: Card) => ({
