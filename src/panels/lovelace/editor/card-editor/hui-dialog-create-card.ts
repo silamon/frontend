@@ -123,12 +123,12 @@ export class HuiCreateDialogCard
               dialogInitialFocus
               >${this.hass!.localize(
                 "ui.panel.lovelace.editor.cardpicker.by_card"
-              )}</ha-secondary-tab
+              ).toUpperCase()}</ha-secondary-tab
             >
             <ha-secondary-tab id="tab-by-entity" aria-controls="panel-by-entity"
               >${this.hass!.localize(
                 "ui.panel.lovelace.editor.cardpicker.by_entity"
-              )}</ha-secondary-tab
+              ).toUpperCase()}</ha-secondary-tab
             >
           </ha-tabs>
         </ha-dialog-header>

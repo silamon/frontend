@@ -15,6 +15,8 @@ import {
   mdiShape,
   mdiViewDashboard,
 } from "@mdi/js";
+import "@polymer/paper-tabs/paper-tab";
+import "@polymer/paper-tabs/paper-tabs";
 import {
   CSSResultGroup,
   LitElement,
@@ -79,17 +81,6 @@ import { isLegacyStrategyConfig } from "./strategies/legacy-strategy";
 import type { Lovelace } from "./types";
 import "./views/hui-view";
 import type { HUIView } from "./views/hui-view";
-import { LovelaceViewConfig } from "../../data/lovelace/config/view";
-import {
-  LovelaceConfig,
-  isStrategyDashboard,
-} from "../../data/lovelace/config/types";
-import { showSaveDialog } from "./editor/show-save-config-dialog";
-import { isLegacyStrategyConfig } from "./strategies/legacy-strategy";
-import { LocalizeKeys } from "../../common/translations/localize";
-import "../../components/ha-tab-bar";
-import "../../components/ha-primary-tab";
-import { getLovelaceStrategy } from "./strategies/get-strategy";
 import { getPanelTitle } from "../../data/panel";
 
 @customElement("hui-root")
@@ -344,18 +335,19 @@ class HUIRoot extends LitElement {
                     ? html`<div class="main-title">${curViewConfig.title}</div>`
                     : views.filter((view) => !view.subview).length > 1
                       ? html`
-                          <ha-tabs
+                          <paper-tabs
                             slot="title"
-                            class="scrolling"
-                            .activeTabIndex=${this._curView}
-                            @change=${this._handleViewSelected}
+                            scrollable
+                            .selected=${this._curView}
+                            @iron-activate=${this._handleViewSelected}
+                            dir=${computeRTLDirection(this.hass!)}
                           >
                             ${views.map(
                               (view) => html`
-                                <ha-primary-tab
+                                <paper-tab
                                   aria-label=${ifDefined(view.title)}
                                   class=${classMap({
-                                    hidden: Boolean(
+                                    "hide-tab": Boolean(
                                       view.subview ||
                                         (view.visible !== undefined &&
                                           ((Array.isArray(view.visible) &&
@@ -375,10 +367,10 @@ class HUIRoot extends LitElement {
                                         ></ha-icon>
                                       `
                                     : view.title || "Unnamed view"}
-                                </ha-primary-tab>
+                                </paper-tab>
                               `
                             )}
-                          </ha-tabs>
+                          </paper-tabs>
                         `
                       : html`
                           <div class="main-title">
@@ -390,7 +382,7 @@ class HUIRoot extends LitElement {
           </div>
           ${this._editMode
             ? html`
-                <ha-tab-bar
+                <paper-tabs
                   scrollable
                   .selected=${this._curView}
                   @iron-activate=${this._handleViewSelected}
@@ -398,7 +390,7 @@ class HUIRoot extends LitElement {
                 >
                   ${views.map(
                     (view) => html`
-                      <ha-primary-tab
+                      <paper-tab
                         aria-label=${ifDefined(view.title)}
                         class=${classMap({
                           "hide-tab": Boolean(
@@ -458,7 +450,7 @@ class HUIRoot extends LitElement {
                               ></ha-icon-button-arrow-next>
                             `
                           : ""}
-                      </ha-primary-tab>
+                      </paper-tab>
                     `
                   )}
                   ${this._editMode
@@ -473,7 +465,7 @@ class HUIRoot extends LitElement {
                         ></ha-icon-button>
                       `
                     : ""}
-                </ha-tab-bar>
+                </paper-tabs>
               `
             : ""}
         </div>
@@ -884,7 +876,7 @@ class HUIRoot extends LitElement {
 
   private _handleViewSelected(ev) {
     ev.preventDefault();
-    const viewIndex = ev.target.activeTabIndex as number;
+    const viewIndex = ev.detail.selected as number;
     if (viewIndex !== this._curView) {
       const path = this.config.views[viewIndex].path || viewIndex;
       this._navigateToView(path);
