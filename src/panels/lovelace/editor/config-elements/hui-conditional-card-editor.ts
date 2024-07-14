@@ -1,5 +1,3 @@
-import "@material/mwc-tab-bar/mwc-tab-bar";
-import "@material/mwc-tab/mwc-tab";
 import type { MDCTabBarActivatedEvent } from "@material/tab-bar";
 import { mdiCodeBraces, mdiContentCopy, mdiListBoxOutline } from "@mdi/js";
 import deepClone from "deep-clone-simple";
@@ -80,21 +78,21 @@ export class HuiConditionalCardEditor
     const isGuiMode = !this._cardEditorEl || this._GUImode;
 
     return html`
-      <mwc-tab-bar
+      <ha-tabs
         .activeIndex=${this._cardTab ? 1 : 0}
         @MDCTabBar:activated=${this._selectTab}
       >
-        <mwc-tab
+        <ha-secondary-tab
           .label=${this.hass!.localize(
             "ui.panel.lovelace.editor.card.conditional.conditions"
           )}
-        ></mwc-tab>
-        <mwc-tab
+        ></ha-secondary-tab>
+        <ha-secondary-tab
           .label=${this.hass!.localize(
             "ui.panel.lovelace.editor.card.conditional.card"
           )}
-        ></mwc-tab>
-      </mwc-tab-bar>
+        ></ha-secondary-tab>
+      </ha-tabs>
       ${this._cardTab
         ? html`
             <div class="card">
@@ -234,9 +232,6 @@ export class HuiConditionalCardEditor
     return [
       configElementStyle,
       css`
-        mwc-tab-bar {
-          border-bottom: 1px solid var(--divider-color);
-        }
         ha-alert {
           display: block;
           margin-top: 12px;

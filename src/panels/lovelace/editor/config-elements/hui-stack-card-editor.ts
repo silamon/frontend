@@ -324,13 +324,6 @@ export class HuiStackCardEditor
       css`
         .toolbar {
           display: flex;
-          --paper-tabs-selection-bar-color: var(--primary-color);
-          --paper-tab-ink: var(--primary-color);
-        }
-        paper-tabs {
-          display: flex;
-          font-size: 14px;
-          flex-grow: 1;
         }
         #add-card {
           max-width: 32px;

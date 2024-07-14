@@ -12,7 +12,6 @@ import { formatDateTime } from "../../common/datetime/format_date_time";
 import "../../components/ha-card";
 import "../../components/ha-menu-button";
 import "../../components/ha-tabs";
-import "@polymer/paper-tabs/paper-tab";
 import { HomeAssistant } from "../../types";
 import { fireEvent } from "../../common/dom/fire_event";
 import { haStyle } from "../../resources/styles";
@@ -222,7 +221,6 @@ class HaPanelMailbox extends LitElement {
           margin-right: max(env(safe-area-inset-right), 24px);
           margin-inline-start: max(env(safe-area-inset-left), 24px);
           margin-inline-end: max(env(safe-area-inset-right), 24px);
-          --paper-tabs-selection-bar-color: #fff;
           text-transform: uppercase;
         }
 

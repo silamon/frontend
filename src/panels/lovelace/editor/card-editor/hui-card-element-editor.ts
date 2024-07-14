@@ -1,6 +1,4 @@
-import "@polymer/paper-tabs/paper-tab";
-import "@polymer/paper-tabs/paper-tabs";
-import { CSSResultGroup, TemplateResult, css, html, nothing } from "lit";
+import { CSSResultGroup, TemplateResult, html, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators";
 import { LovelaceCardConfig } from "../../../../data/lovelace/config/card";
 import { getCardElementClass } from "../../create-element/create-card-element";
@@ -88,7 +86,7 @@ export class HuiCardElementEditor extends HuiElementEditor<LovelaceCardConfig> {
         `;
     }
     return html`
-      <paper-tabs
+      <ha-tabs
         scrollable
         hide-scroll-buttons
         .selected=${displayedTabs.indexOf(this._curTab)}
@@ -96,31 +94,20 @@ export class HuiCardElementEditor extends HuiElementEditor<LovelaceCardConfig> {
       >
         ${displayedTabs.map(
           (tab, index) => html`
-            <paper-tab id=${tab} .dialogInitialFocus=${index === 0}>
+            <ha-secondary-tab id=${tab} .dialogInitialFocus=${index === 0}>
               ${this.hass.localize(
                 `ui.panel.lovelace.editor.edit_card.tab_${tab}`
               )}
-            </paper-tab>
+            </ha-secondary-tab>
           `
         )}
-      </paper-tabs>
+      </ha-tabs>
       ${content}
     `;
   }
 
   static get styles(): CSSResultGroup {
-    return [
-      HuiElementEditor.styles,
-      css`
-        paper-tabs {
-          --paper-tabs-selection-bar-color: var(--primary-color);
-          color: var(--primary-text-color);
-          text-transform: uppercase;
-          margin-bottom: 16px;
-          border-bottom: 1px solid var(--divider-color);
-        }
-      `,
-    ];
+    return [HuiElementEditor.styles];
   }
 }
 

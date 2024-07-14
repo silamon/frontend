@@ -1,7 +1,5 @@
 import { ActionDetail } from "@material/mwc-list";
 import { mdiCheck, mdiClose, mdiDotsVertical } from "@mdi/js";
-import "@polymer/paper-tabs/paper-tab";
-import "@polymer/paper-tabs/paper-tabs";
 import {
   CSSResultGroup,
   LitElement,
@@ -35,6 +33,8 @@ import {
 import "./hui-section-settings-editor";
 import "./hui-section-visibility-editor";
 import type { EditSectionDialogParams } from "./show-edit-section-dialog";
+import "../../../../components/ha-secondary-tab";
+import "../../../../components/ha-tabs";
 
 const TABS = ["tab-settings", "tab-visibility"] as const;
 
@@ -185,7 +185,7 @@ export class HuiDialogEditSection
           </ha-button-menu>
           ${!this._yamlMode
             ? html`
-                <paper-tabs
+                <ha-tabs
                   scrollable
                   hide-scroll-buttons
                   .selected=${TABS.indexOf(this._curTab)}
@@ -193,14 +193,17 @@ export class HuiDialogEditSection
                 >
                   ${TABS.map(
                     (tab, index) => html`
-                      <paper-tab id=${tab} .dialogInitialFocus=${index === 0}>
+                      <ha-secondary-tab
+                        id=${tab}
+                        .dialogInitialFocus=${index === 0}
+                      >
                         ${this.hass!.localize(
                           `ui.panel.lovelace.editor.edit_section.${tab.replace("-", "_")}`
                         )}
-                      </paper-tab>
+                      </ha-secondary-tab>
                     `
                   )}
-                </paper-tabs>
+                </ha-tabs>
               `
             : nothing}
         </ha-dialog-header>
@@ -292,12 +295,6 @@ export class HuiDialogEditSection
         }
         ha-dialog.yaml-mode {
           --dialog-content-padding: 0;
-        }
-        paper-tabs {
-          --paper-tabs-selection-bar-color: var(--primary-color);
-          color: var(--primary-text-color);
-          text-transform: uppercase;
-          padding: 0 20px;
         }
         .selected_menu_item {
           color: var(--primary-color);
