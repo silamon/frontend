@@ -7,6 +7,8 @@ import "@material/mwc-tab-bar/mwc-tab-bar";
 import "@material/mwc-tab/mwc-tab";
 import "@polymer/paper-tabs/paper-tab";
 import "@polymer/paper-tabs/paper-tabs";
+import "@material/web/tabs/primary-tab";
+import "@material/web/tabs/tabs";
 
 @customElement("demo-misc-paper-tabs")
 export class DemoPaperTabs extends LitElement {
@@ -47,6 +49,55 @@ export class DemoPaperTabs extends LitElement {
         <mwc-tab label="Tab twelve"></mwc-tab>
       </mwc-tab-bar>
 
+      <md-tabs aria-label="Content to view">
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+      </md-tabs>
+
+      HA tab bar:
+      <ha-tabs aria-label="Content to view">
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+      </ha-tabs>
+
       <div class="items">
         <div class="item item1"></div>
         <div class="item item2"></div>
@@ -72,6 +123,8 @@ export class DemoPaperTabs extends LitElement {
     if (!slider) {
       return;
     }
+    console.log("adding");
+
     slider!.addEventListener("mousedown", (e) => {
       isDown = true;
       slider!.classList.add("active");
@@ -106,9 +159,6 @@ export class DemoPaperTabs extends LitElement {
       overflow-x: scroll;
       overflow-y: hidden;
       white-space: nowrap;
-      transition: all 0.2s;
-      transform: scale(0.98);
-      will-change: transform;
       user-select: none;
       cursor: pointer;
     }
@@ -119,12 +169,6 @@ export class DemoPaperTabs extends LitElement {
       min-height: 250px;
       min-width: 400px;
       margin: 2em 1em;
-    }
-    @media screen and (max-width: 500px) {
-      .item {
-        min-height: 200px;
-        min-width: 200px;
-      }
     }
   `;
 }
