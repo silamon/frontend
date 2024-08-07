@@ -39,7 +39,7 @@ import type { ConfigChangedEvent } from "../hui-element-editor";
 import { baseLovelaceCardConfig } from "../structs/base-card-struct";
 import { GUIModeChangedEvent } from "../types";
 import { configElementStyle } from "./config-elements-style";
-import "../../../../components/ha-tab-bar";
+import "../../../../components/ha-tabs";
 import "../../../../components/ha-primary-tab";
 
 const cardConfigStruct = assign(
@@ -119,7 +119,7 @@ export class HuiStackCardEditor
       ></ha-form>
       <div class="card-config">
         <div class="toolbar">
-          <ha-tab-bar
+          <ha-tabs
             .selected=${selected}
             scrollable
             @iron-activate=${this._handleSelectedCard}
@@ -127,8 +127,8 @@ export class HuiStackCardEditor
             ${this._config.cards.map(
               (_card, i) => html`<ha-primary-tab>${i + 1}</ha-primary-tab>`
             )}
-          </ha-tab-bar>
-          <ha-tab-bar
+          </ha-tabs>
+          <ha-tabs
             id="add-card"
             .selected=${selected === numcards ? "0" : undefined}
             @iron-activate=${this._handleSelectedCard}
@@ -136,7 +136,7 @@ export class HuiStackCardEditor
             <ha-primary-tab>
               <ha-svg-icon .path=${mdiPlus}></ha-svg-icon>
             </ha-primary-tab>
-          </ha-tab-bar>
+          </ha-tabs>
         </div>
 
         <div id="editor">

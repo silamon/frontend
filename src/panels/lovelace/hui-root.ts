@@ -1031,12 +1031,9 @@ class HUIRoot extends LitElement {
         .edit-mode div[main-title] {
           pointer-events: auto;
         }
-        .edit-mode paper-tabs {
+        .edit-mode ha-tabs {
           background-color: var(--app-header-edit-background-color, #455a64);
           color: var(--app-header-edit-text-color, #fff);
-        }
-        paper-tab.iron-selected .edit-icon {
-          display: inline-flex;
         }
         .edit-icon {
           color: var(--accent-color);

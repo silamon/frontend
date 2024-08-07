@@ -2,7 +2,7 @@ import "@material/mwc-button";
 import { css, html, LitElement, TemplateResult } from "lit";
 import { customElement } from "lit/decorators";
 import "../../../../src/components/ha-card";
-import "../../../../src/components/ha-tab-bar";
+import "../../../../src/components/ha-tabs";
 import "@material/mwc-tab-bar/mwc-tab-bar";
 import "@material/mwc-tab/mwc-tab";
 import "@polymer/paper-tabs/paper-tab";
@@ -14,6 +14,7 @@ import "@material/web/tabs/tabs";
 export class DemoPaperTabs extends LitElement {
   protected render(): TemplateResult {
     return html`
+      Paper tabs:
       <paper-tabs selected="0" scrollable fit-container>
         <paper-tab>NUMBER ONE ITEM</paper-tab>
         <paper-tab>ITEM TWO</paper-tab>
@@ -34,6 +35,7 @@ export class DemoPaperTabs extends LitElement {
 
       <br /><br />
 
+      MWC Tab bar:
       <mwc-tab-bar>
         <mwc-tab label="Tab one"></mwc-tab>
         <mwc-tab label="Tab two"></mwc-tab>
@@ -49,6 +51,7 @@ export class DemoPaperTabs extends LitElement {
         <mwc-tab label="Tab twelve"></mwc-tab>
       </mwc-tab-bar>
 
+      MD Tabs
       <md-tabs aria-label="Content to view">
         <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
         <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
@@ -98,6 +101,32 @@ export class DemoPaperTabs extends LitElement {
         <md-primary-tab aria-label="Music"> Music </md-primary-tab>
       </ha-tabs>
 
+      HA Tab bar wth buttons:
+      <ha-tabs aria-label="Content to view" .buttons=${true}>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
+        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
+        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+      </ha-tabs>
+
+      Experimental no components:
       <div class="items">
         <div class="item item1"></div>
         <div class="item item2"></div>

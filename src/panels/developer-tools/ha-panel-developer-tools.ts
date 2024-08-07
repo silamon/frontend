@@ -10,7 +10,7 @@ import "../../components/ha-list-item";
 import { haStyle } from "../../resources/styles";
 import { HomeAssistant, Route } from "../../types";
 import "./developer-tools-router";
-import "../../components/ha-tab-bar";
+import "../../components/ha-tabs";
 import "../../components/ha-secondary-tab";
 
 @customElement("ha-panel-developer-tools")

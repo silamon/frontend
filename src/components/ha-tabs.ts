@@ -1,9 +1,48 @@
-import { customElement } from "lit/decorators";
+import { customElement, property } from "lit/decorators";
 import { MdTabs } from "@material/web/tabs/tabs";
-import { CSSResult, css } from "lit";
+import { css, html, nothing } from "lit";
+import "./ha-icon-button-prev";
+import "./ha-icon-button-next";
+import { HomeAssistant } from "../types";
 
 @customElement("ha-tabs")
 export class HaTabs extends MdTabs {
+  @property({ attribute: false }) public hass!: HomeAssistant;
+
+  @property({ attribute: false }) public buttons: boolean = false;
+
+  protected render() {
+    return html`
+      ${this.buttons
+        ? html`<ha-icon-button-prev
+            .label=${this.hass?.localize(
+              "ui.panel.lovelace.components.energy_period_selector.previous"
+            ) || "Prev"}
+            @click=${this._pickPrevious}
+          ></ha-icon-button-prev>`
+        : nothing}
+      ${super.render()}
+      ${this.buttons
+        ? html`<ha-icon-button-next
+            .label=${this.hass?.localize(
+              "ui.panel.lovelace.components.energy_period_selector.next"
+            ) || "Next"}
+            @click=${this._pickNext}
+          ></ha-icon-button-next>`
+        : nothing}
+    `;
+  }
+
+  private _pickPrevious() {
+    this.activeTabIndex -= 1;
+    this.scrollToTab();
+  }
+
+  private _pickNext() {
+    this.activeTabIndex += 1;
+    this.scrollToTab();
+  }
+
   protected updated(c) {
     super.updated(c);
     const slider = this.shadowRoot?.querySelector(".tabs");
@@ -14,7 +53,6 @@ export class HaTabs extends MdTabs {
     if (!slider) {
       return;
     }
-    console.log("adding");
 
     slider!.addEventListener("mousedown", (e) => {
       isDown = true;
@@ -34,30 +72,27 @@ export class HaTabs extends MdTabs {
     });
 
     slider!.addEventListener("mousemove", (e) => {
-      console.log("test?");
       if (!isDown) return;
       e.preventDefault();
       const x = e.pageX - slider!.offsetLeft;
       const walk = (x - startX) * 1; //scroll-fast
       var prevScrollLeft = slider!.scrollLeft;
-      console.log("setting scrollleft to " + (scrollLeft - walk));
       slider!.scrollLeft = scrollLeft - walk;
     });
   }
 
-  static get styles(): CSSResult[] {
-    return [
-      ...MdTabs.styles,
-      css`
-        :host {
-          --md-sys-color-primary: var(--primary-color);
-          --md-sys-color-secondary: var(--secondary-color);
-          --md-sys-color-surface: var(--card-background-color);
-          --md-sys-color-on-surface: var(--primary-color);
-          --md-sys-color-on-surface-variant: var(--secondary-color);
-        }
+  static override styles = [
+    ...super.styles,
+    css`
+      :host {
+        --md-sys-color-primary: var(--primary-color);
+        --md-sys-color-secondary: var(--secondary-color);
+        --md-sys-color-surface: var(--card-background-color);
+        --md-sys-color-on-surface: var(--primary-color);
+        --md-sys-color-on-surface-variant: var(--secondary-color);
+      }
 
-        /* .tabs::-webkit-scrollbar {
+      /* .tabs::-webkit-scrollbar {
           width: 0.4rem;
           height: 0.4rem;
         }
@@ -73,9 +108,24 @@ export class HaTabs extends MdTabs {
           scrollbar-color: var(--scrollbar-thumb-color) transparent;
           scrollbar-width: thin;
         }*/
-      `,
-    ];
-  }
+
+      :host {
+        display: flex;
+        flex-direction: row;
+        scroll-behavior: unset;
+        scrollbar-width: unset;
+      }
+
+      ha-icon-button-prev,
+      ha-icon-button-next {
+        display: inline;
+      }
+
+      ha-icon-button-prev + ha-tabs {
+        margin-left: 48px;
+      }
+    `,
+  ];
 }
 
 declare global {
