@@ -43,7 +43,7 @@ export class HuiConditionalCardEditor
   @property({ attribute: false }) public lovelace?: LovelaceConfig;
 
   @storage({
-    key: "lovelaceClipboard",
+    key: "dashboardCardClipboard",
     state: false,
     subscribe: false,
     storage: "sessionStorage",

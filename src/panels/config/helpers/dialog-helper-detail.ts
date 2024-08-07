@@ -25,7 +25,10 @@ import { createInputDateTime } from "../../../data/input_datetime";
 import { createInputNumber } from "../../../data/input_number";
 import { createInputSelect } from "../../../data/input_select";
 import { createInputText } from "../../../data/input_text";
-import { domainToName } from "../../../data/integration";
+import {
+  domainToName,
+  fetchIntegrationManifest,
+} from "../../../data/integration";
 import { createSchedule } from "../../../data/schedule";
 import { createTimer } from "../../../data/timer";
 import { showConfigFlowDialog } from "../../../dialogs/config-flow/show-dialog-config-flow";
@@ -120,13 +123,10 @@ export class DialogHelperDetail extends LitElement {
     this._opened = true;
     await this.updateComplete;
     this.hass.loadFragmentTranslation("config");
-    Promise.all([
-      getConfigFlowHandlers(this.hass, ["helper"]),
-      // Ensure the titles are loaded before we render the flows.
-      this.hass.loadBackendTranslation("title", undefined, true),
-    ]).then(([flows]) => {
-      this._helperFlows = flows;
-    });
+    const flows = await getConfigFlowHandlers(this.hass, ["helper"]);
+    await this.hass.loadBackendTranslation("title", flows, true);
+    // Ensure the titles are loaded before we render the flows.
+    this._helperFlows = flows;
   }
 
   public closeDialog(): void {
@@ -325,6 +325,7 @@ export class DialogHelperDetail extends LitElement {
     } else {
       showConfigFlowDialog(this, {
         startFlowHandler: domain,
+        manifest: await fetchIntegrationManifest(this.hass, domain),
         dialogClosedCallback: this._params!.dialogClosedCallback,
       });
       this.closeDialog();

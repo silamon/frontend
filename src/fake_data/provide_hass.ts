@@ -226,6 +226,7 @@ export const provideHass = (
       },
       suspendReconnectUntil: noop,
       suspend: noop,
+      ping: noop,
       socket: {
         readyState: WebSocket.OPEN,
       },
@@ -354,7 +355,7 @@ export const provideHass = (
       (state !== null ? state : stateObj.state) ?? "",
     formatEntityAttributeName: (_stateObj, attribute) => attribute,
     formatEntityAttributeValue: (stateObj, attribute, value) =>
-      value !== null ? value : stateObj.attributes[attribute] ?? "",
+      value !== null ? value : (stateObj.attributes[attribute] ?? ""),
     ...overrideData,
   };
 
