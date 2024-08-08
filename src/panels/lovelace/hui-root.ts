@@ -15,8 +15,6 @@ import {
   mdiShape,
   mdiViewDashboard,
 } from "@mdi/js";
-import "@polymer/paper-tabs/paper-tab";
-import "@polymer/paper-tabs/paper-tabs";
 import {
   CSSResultGroup,
   LitElement,
@@ -40,7 +38,6 @@ import {
   extractSearchParamsObject,
   removeSearchParam,
 } from "../../common/url/search-params";
-import { computeRTLDirection } from "../../common/util/compute_rtl";
 import { debounce } from "../../common/util/debounce";
 import { afterNextRender } from "../../common/util/render-status";
 import "../../components/ha-button-menu";
@@ -51,6 +48,8 @@ import "../../components/ha-icon-button-arrow-prev";
 import "../../components/ha-menu-button";
 import "../../components/ha-svg-icon";
 import "../../components/ha-tabs";
+import "../../components/ha-primary-tab";
+import "../../components/ha-secondary-tab";
 import type { LovelacePanelConfig } from "../../data/lovelace";
 import {
   LovelaceConfig,
@@ -335,16 +334,15 @@ class HUIRoot extends LitElement {
                     ? html`<div class="main-title">${curViewConfig.title}</div>`
                     : views.filter((view) => !view.subview).length > 1
                       ? html`
-                          <paper-tabs
+                          <ha-tabs
                             slot="title"
-                            scrollable
-                            .selected=${this._curView}
-                            @iron-activate=${this._handleViewSelected}
-                            dir=${computeRTLDirection(this.hass!)}
+                            class="scrolling"
+                            active-tab-index=${this._curView}
+                            @change=${this._handleViewSelected}
                           >
                             ${views.map(
                               (view) => html`
-                                <paper-tab
+                                <ha-secondary-tab
                                   aria-label=${ifDefined(view.title)}
                                   class=${classMap({
                                     "hide-tab": Boolean(
@@ -364,13 +362,14 @@ class HUIRoot extends LitElement {
                                         <ha-icon
                                           title=${ifDefined(view.title)}
                                           .icon=${view.icon}
+                                          slot="icon"
                                         ></ha-icon>
                                       `
                                     : view.title || "Unnamed view"}
-                                </paper-tab>
+                                </ha-secondary-tab>
                               `
                             )}
-                          </paper-tabs>
+                          </ha-tabs>
                         `
                       : html`
                           <div class="main-title">
@@ -382,15 +381,14 @@ class HUIRoot extends LitElement {
           </div>
           ${this._editMode
             ? html`
-                <paper-tabs
-                  scrollable
-                  .selected=${this._curView}
-                  @iron-activate=${this._handleViewSelected}
-                  dir=${computeRTLDirection(this.hass!)}
+                <ha-tabs
+                  class="scrolling"
+                  active-tab-index=${this._curView}
+                  @change=${this._handleViewSelected}
                 >
                   ${views.map(
                     (view) => html`
-                      <paper-tab
+                      <ha-primary-tab
                         aria-label=${ifDefined(view.title)}
                         class=${classMap({
                           "hide-tab": Boolean(
@@ -425,6 +423,7 @@ class HUIRoot extends LitElement {
                                 })}
                                 title=${ifDefined(view.title)}
                                 .icon=${view.icon}
+                                slot="icon"
                               ></ha-icon>
                             `
                           : view.title || "Unnamed view"}
@@ -450,7 +449,7 @@ class HUIRoot extends LitElement {
                               ></ha-icon-button-arrow-next>
                             `
                           : ""}
-                      </paper-tab>
+                      </ha-primary-tab>
                     `
                   )}
                   ${this._editMode
@@ -465,7 +464,7 @@ class HUIRoot extends LitElement {
                         ></ha-icon-button>
                       `
                     : ""}
-                </paper-tabs>
+                </ha-tabs>
               `
             : ""}
         </div>
@@ -875,10 +874,10 @@ class HUIRoot extends LitElement {
   }
 
   private _handleViewSelected(ev) {
-    ev.preventDefault();
-    const viewIndex = ev.detail.selected as number;
+    const viewIndex: number = (ev.target as any).activeTabIndex;
     if (viewIndex !== this._curView) {
       const path = this.config.views[viewIndex].path || viewIndex;
+      this._curView = viewIndex;
       this._navigateToView(path);
     } else if (!this._editMode) {
       scrollTo({ behavior: "smooth", top: 0 });
@@ -1013,21 +1012,6 @@ class HUIRoot extends LitElement {
           display: flex;
           align-items: center;
         }
-        ha-tabs {
-          width: 100%;
-          height: 100%;
-          margin-left: 4px;
-          margin-inline-start: 4px;
-          margin-inline-end: initial;
-        }
-        ha-tabs,
-        paper-tabs {
-          --paper-tabs-selection-bar-color: var(
-            --app-header-selection-bar-color,
-            var(--app-header-text-color, #fff)
-          );
-          text-transform: uppercase;
-        }
         .edit-mode div[main-title] {
           pointer-events: auto;
         }
@@ -1101,6 +1085,25 @@ class HUIRoot extends LitElement {
         }
         .child-view-icon {
           opacity: 0.5;
+        }
+        ha-tabs {
+          text-transform: uppercase;
+          --md-sys-color-primary: var(--app-header-text-color, white);
+          --md-sys-color-secondary: var(--app-header-text-color, white);
+          --md-sys-color-surface: var(--app-header-background-color);
+          --md-sys-color-on-surface: var(--app-header-text-color, white);
+          --md-sys-color-on-surface-variant: var(
+            --app-header-text-color,
+            white
+          );
+          width: 100%;
+          height: 100%;
+        }
+        .edit-mode ha-tabs {
+          --md-sys-color-surface: var(
+            --app-header-edit-background-color,
+            #455a64
+          );
         }
       `,
     ];
