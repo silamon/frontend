@@ -1,6 +1,6 @@
 import { mdiDotsVertical } from "@mdi/js";
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
-import { customElement, property } from "lit/decorators";
+import { customElement, property, state } from "lit/decorators";
 import type { ActionDetail } from "@material/mwc-list";
 import { navigate } from "../../common/navigate";
 import "../../components/ha-menu-button";
@@ -13,6 +13,16 @@ import "./developer-tools-router";
 import "../../components/ha-tabs";
 import "../../components/ha-secondary-tab";
 
+const tabs = [
+  { page: "yaml", label: "yaml" },
+  { page: "state", label: "states" },
+  { page: "action", label: "actions" },
+  { page: "template", label: "templates" },
+  { page: "event", label: "events" },
+  { page: "statistics", label: "statistics" },
+  { page: "assist", label: "assist" },
+] as const;
+
 @customElement("ha-panel-developer-tools")
 class PanelDeveloperTools extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
@@ -21,13 +31,17 @@ class PanelDeveloperTools extends LitElement {
 
   @property({ type: Boolean }) public narrow = false;
 
+  @state() private _activeTabIndex: number = 0;
+
   protected firstUpdated(changedProps) {
     super.firstUpdated(changedProps);
     this.hass.loadBackendTranslation("title");
+
+    const path = this.route.path.substring(1);
+    this._activeTabIndex = tabs.findIndex((tab) => tab.page === path) || 0;
   }
 
   protected render(): TemplateResult {
-    const page = this._page;
     return html`
       <div class="header">
         <div class="toolbar">
@@ -52,32 +66,18 @@ class PanelDeveloperTools extends LitElement {
         </div>
         <ha-tabs
           class="scrolling"
-          .activeTabIndex=${page}
-          @change=${this.handlePageSelected}
+          active-tab-index=${this._activeTabIndex}
+          @change=${this._handleTabChanged}
         >
-          <ha-secondary-tab page-name="yaml">
-            ${this.hass.localize("ui.panel.developer-tools.tabs.yaml.title")}
-          </ha-secondary-tab>
-          <ha-secondary-tab page-name="state">
-            ${this.hass.localize("ui.panel.developer-tools.tabs.states.title")}
-          </ha-secondary-tab>
-          <ha-secondary-tab page-name="action">
-            ${this.hass.localize("ui.panel.developer-tools.tabs.actions.title")}
-          </ha-secondary-tab>
-          <ha-secondary-tab page-name="template">
-            ${this.hass.localize(
-              "ui.panel.developer-tools.tabs.templates.title"
-            )}
-          </ha-secondary-tab>
-          <ha-secondary-tab page-name="event">
-            ${this.hass.localize("ui.panel.developer-tools.tabs.events.title")}
-          </ha-secondary-tab>
-          <ha-secondary-tab page-name="statistics">
-            ${this.hass.localize(
-              "ui.panel.developer-tools.tabs.statistics.title"
-            )}
-          </ha-secondary-tab>
-          <ha-secondary-tab page-name="assist">Assist</ha-secondary-tab>
+          ${tabs.map(
+            (tab) => html`
+              <ha-secondary-tab
+                >${this.hass.localize(
+                  `ui.panel.developer-tools.tabs.${tab.label}.title`
+                )}
+              </ha-secondary-tab>
+            `
+          )}
         </ha-tabs>
       </div>
       <developer-tools-router
@@ -88,13 +88,13 @@ class PanelDeveloperTools extends LitElement {
     `;
   }
 
-  private handlePageSelected(ev) {
-    const newPage = ev.target.activeIndex;
-    if (newPage !== this._page) {
-      navigate(`/developer-tools/${newPage}`);
-    } else {
-      scrollTo({ behavior: "smooth", top: 0 });
+  private _handleTabChanged(ev: CustomEvent): void {
+    const newActiveTabIndex: number = (ev.target as any).activeTabIndex;
+    if (newActiveTabIndex === this._activeTabIndex) {
+      return;
     }
+    this._activeTabIndex = newActiveTabIndex;
+    navigate(`/developer-tools/${tabs[newActiveTabIndex].page}`);
   }
 
   private async _handleMenuAction(ev: CustomEvent<ActionDetail>) {
@@ -103,10 +103,6 @@ class PanelDeveloperTools extends LitElement {
         navigate(`/developer-tools/debug`);
         break;
     }
-  }
-
-  private get _page() {
-    return this.route.path.substr(1);
   }
 
   static get styles(): CSSResultGroup {
@@ -159,16 +155,16 @@ class PanelDeveloperTools extends LitElement {
           flex: 1 1 100%;
           max-width: 100%;
         }
-        ha-secondary-tabs {
-          margin-left: max(env(safe-area-inset-left), 24px);
-          margin-right: max(env(safe-area-inset-right), 24px);
-          margin-inline-start: max(env(safe-area-inset-left), 24px);
-          margin-inline-end: max(env(safe-area-inset-right), 24px);
-          --ha-secondary-tabs-selection-bar-color: var(
-            --app-header-selection-bar-color,
-            var(--app-header-text-color, #fff)
-          );
+        ha-tabs {
           text-transform: uppercase;
+          --md-sys-color-primary: var(--app-header-text-color, white);
+          --md-sys-color-secondary: var(--app-header-text-color, white);
+          --md-sys-color-surface: var(--app-header-background-color);
+          --md-sys-color-on-surface: var(--app-header-text-color, white);
+          --md-sys-color-on-surface-variant: var(
+            --app-header-text-color,
+            white
+          );
         }
       `,
     ];

@@ -110,19 +110,7 @@ export class HaTabs extends MdTabs {
         }*/
 
       :host {
-        display: flex;
-        flex-direction: row;
         scroll-behavior: unset;
-        scrollbar-width: unset;
-      }
-
-      ha-icon-button-prev,
-      ha-icon-button-next {
-        display: inline;
-      }
-
-      ha-icon-button-prev + ha-tabs {
-        margin-left: 48px;
       }
     `,
   ];
