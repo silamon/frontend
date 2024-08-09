@@ -337,7 +337,7 @@ class HUIRoot extends LitElement {
                           <ha-tabs
                             slot="title"
                             class="scrolling"
-                            active-tab-index=${this._curView}
+                            active-tab-index=${ifDefined(this._curView)}
                             @change=${this._handleViewSelected}
                           >
                             ${views.map(
@@ -383,7 +383,7 @@ class HUIRoot extends LitElement {
             ? html`
                 <ha-tabs
                   class="scrolling"
-                  active-tab-index=${this._curView}
+                  active-tab-index=${ifDefined(this._curView)}
                   @change=${this._handleViewSelected}
                 >
                   ${views.map(

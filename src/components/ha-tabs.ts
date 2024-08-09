@@ -75,8 +75,7 @@ export class HaTabs extends MdTabs {
       if (!isDown) return;
       e.preventDefault();
       const x = e.pageX - (slider! as any).offsetLeft;
-      const walk = (x - startX) * 1; //scroll-fast
-      const prevScrollLeft = slider!.scrollLeft;
+      const walk = (x - startX) * 1;
       slider!.scrollLeft = scrollLeft - walk;
     });
   }
