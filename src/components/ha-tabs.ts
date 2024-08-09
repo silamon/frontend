@@ -47,6 +47,7 @@ export class HaTabs extends MdTabs {
     super.updated(c);
     const slider = this.shadowRoot?.querySelector(".tabs");
     let isDown = false;
+    let isMoving = false;
     let startX;
     let scrollLeft;
 
@@ -63,11 +64,16 @@ export class HaTabs extends MdTabs {
 
     slider!.addEventListener("mouseleave", () => {
       isDown = false;
+      isMoving = false;
       slider!.classList.remove("active");
     });
 
-    slider!.addEventListener("mouseup", () => {
+    slider!.addEventListener("mouseup", (e) => {
+      if (isDown && isMoving) {
+        e.preventDefault();
+      }
       isDown = false;
+      isMoving = false;
       slider!.classList.remove("active");
     });
 
@@ -77,6 +83,9 @@ export class HaTabs extends MdTabs {
       const x = e.pageX - (slider! as any).offsetLeft;
       const walk = (x - startX) * 1;
       slider!.scrollLeft = scrollLeft - walk;
+      if (x > 5) {
+        isMoving = true;
+      }
     });
   }
 
