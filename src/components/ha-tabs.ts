@@ -57,7 +57,7 @@ export class HaTabs extends MdTabs {
     slider!.addEventListener("mousedown", (e) => {
       isDown = true;
       slider!.classList.add("active");
-      startX = e.pageX - slider!.offsetLeft;
+      startX = e.pageX - (slider! as any).offsetLeft;
       scrollLeft = slider!.scrollLeft;
     });
 
@@ -74,9 +74,9 @@ export class HaTabs extends MdTabs {
     slider!.addEventListener("mousemove", (e) => {
       if (!isDown) return;
       e.preventDefault();
-      const x = e.pageX - slider!.offsetLeft;
+      const x = e.pageX - (slider! as any).offsetLeft;
       const walk = (x - startX) * 1; //scroll-fast
-      var prevScrollLeft = slider!.scrollLeft;
+      const prevScrollLeft = slider!.scrollLeft;
       slider!.scrollLeft = scrollLeft - walk;
     });
   }
@@ -91,23 +91,6 @@ export class HaTabs extends MdTabs {
         --md-sys-color-on-surface: var(--primary-color);
         --md-sys-color-on-surface-variant: var(--secondary-color);
       }
-
-      /* .tabs::-webkit-scrollbar {
-          width: 0.4rem;
-          height: 0.4rem;
-        }
-
-        .tabs::-webkit-scrollbar-thumb {
-          -webkit-border-radius: 4px;
-          border-radius: 4px;
-          background: var(--scrollbar-thumb-color);
-        }
-
-        .tabs {
-          overflow-y: auto;
-          scrollbar-color: var(--scrollbar-thumb-color) transparent;
-          scrollbar-width: thin;
-        }*/
 
       :host {
         scroll-behavior: unset;

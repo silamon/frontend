@@ -388,7 +388,7 @@ class HUIRoot extends LitElement {
                 >
                   ${views.map(
                     (view) => html`
-                      <ha-primary-tab
+                      <ha-secondary-tab
                         aria-label=${ifDefined(view.title)}
                         class=${classMap({
                           "hide-tab": Boolean(
@@ -449,19 +449,22 @@ class HUIRoot extends LitElement {
                               ></ha-icon-button-arrow-next>
                             `
                           : ""}
-                      </ha-primary-tab>
+                      </ha-secondary-tab>
                     `
                   )}
                   ${this._editMode
                     ? html`
-                        <ha-icon-button
-                          id="add-view"
-                          @click=${this._addView}
-                          .label=${this.hass!.localize(
-                            "ui.panel.lovelace.editor.edit_view.add"
-                          )}
-                          .path=${mdiPlus}
-                        ></ha-icon-button>
+                        <ha-secondary-tab>
+                          <ha-icon-button
+                            id="add-view"
+                            @click=${this._addView}
+                            .label=${this.hass!.localize(
+                              "ui.panel.lovelace.editor.edit_view.add"
+                            )}
+                            .path=${mdiPlus}
+                            slot="icon"
+                          ></ha-icon-button>
+                        </ha-secondary-tab>
                       `
                     : ""}
                 </ha-tabs>
@@ -1029,6 +1032,9 @@ class HUIRoot extends LitElement {
         }
         .edit-icon.view {
           display: none;
+        }
+        ha-secondary-tab[active] .edit-icon {
+          display: inline-flex;
         }
         #add-view {
           position: absolute;
