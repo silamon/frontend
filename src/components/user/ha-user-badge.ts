@@ -91,16 +91,16 @@ class UserBadge extends LitElement {
         display: contents;
       }
       .picture {
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
         background-size: cover;
         border-radius: 50%;
       }
       .initials {
         display: inline-block;
         box-sizing: border-box;
-        width: 40px;
-        line-height: 40px;
+        width: 36px;
+        line-height: 36px;
         border-radius: 50%;
         text-align: center;
         background-color: var(--light-primary-color);
