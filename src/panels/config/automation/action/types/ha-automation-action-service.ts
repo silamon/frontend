@@ -52,8 +52,8 @@ export class HaServiceAction extends LitElement implements ActionElement {
     }
   );
 
-  public static get defaultConfig() {
-    return { service: "", data: {} };
+  public static get defaultConfig(): ServiceAction {
+    return { action: "", data: {} };
   }
 
   protected willUpdate(changedProperties: PropertyValues) {
