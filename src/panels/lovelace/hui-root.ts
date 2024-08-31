@@ -336,7 +336,7 @@ class HUIRoot extends LitElement {
                       ? html`
                           <ha-tabs
                             slot="title"
-                            class="scrolling"
+                            class="scrolling inline"
                             active-tab-index=${ifDefined(this._curView)}
                             @change=${this._handleViewSelected}
                           >
@@ -382,7 +382,7 @@ class HUIRoot extends LitElement {
           ${this._editMode
             ? html`
                 <ha-tabs
-                  class="scrolling"
+                  class="scrolling inline"
                   active-tab-index=${ifDefined(this._curView)}
                   @change=${this._handleViewSelected}
                 >
@@ -423,7 +423,6 @@ class HUIRoot extends LitElement {
                                 })}
                                 title=${ifDefined(view.title)}
                                 .icon=${view.icon}
-                                slot="icon"
                               ></ha-icon>
                             `
                           : view.title || "Unnamed view"}
@@ -454,17 +453,15 @@ class HUIRoot extends LitElement {
                   )}
                   ${this._editMode
                     ? html`
-                        <ha-secondary-tab>
-                          <ha-icon-button
-                            id="add-view"
-                            @click=${this._addView}
-                            .label=${this.hass!.localize(
-                              "ui.panel.lovelace.editor.edit_view.add"
-                            )}
-                            .path=${mdiPlus}
-                            slot="icon"
-                          ></ha-icon-button>
-                        </ha-secondary-tab>
+                        <ha-icon-button
+                          id="add-view"
+                          @click=${this._addView}
+                          .label=${this.hass!.localize(
+                            "ui.panel.lovelace.editor.edit_view.add"
+                          )}
+                          .path=${mdiPlus}
+                          slot="icon"
+                        ></ha-icon-button>
                       `
                     : ""}
                 </ha-tabs>

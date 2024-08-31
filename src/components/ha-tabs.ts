@@ -103,6 +103,15 @@ export class HaTabs extends MdTabs {
       :host {
         scroll-behavior: unset;
       }
+
+      /*:host.inline*/
+      .tabs {
+        justify-content: flex-start !important;
+      }
+      /*:host.inline*/
+      ::slotted(*) {
+        flex: unset !important;
+      }
     `,
   ];
 }

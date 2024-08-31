@@ -24,6 +24,7 @@ import type { ConfigChangedEvent } from "../hui-element-editor";
 import { baseLovelaceCardConfig } from "../structs/base-card-struct";
 import type { GUIModeChangedEvent } from "../types";
 import { configElementStyle } from "./config-elements-style";
+import "../../../../components/ha-secondary-tab";
 
 const cardConfigStruct = assign(
   baseLovelaceCardConfig,
@@ -83,15 +84,15 @@ export class HuiConditionalCardEditor
         @MDCTabBar:activated=${this._selectTab}
       >
         <ha-secondary-tab
-          .label=${this.hass!.localize(
+          >${this.hass!.localize(
             "ui.panel.lovelace.editor.card.conditional.conditions"
-          )}
-        ></ha-secondary-tab>
+          )}</ha-secondary-tab
+        >
         <ha-secondary-tab
-          .label=${this.hass!.localize(
+          >${this.hass!.localize(
             "ui.panel.lovelace.editor.card.conditional.card"
-          )}
-        ></ha-secondary-tab>
+          )}</ha-secondary-tab
+        >
       </ha-tabs>
       ${this._cardTab
         ? html`
