@@ -120,9 +120,10 @@ export class HuiStackCardEditor
       <div class="card-config">
         <div class="toolbar">
           <ha-tabs
-            .selected=${selected}
-            scrollable
-            @iron-activate=${this._handleSelectedCard}
+            class="scrolling inline"
+            style="width: 100%"
+            .activeTabIndex=${selected}
+            @change=${this._handleSelectedCard}
           >
             ${this._config.cards.map(
               (_card, i) => html`<ha-primary-tab>${i + 1}</ha-primary-tab>`
@@ -130,8 +131,8 @@ export class HuiStackCardEditor
           </ha-tabs>
           <ha-tabs
             id="add-card"
-            .selected=${selected === numcards ? "0" : undefined}
-            @iron-activate=${this._handleSelectedCard}
+            .activeTabIndex=${selected === numcards ? 0 : undefined}
+            @change=${this._handleSelectedCard}
           >
             <ha-primary-tab>
               <ha-svg-icon .path=${mdiPlus}></ha-svg-icon>
@@ -324,9 +325,10 @@ export class HuiStackCardEditor
       css`
         .toolbar {
           display: flex;
+          width: 100%;
         }
         #add-card {
-          max-width: 32px;
+          max-width: 52px;
           padding: 0;
         }
 

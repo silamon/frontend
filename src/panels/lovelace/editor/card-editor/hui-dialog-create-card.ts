@@ -1,3 +1,5 @@
+import "@material/mwc-tab-bar/mwc-tab-bar";
+import "@material/mwc-tab/mwc-tab";
 import { mdiClose } from "@mdi/js";
 import { css, CSSResultGroup, html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators";
@@ -31,8 +33,6 @@ import "./hui-entity-picker-table";
 import { CreateCardDialogParams } from "./show-create-card-dialog";
 import { showEditCardDialog } from "./show-edit-card-dialog";
 import { showSuggestCardDialog } from "./show-suggest-card-dialog";
-import "../../../../components/ha-tabs";
-import "../../../../components/ha-secondary-tab";
 
 declare global {
   interface HASSDomEvents {
@@ -113,59 +113,45 @@ export class HuiCreateDialogCard
             .path=${mdiClose}
           ></ha-icon-button>
           <span slot="title"> ${title} </span>
-          <ha-tabs
-            .activeTabIndex=${this._currTabIndex}
-            @change=${this._handleTabChanged}
+          <mwc-tab-bar
+            .activeIndex=${this._currTabIndex}
+            @MDCTabBar:activated=${this._handleTabChanged}
           >
-            <ha-secondary-tab
-              id="tab-by-card"
-              aria-controls="panel-by-card"
-              dialogInitialFocus
-              >${this.hass!.localize(
+            <mwc-tab
+              .label=${this.hass!.localize(
                 "ui.panel.lovelace.editor.cardpicker.by_card"
-              ).toUpperCase()}</ha-secondary-tab
-            >
-            <ha-secondary-tab id="tab-by-entity" aria-controls="panel-by-entity"
-              >${this.hass!.localize(
+              )}
+              dialogInitialFocus
+            ></mwc-tab>
+            <mwc-tab
+              .label=${this.hass!.localize(
                 "ui.panel.lovelace.editor.cardpicker.by_entity"
-              ).toUpperCase()}</ha-secondary-tab
-            >
-          </ha-tabs>
+              )}
+            ></mwc-tab>
+          </mwc-tab-bar>
         </ha-dialog-header>
         ${cache(
           this._currTabIndex === 0
             ? html`
-                <div
-                  role="tabpanel"
-                  id="panel-by-card"
-                  aria-labelledby="tab-by-card"
-                >
-                  <hui-card-picker
-                    .suggestedCards=${this._params.suggestedCards}
-                    .lovelace=${this._params.lovelaceConfig}
-                    .hass=${this.hass}
-                    @config-changed=${this._handleCardPicked}
-                  ></hui-card-picker>
-                </div>
+                <hui-card-picker
+                  .suggestedCards=${this._params.suggestedCards}
+                  .lovelace=${this._params.lovelaceConfig}
+                  .hass=${this.hass}
+                  @config-changed=${this._handleCardPicked}
+                ></hui-card-picker>
               `
             : html`
-                <div
-                  role="tabpanel"
-                  id="panel-by-entity"
-                  aria-labelledby="tab-by-entity"
-                >
-                  <hui-entity-picker-table
-                    no-label-float
-                    .hass=${this.hass}
-                    .narrow=${true}
-                    .entities=${this._allEntities(this.hass.states)}
-                    @selected-changed=${this._handleSelectedChanged}
-                  ></hui-entity-picker-table>
-                </div>
+                <hui-entity-picker-table
+                  no-label-float
+                  .hass=${this.hass}
+                  .narrow=${true}
+                  .entities=${this._allEntities(this.hass.states)}
+                  @selected-changed=${this._handleSelectedChanged}
+                ></hui-entity-picker-table>
               `
         )}
 
-        <div slot="secondaryAction">
+        <div slot="primaryAction">
           <mwc-button @click=${this._cancel}>
             ${this.hass!.localize("ui.common.cancel")}
           </mwc-button>
@@ -258,13 +244,13 @@ export class HuiCreateDialogCard
     this.closeDialog();
   }
 
-  private _handleTabChanged(ev): void {
-    const newTabIndex = ev.target.activeTabIndex;
-    if (newTabIndex === this._currTabIndex) {
+  private _handleTabChanged(ev: CustomEvent): void {
+    const newTab = ev.detail.index;
+    if (newTab === this._currTabIndex) {
       return;
     }
 
-    this._currTabIndex = newTabIndex;
+    this._currTabIndex = ev.detail.index;
     this._selectedEntities = [];
   }
 
