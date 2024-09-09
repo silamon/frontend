@@ -1,6 +1,6 @@
 import { customElement, property } from "lit/decorators";
 import { MdTabs } from "@material/web/tabs/tabs";
-import { css, html, nothing } from "lit";
+import { css } from "lit";
 import "./ha-icon-button-prev";
 import "./ha-icon-button-next";
 import { HomeAssistant } from "../types";
@@ -9,9 +9,9 @@ import { HomeAssistant } from "../types";
 export class HaTabs extends MdTabs {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
-  @property({ attribute: false }) public buttons: boolean = false;
+  // @property({ attribute: false }) public buttons: boolean = false;
 
-  protected render() {
+  /* protected render() {
     return html`
       ${this.buttons
         ? html`<ha-icon-button-prev
@@ -31,7 +31,7 @@ export class HaTabs extends MdTabs {
           ></ha-icon-button-next>`
         : nothing}
     `;
-  }
+  } */
 
   private _pickPrevious() {
     this.activeTabIndex -= 1;
@@ -104,12 +104,11 @@ export class HaTabs extends MdTabs {
         scroll-behavior: unset;
       }
 
-      /*:host.inline*/
-      .tabs {
+      :host(.inline) .tabs {
         justify-content: flex-start !important;
       }
-      /*:host.inline*/
-      ::slotted(*) {
+
+      :host(.inline) ::slotted(*) {
         flex: unset !important;
       }
     `,

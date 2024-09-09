@@ -3,6 +3,7 @@ import { css, html, LitElement, TemplateResult } from "lit";
 import { customElement } from "lit/decorators";
 import "../../../../src/components/ha-card";
 import "../../../../src/components/ha-tabs";
+import "../../../../src/components/ha-primary-tab";
 import "@material/mwc-tab-bar/mwc-tab-bar";
 import "@material/mwc-tab/mwc-tab";
 import "@polymer/paper-tabs/paper-tab";
@@ -101,29 +102,10 @@ export class DemoPaperTabs extends LitElement {
         <md-primary-tab aria-label="Music"> Music </md-primary-tab>
       </ha-tabs>
 
-      HA Tab bar wth buttons:
-      <ha-tabs aria-label="Content to view" .buttons=${true}>
-        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
-        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
-        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
-        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
-        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
-        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
-        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
-        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
-        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
-        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
-        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
-        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
-        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
-        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
-        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
-        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
-        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
-        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
-        <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
-        <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
-        <md-primary-tab aria-label="Music"> Music </md-primary-tab>
+      <ha-tabs class="inline" aria-label="Content to view">
+        <ha-primary-tab aria-label="Photos"> Photos </ha-primary-tab>
+        <ha-primary-tab aria-label="Videos"> Videos </ha-primary-tab>
+        <ha-primary-tab aria-label="Music"> Music </ha-primary-tab>
       </ha-tabs>
 
       Experimental no components:
@@ -157,7 +139,7 @@ export class DemoPaperTabs extends LitElement {
     slider!.addEventListener("mousedown", (e) => {
       isDown = true;
       slider!.classList.add("active");
-      startX = e.pageX - slider!.offsetLeft;
+      startX = e.pageX - (slider! as any).offsetLeft;
       scrollLeft = slider!.scrollLeft;
     });
 
@@ -174,9 +156,8 @@ export class DemoPaperTabs extends LitElement {
     slider!.addEventListener("mousemove", (e) => {
       if (!isDown) return;
       e.preventDefault();
-      const x = e.pageX - slider!.offsetLeft;
-      const walk = (x - startX) * 1; //scroll-fast
-      var prevScrollLeft = slider!.scrollLeft;
+      const x = e.pageX - (slider! as any).offsetLeft;
+      const walk = (x - startX) * 1; // scroll-fast
       slider!.scrollLeft = scrollLeft - walk;
     });
   }
