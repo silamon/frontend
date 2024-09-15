@@ -338,7 +338,7 @@ class HUIRoot extends LitElement {
                           <ha-tabs
                             slot="title"
                             class="scrolling inline"
-                            active-tab-index=${ifDefined(this._curView)}
+                            .activeTabIndex=${ifDefined(this._curView)}
                             @change=${this._handleViewSelected}
                           >
                             ${views.map(
@@ -385,7 +385,7 @@ class HUIRoot extends LitElement {
                 <div class="flexrow">
                   <ha-tabs
                     class="scrolling inline"
-                    active-tab-index=${ifDefined(this._curView)}
+                    .activeTabIndex=${ifDefined(this._curView)}
                     @change=${this._handleViewSelected}
                   >
                     ${views.map(
@@ -877,7 +877,8 @@ class HUIRoot extends LitElement {
   }
 
   private _handleViewSelected(ev) {
-    const viewIndex: number = (ev.target as any).activeTabIndex;
+    console.log("test");
+    const viewIndex: number = ev.target.activeTabIndex;
     if (viewIndex !== this._curView) {
       const path = this.config.views[viewIndex].path || viewIndex;
       this._curView = viewIndex;
@@ -888,7 +889,8 @@ class HUIRoot extends LitElement {
   }
 
   private _selectView(viewIndex: HUIRoot["_curView"], force: boolean): void {
-    if (!force && this._curView === viewIndex) {
+    console.log("selectView");
+    if (!true && this._curView === viewIndex) {
       return;
     }
 

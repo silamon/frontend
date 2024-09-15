@@ -125,16 +125,12 @@ export class HuiStackCardEditor
             @change=${this._handleSelectedCard}
           >
             ${this._config.cards.map(
-              (_card, i) => html`<ha-primary-tab>${i + 1}</ha-primary-tab>`
+              (_card, i) => html`<ha-secondary-tab>${i + 1}</ha-secondary-tab>`
             )}
+            <ha-secondary-tab id="add-card">
+              <ha-svg-icon .path=${mdiPlus}></ha-svg-icon>
+            </ha-secondary-tab>
           </ha-tabs>
-
-          <ha-icon-button
-            id="add-card"
-            @change=${this._handleSelectedCard}
-            .path=${mdiPlus}
-            slot="icon"
-          ></ha-icon-button>
         </div>
 
         <div id="editor">
@@ -223,7 +219,7 @@ export class HuiStackCardEditor
     }
     this._setMode(true);
     this._guiModeAvailable = true;
-    this._selectedCard = parseInt(ev.detail.selected, 10);
+    this._selectedCard = parseInt(ev.target.activeTabIndex, 10);
   }
 
   protected _handleConfigChanged(ev: HASSDomEvent<ConfigChangedEvent>) {
@@ -323,10 +319,6 @@ export class HuiStackCardEditor
         .toolbar {
           display: flex;
           width: 100%;
-        }
-        #add-card {
-          max-width: 52px;
-          padding: 0;
         }
 
         #card-options {
