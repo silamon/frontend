@@ -22,6 +22,7 @@ import {
   TemplateResult,
   css,
   html,
+  nothing,
 } from "lit";
 import { customElement, property, state } from "lit/decorators";
 import { classMap } from "lit/directives/class-map";
@@ -381,76 +382,78 @@ class HUIRoot extends LitElement {
           </div>
           ${this._editMode
             ? html`
-                <ha-tabs
-                  class="scrolling inline"
-                  active-tab-index=${ifDefined(this._curView)}
-                  @change=${this._handleViewSelected}
-                >
-                  ${views.map(
-                    (view) => html`
-                      <ha-secondary-tab
-                        aria-label=${ifDefined(view.title)}
-                        class=${classMap({
-                          "hide-tab": Boolean(
-                            !this._editMode &&
-                              view.visible !== undefined &&
-                              ((Array.isArray(view.visible) &&
-                                !view.visible.some(
-                                  (e) => e.user === this.hass!.user?.id
-                                )) ||
-                                view.visible === false)
-                          ),
-                        })}
-                      >
-                        ${this._editMode
-                          ? html`
-                              <ha-icon-button-arrow-prev
-                                .hass=${this.hass}
-                                .label=${this.hass!.localize(
-                                  "ui.panel.lovelace.editor.edit_view.move_left"
-                                )}
-                                class="edit-icon view"
-                                @click=${this._moveViewLeft}
-                                ?disabled=${this._curView === 0}
-                              ></ha-icon-button-arrow-prev>
-                            `
-                          : ""}
-                        ${view.icon
-                          ? html`
-                              <ha-icon
-                                class=${classMap({
-                                  "child-view-icon": Boolean(view.subview),
-                                })}
-                                title=${ifDefined(view.title)}
-                                .icon=${view.icon}
-                              ></ha-icon>
-                            `
-                          : view.title || "Unnamed view"}
-                        ${this._editMode
-                          ? html`
-                              <ha-svg-icon
-                                title=${this.hass!.localize(
-                                  "ui.panel.lovelace.editor.edit_view.edit"
-                                )}
-                                class="edit-icon view"
-                                .path=${mdiPencil}
-                                @click=${this._editView}
-                              ></ha-svg-icon>
-                              <ha-icon-button-arrow-next
-                                .hass=${this.hass}
-                                .label=${this.hass!.localize(
-                                  "ui.panel.lovelace.editor.edit_view.move_right"
-                                )}
-                                class="edit-icon view"
-                                @click=${this._moveViewRight}
-                                ?disabled=${(this._curView! as number) + 1 ===
-                                views.length}
-                              ></ha-icon-button-arrow-next>
-                            `
-                          : ""}
-                      </ha-secondary-tab>
-                    `
-                  )}
+                <div class="flexrow">
+                  <ha-tabs
+                    class="scrolling inline"
+                    active-tab-index=${ifDefined(this._curView)}
+                    @change=${this._handleViewSelected}
+                  >
+                    ${views.map(
+                      (view) => html`
+                        <ha-secondary-tab
+                          aria-label=${ifDefined(view.title)}
+                          class=${classMap({
+                            "hide-tab": Boolean(
+                              !this._editMode &&
+                                view.visible !== undefined &&
+                                ((Array.isArray(view.visible) &&
+                                  !view.visible.some(
+                                    (e) => e.user === this.hass!.user?.id
+                                  )) ||
+                                  view.visible === false)
+                            ),
+                          })}
+                        >
+                          ${this._editMode
+                            ? html`
+                                <ha-icon-button-arrow-prev
+                                  .hass=${this.hass}
+                                  .label=${this.hass!.localize(
+                                    "ui.panel.lovelace.editor.edit_view.move_left"
+                                  )}
+                                  class="edit-icon view"
+                                  @click=${this._moveViewLeft}
+                                  ?disabled=${this._curView === 0}
+                                ></ha-icon-button-arrow-prev>
+                              `
+                            : ""}
+                          ${view.icon
+                            ? html`
+                                <ha-icon
+                                  class=${classMap({
+                                    "child-view-icon": Boolean(view.subview),
+                                  })}
+                                  title=${ifDefined(view.title)}
+                                  .icon=${view.icon}
+                                ></ha-icon>
+                              `
+                            : view.title || "Unnamed view"}
+                          ${this._editMode
+                            ? html`
+                                <ha-svg-icon
+                                  title=${this.hass!.localize(
+                                    "ui.panel.lovelace.editor.edit_view.edit"
+                                  )}
+                                  class="edit-icon view"
+                                  .path=${mdiPencil}
+                                  @click=${this._editView}
+                                ></ha-svg-icon>
+                                <ha-icon-button-arrow-next
+                                  .hass=${this.hass}
+                                  .label=${this.hass!.localize(
+                                    "ui.panel.lovelace.editor.edit_view.move_right"
+                                  )}
+                                  class="edit-icon view"
+                                  @click=${this._moveViewRight}
+                                  ?disabled=${(this._curView! as number) + 1 ===
+                                  views.length}
+                                ></ha-icon-button-arrow-next>
+                              `
+                            : nothing}
+                        </ha-secondary-tab>
+                      `
+                    )}
+                  </ha-tabs>
                   ${this._editMode
                     ? html`
                         <ha-icon-button
@@ -463,10 +466,10 @@ class HUIRoot extends LitElement {
                           slot="icon"
                         ></ha-icon-button>
                       `
-                    : ""}
-                </ha-tabs>
+                    : nothing}
+                </div>
               `
-            : ""}
+            : nothing}
         </div>
         <div id="view" @ll-rebuild=${this._debouncedConfigChanged}></div>
       </div>
@@ -1012,6 +1015,9 @@ class HUIRoot extends LitElement {
           display: flex;
           align-items: center;
         }
+        .flexrow {
+          display: flex;
+        }
         .edit-mode div[main-title] {
           pointer-events: auto;
         }
@@ -1034,7 +1040,6 @@ class HUIRoot extends LitElement {
           display: inline-flex;
         }
         #add-view {
-          position: absolute;
           height: 44px;
         }
         #add-view ha-svg-icon {

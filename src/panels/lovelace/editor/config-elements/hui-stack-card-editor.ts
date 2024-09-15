@@ -121,7 +121,6 @@ export class HuiStackCardEditor
         <div class="toolbar">
           <ha-tabs
             class="scrolling inline"
-            style="width: 100%"
             .activeTabIndex=${selected}
             @change=${this._handleSelectedCard}
           >
@@ -129,15 +128,13 @@ export class HuiStackCardEditor
               (_card, i) => html`<ha-primary-tab>${i + 1}</ha-primary-tab>`
             )}
           </ha-tabs>
-          <ha-tabs
+
+          <ha-icon-button
             id="add-card"
-            .activeTabIndex=${selected === numcards ? 0 : undefined}
             @change=${this._handleSelectedCard}
-          >
-            <ha-primary-tab>
-              <ha-svg-icon .path=${mdiPlus}></ha-svg-icon>
-            </ha-primary-tab>
-          </ha-tabs>
+            .path=${mdiPlus}
+            slot="icon"
+          ></ha-icon-button>
         </div>
 
         <div id="editor">

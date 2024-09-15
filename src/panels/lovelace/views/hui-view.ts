@@ -150,6 +150,7 @@ export class HUIView extends ReactiveElement {
           - lovelace changes if edit mode is enabled or config has changed
     */
 
+    console.log("going here?");
     const oldLovelace = changedProperties.get("lovelace");
 
     // If config has changed, create element if necessary and set all values.
@@ -167,6 +168,7 @@ export class HUIView extends ReactiveElement {
   protected update(changedProperties: PropertyValues) {
     super.update(changedProperties);
 
+    console.log("going here?");
     // If no layout element, we're still creating one
     if (this._layoutElement) {
       // Config has not changed. Just props
