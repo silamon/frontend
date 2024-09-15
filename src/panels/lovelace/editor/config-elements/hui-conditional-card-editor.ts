@@ -80,8 +80,8 @@ export class HuiConditionalCardEditor
 
     return html`
       <ha-tabs
-        .activeIndex=${this._cardTab ? 1 : 0}
-        @MDCTabBar:activated=${this._selectTab}
+        active-tab-index=${this._cardTab ? 1 : 0}
+        @change=${this._selectTab}
       >
         <ha-secondary-tab
           >${this.hass!.localize(
@@ -157,8 +157,8 @@ export class HuiConditionalCardEditor
     `;
   }
 
-  private _selectTab(ev: MDCTabBarActivatedEvent): void {
-    this._cardTab = ev.detail.index === 1;
+  private _selectTab(ev: Event): void {
+    this._cardTab = (ev.target as any).activeTabIndex === 1;
   }
 
   private _toggleMode(): void {
@@ -257,6 +257,9 @@ export class HuiConditionalCardEditor
           margin-right: auto;
           margin-inline-end: auto;
           margin-inline-start: initial;
+        }
+        ha-tabs {
+          text-transform: uppercase;
         }
       `,
     ];
