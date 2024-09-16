@@ -134,7 +134,6 @@ export class DemoPaperTabs extends LitElement {
     if (!slider) {
       return;
     }
-    console.log("adding");
 
     slider!.addEventListener("mousedown", (e) => {
       isDown = true;

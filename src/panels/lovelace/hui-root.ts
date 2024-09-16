@@ -877,7 +877,6 @@ class HUIRoot extends LitElement {
   }
 
   private _handleViewSelected(ev) {
-    console.log("test");
     const viewIndex: number = ev.target.activeTabIndex;
     if (viewIndex !== this._curView) {
       const path = this.config.views[viewIndex].path || viewIndex;
@@ -889,7 +888,6 @@ class HUIRoot extends LitElement {
   }
 
   private _selectView(viewIndex: HUIRoot["_curView"], force: boolean): void {
-    console.log("selectView");
     if (!true && this._curView === viewIndex) {
       return;
     }
