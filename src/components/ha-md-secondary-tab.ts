@@ -1,11 +1,11 @@
 import { customElement } from "lit/decorators";
 import { MdSecondaryTab } from "@material/web/tabs/secondary-tab";
 
-@customElement("ha-secondary-tab")
-export class HaSecondaryTab extends MdSecondaryTab {}
+@customElement("ha-md-secondary-tab")
+export class HaMdSecondaryTab extends MdSecondaryTab {}
 
 declare global {
   interface HTMLElementTagNameMap {
-    "ha-secondary-tab": HaSecondaryTab;
+    "ha-md-secondary-tab": HaMdSecondaryTab;
   }
 }

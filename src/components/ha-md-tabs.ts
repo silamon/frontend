@@ -5,8 +5,8 @@ import "./ha-icon-button-prev";
 import "./ha-icon-button-next";
 import { HomeAssistant } from "../types";
 
-@customElement("ha-tabs")
-export class HaTabs extends MdTabs {
+@customElement("ha-md-tabs")
+export class HaMdTabs extends MdTabs {
   @property({ attribute: false }) public hass!: HomeAssistant;
 
   // @property({ attribute: false }) public buttons: boolean = false;
@@ -117,6 +117,6 @@ export class HaTabs extends MdTabs {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "ha-tabs": HaTabs;
+    "ha-md-tabs": HaMdTabs;
   }
 }

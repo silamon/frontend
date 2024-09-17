@@ -10,8 +10,8 @@ import "../../components/ha-list-item";
 import { haStyle } from "../../resources/styles";
 import { HomeAssistant, Route } from "../../types";
 import "./developer-tools-router";
-import "../../components/ha-tabs";
-import "../../components/ha-secondary-tab";
+import "../../components/ha-md-tabs";
+import "../../components/ha-md-secondary-tab";
 
 const tabs = [
   { page: "yaml", label: "yaml" },
@@ -64,21 +64,21 @@ class PanelDeveloperTools extends LitElement {
             </ha-list-item>
           </ha-button-menu>
         </div>
-        <ha-tabs
+        <ha-md-tabs
           class="scrolling"
           active-tab-index=${this._activeTabIndex}
           @change=${this._handleTabChanged}
         >
           ${tabs.map(
             (tab) => html`
-              <ha-secondary-tab
+              <ha-md-secondary-tab
                 >${this.hass.localize(
                   `ui.panel.developer-tools.tabs.${tab.label}.title`
                 )}
-              </ha-secondary-tab>
+              </ha-md-secondary-tab>
             `
           )}
-        </ha-tabs>
+        </ha-md-tabs>
       </div>
       <developer-tools-router
         .route=${this.route}
@@ -155,7 +155,7 @@ class PanelDeveloperTools extends LitElement {
           flex: 1 1 100%;
           max-width: 100%;
         }
-        ha-tabs {
+        ha-md-tabs {
           text-transform: uppercase;
           --md-sys-color-primary: var(--app-header-text-color, white);
           --md-sys-color-secondary: var(--app-header-text-color, white);

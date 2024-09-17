@@ -48,9 +48,9 @@ import "../../components/ha-icon-button-arrow-next";
 import "../../components/ha-icon-button-arrow-prev";
 import "../../components/ha-menu-button";
 import "../../components/ha-svg-icon";
-import "../../components/ha-tabs";
-import "../../components/ha-primary-tab";
-import "../../components/ha-secondary-tab";
+import "../../components/ha-md-tabs";
+import "../../components/ha-md-primary-tab";
+import "../../components/ha-md-secondary-tab";
 import type { LovelacePanelConfig } from "../../data/lovelace";
 import {
   LovelaceConfig,
@@ -335,7 +335,7 @@ class HUIRoot extends LitElement {
                     ? html`<div class="main-title">${curViewConfig.title}</div>`
                     : views.filter((view) => !view.subview).length > 1
                       ? html`
-                          <ha-tabs
+                          <ha-md-tabs
                             slot="title"
                             class="scrolling inline"
                             .activeTabIndex=${ifDefined(this._curView)}
@@ -343,7 +343,7 @@ class HUIRoot extends LitElement {
                           >
                             ${views.map(
                               (view) => html`
-                                <ha-secondary-tab
+                                <ha-md-secondary-tab
                                   aria-label=${ifDefined(view.title)}
                                   class=${classMap({
                                     "hide-tab": Boolean(
@@ -367,10 +367,10 @@ class HUIRoot extends LitElement {
                                         ></ha-icon>
                                       `
                                     : view.title || "Unnamed view"}
-                                </ha-secondary-tab>
+                                </ha-md-secondary-tab>
                               `
                             )}
-                          </ha-tabs>
+                          </ha-md-tabs>
                         `
                       : html`
                           <div class="main-title">
@@ -383,14 +383,14 @@ class HUIRoot extends LitElement {
           ${this._editMode
             ? html`
                 <div class="flexrow">
-                  <ha-tabs
+                  <ha-md-tabs
                     class="scrolling inline"
                     .activeTabIndex=${ifDefined(this._curView)}
                     @change=${this._handleViewSelected}
                   >
                     ${views.map(
                       (view) => html`
-                        <ha-secondary-tab
+                        <ha-md-secondary-tab
                           aria-label=${ifDefined(view.title)}
                           class=${classMap({
                             "hide-tab": Boolean(
@@ -450,10 +450,10 @@ class HUIRoot extends LitElement {
                                 ></ha-icon-button-arrow-next>
                               `
                             : nothing}
-                        </ha-secondary-tab>
+                        </ha-md-secondary-tab>
                       `
                     )}
-                  </ha-tabs>
+                  </ha-md-tabs>
                   ${this._editMode
                     ? html`
                         <ha-icon-button
@@ -1021,7 +1021,7 @@ class HUIRoot extends LitElement {
         .edit-mode div[main-title] {
           pointer-events: auto;
         }
-        .edit-mode ha-tabs {
+        .edit-mode ha-md-tabs {
           background-color: var(--app-header-edit-background-color, #455a64);
           color: var(--app-header-edit-text-color, #fff);
         }
@@ -1036,7 +1036,7 @@ class HUIRoot extends LitElement {
         .edit-icon.view {
           display: none;
         }
-        ha-secondary-tab[active] .edit-icon {
+        ha-md-secondary-tab[active] .edit-icon {
           display: inline-flex;
         }
         #add-view {
@@ -1094,7 +1094,7 @@ class HUIRoot extends LitElement {
         .child-view-icon {
           opacity: 0.5;
         }
-        ha-tabs {
+        ha-md-tabs {
           text-transform: uppercase;
           --md-sys-color-primary: var(--app-header-text-color, white);
           --md-sys-color-secondary: var(--app-header-text-color, white);
@@ -1107,7 +1107,7 @@ class HUIRoot extends LitElement {
           width: 100%;
           height: 100%;
         }
-        .edit-mode ha-tabs {
+        .edit-mode ha-md-tabs {
           --md-sys-color-surface: var(
             --app-header-edit-background-color,
             #455a64

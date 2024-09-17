@@ -2,8 +2,8 @@ import "@material/mwc-button";
 import { css, html, LitElement, TemplateResult } from "lit";
 import { customElement } from "lit/decorators";
 import "../../../../src/components/ha-card";
-import "../../../../src/components/ha-tabs";
-import "../../../../src/components/ha-primary-tab";
+import "../../../../src/components/ha-md-tabs";
+import "../../../../src/components/ha-md-primary-tab";
 import "@material/mwc-tab-bar/mwc-tab-bar";
 import "@material/mwc-tab/mwc-tab";
 import "@polymer/paper-tabs/paper-tab";
@@ -78,7 +78,7 @@ export class DemoPaperTabs extends LitElement {
       </md-tabs>
 
       HA tab bar:
-      <ha-tabs aria-label="Content to view">
+      <ha-md-tabs aria-label="Content to view">
         <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
         <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
         <md-primary-tab aria-label="Music"> Music </md-primary-tab>
@@ -100,13 +100,13 @@ export class DemoPaperTabs extends LitElement {
         <md-primary-tab aria-label="Photos"> Photos </md-primary-tab>
         <md-primary-tab aria-label="Videos"> Videos </md-primary-tab>
         <md-primary-tab aria-label="Music"> Music </md-primary-tab>
-      </ha-tabs>
+      </ha-md-tabs>
 
-      <ha-tabs class="inline" aria-label="Content to view">
-        <ha-primary-tab aria-label="Photos"> Photos </ha-primary-tab>
-        <ha-primary-tab aria-label="Videos"> Videos </ha-primary-tab>
-        <ha-primary-tab aria-label="Music"> Music </ha-primary-tab>
-      </ha-tabs>
+      <ha-md-tabs class="inline" aria-label="Content to view">
+        <ha-md-primary-tab aria-label="Photos"> Photos </ha-md-primary-tab>
+        <ha-md-primary-tab aria-label="Videos"> Videos </ha-md-primary-tab>
+        <ha-md-primary-tab aria-label="Music"> Music </ha-md-primary-tab>
+      </ha-md-tabs>
 
       Experimental no components:
       <div class="items">

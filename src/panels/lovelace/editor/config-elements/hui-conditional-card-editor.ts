@@ -24,7 +24,7 @@ import type { ConfigChangedEvent } from "../hui-element-editor";
 import { baseLovelaceCardConfig } from "../structs/base-card-struct";
 import type { GUIModeChangedEvent } from "../types";
 import { configElementStyle } from "./config-elements-style";
-import "../../../../components/ha-secondary-tab";
+import "../../../../components/ha-md-secondary-tab";
 
 const cardConfigStruct = assign(
   baseLovelaceCardConfig,
@@ -79,21 +79,21 @@ export class HuiConditionalCardEditor
     const isGuiMode = !this._cardEditorEl || this._GUImode;
 
     return html`
-      <ha-tabs
+      <ha-md-tabs
         active-tab-index=${this._cardTab ? 1 : 0}
         @change=${this._selectTab}
       >
-        <ha-secondary-tab
+        <ha-md-secondary-tab
           >${this.hass!.localize(
             "ui.panel.lovelace.editor.card.conditional.conditions"
-          )}</ha-secondary-tab
+          )}</ha-md-secondary-tab
         >
-        <ha-secondary-tab
+        <ha-md-secondary-tab
           >${this.hass!.localize(
             "ui.panel.lovelace.editor.card.conditional.card"
-          )}</ha-secondary-tab
+          )}</ha-md-secondary-tab
         >
-      </ha-tabs>
+      </ha-md-tabs>
       ${this._cardTab
         ? html`
             <div class="card">
@@ -258,7 +258,7 @@ export class HuiConditionalCardEditor
           margin-inline-end: auto;
           margin-inline-start: initial;
         }
-        ha-tabs {
+        ha-md-tabs {
           text-transform: uppercase;
         }
       `,

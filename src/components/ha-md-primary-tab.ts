@@ -1,11 +1,11 @@
 import { customElement } from "lit/decorators";
 import { MdPrimaryTab } from "@material/web/tabs/primary-tab";
 
-@customElement("ha-primary-tab")
-export class HaPrimaryTab extends MdPrimaryTab {}
+@customElement("ha-md-primary-tab")
+export class HaMdPrimaryTab extends MdPrimaryTab {}
 
 declare global {
   interface HTMLElementTagNameMap {
-    "ha-primary-tab": HaPrimaryTab;
+    "ha-md-primary-tab": HaMdPrimaryTab;
   }
 }
