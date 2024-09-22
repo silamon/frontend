@@ -1,6 +1,7 @@
-import { mdiGestureTap, mdiPalette } from "@mdi/js";
+import { mdiGestureTap, mdiListBox, mdiPalette } from "@mdi/js";
 import { LitElement, css, html, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators";
+import { cache } from "lit/directives/cache";
 import memoizeOne from "memoize-one";
 import {
   any,
@@ -14,12 +15,13 @@ import {
   union,
 } from "superstruct";
 import { HASSDomEvent, fireEvent } from "../../../../common/dom/fire_event";
-import { LocalizeFunc } from "../../../../common/translations/localize";
+import "../../../../components/ha-expansion-panel";
 import "../../../../components/ha-form/ha-form";
 import type {
   HaFormSchema,
   SchemaUnion,
 } from "../../../../components/ha-form/types";
+import "../../../../components/ha-svg-icon";
 import type { HomeAssistant } from "../../../../types";
 import {
   LovelaceCardFeatureConfig,
@@ -69,18 +71,14 @@ export class HuiTileCardEditor
   }
 
   private _schema = memoizeOne(
-    (
-      localize: LocalizeFunc,
-      entityId: string | undefined,
-      hideState: boolean
-    ) =>
+    (entityId: string | undefined, hideState: boolean) =>
       [
         { name: "entity", selector: { entity: {} } },
         {
-          name: "",
+          name: "appearance",
+          flatten: true,
           type: "expandable",
           iconPath: mdiPalette,
-          title: localize(`ui.panel.lovelace.editor.card.tile.appearance`),
           schema: [
             {
               name: "",
@@ -136,9 +134,9 @@ export class HuiTileCardEditor
           ],
         },
         {
-          name: "",
+          name: "interactions",
           type: "expandable",
-          title: localize(`ui.panel.lovelace.editor.card.tile.interactions`),
+          flatten: true,
           iconPath: mdiGestureTap,
           schema: [
             {
@@ -173,28 +171,31 @@ export class HuiTileCardEditor
       return nothing;
     }
 
-    const stateObj = this._config.entity
-      ? this.hass.states[this._config.entity]
-      : undefined;
-
-    const schema = this._schema(
-      this.hass!.localize,
-      this._config.entity,
-      this._config.hide_state ?? false
+    return cache(
+      this._subElementEditorConfig
+        ? this._renderFeatureForm()
+        : this._renderForm()
     );
+  }
 
-    if (this._subElementEditorConfig) {
-      return html`
-        <hui-sub-element-editor
-          .hass=${this.hass}
-          .config=${this._subElementEditorConfig}
-          .context=${this._context(this._config.entity)}
-          @go-back=${this._goBack}
-          @config-changed=${this.subElementChanged}
-        >
-        </hui-sub-element-editor>
-      `;
-    }
+  private _renderFeatureForm() {
+    return html`
+      <hui-sub-element-editor
+        .hass=${this.hass}
+        .config=${this._subElementEditorConfig}
+        .context=${this._context(this._config!.entity)}
+        @go-back=${this._goBack}
+        @config-changed=${this.subElementChanged}
+      >
+      </hui-sub-element-editor>
+    `;
+  }
+
+  private _renderForm() {
+    const entityId = this._config!.entity;
+    const stateObj = entityId ? this.hass!.states[entityId] : undefined;
+
+    const schema = this._schema(entityId, this._config!.hide_state ?? false);
 
     const data = this._config;
 
@@ -206,13 +207,23 @@ export class HuiTileCardEditor
         .computeLabel=${this._computeLabelCallback}
         @value-changed=${this._valueChanged}
       ></ha-form>
-      <hui-card-features-editor
-        .hass=${this.hass}
-        .stateObj=${stateObj}
-        .features=${this._config!.features ?? []}
-        @features-changed=${this._featuresChanged}
-        @edit-detail-element=${this._editDetailElement}
-      ></hui-card-features-editor>
+      <ha-expansion-panel outlined>
+        <h3 slot="header">
+          <ha-svg-icon .path=${mdiListBox}></ha-svg-icon>
+          ${this.hass!.localize(
+            "ui.panel.lovelace.editor.card.generic.features"
+          )}
+        </h3>
+        <div class="content">
+          <hui-card-features-editor
+            .hass=${this.hass}
+            .stateObj=${stateObj}
+            .features=${this._config!.features ?? []}
+            @features-changed=${this._featuresChanged}
+            @edit-detail-element=${this._editDetailElement}
+          ></hui-card-features-editor>
+        </div>
+      </ha-expansion-panel>
     `;
   }
 
@@ -306,6 +317,8 @@ export class HuiTileCardEditor
       case "vertical":
       case "hide_state":
       case "state_content":
+      case "appearance":
+      case "interactions":
         return this.hass!.localize(
           `ui.panel.lovelace.editor.card.tile.${schema.name}`
         );

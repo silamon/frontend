@@ -50,7 +50,7 @@ export const describeAction = <T extends ActionType>(
   ignoreAlias = false
 ): string => {
   try {
-    return tryDescribeAction(
+    const description = tryDescribeAction(
       hass,
       entityRegistry,
       labelRegistry,
@@ -59,6 +59,10 @@ export const describeAction = <T extends ActionType>(
       actionType,
       ignoreAlias
     );
+    if (typeof description !== "string") {
+      throw new Error(String(description));
+    }
+    return description;
   } catch (error: any) {
     // eslint-disable-next-line no-console
     console.error(error);
@@ -126,6 +130,12 @@ const tryDescribeAction = <T extends ActionType>(
               if (entityReg) {
                 targets.push(
                   computeEntityRegistryName(hass, entityReg) || targetThing
+                );
+              } else if (targetThing === "all") {
+                targets.push(
+                  hass.localize(
+                    `${actionTranslationBaseKey}.service.description.target_every_entity`
+                  )
                 );
               } else {
                 targets.push(

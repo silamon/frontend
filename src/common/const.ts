@@ -40,7 +40,6 @@ import {
   mdiImageFilterFrames,
   mdiLightbulb,
   mdiLightningBolt,
-  mdiMailbox,
   mdiMapMarkerRadius,
   mdiMeterGas,
   mdiMicrophoneMessage,
@@ -119,7 +118,6 @@ export const FIXED_DOMAIN_ICONS = {
   input_text: mdiFormTextbox,
   lawn_mower: mdiRobotMower,
   light: mdiLightbulb,
-  mailbox: mdiMailbox,
   notify: mdiCommentAlert,
   number: mdiRayVertex,
   persistent_notification: mdiBell,
@@ -236,7 +234,12 @@ export const SENSOR_ENTITIES = [
   "weather",
 ];
 
-export const ASSIST_ENTITIES = ["conversation", "stt", "tts"];
+export const ASSIST_ENTITIES = [
+  "assist_satellite",
+  "conversation",
+  "stt",
+  "tts",
+];
 
 /** Domains that render an input element instead of a text value when displayed in a row.
  *  Those rows should then not show a cursor pointer when hovered (which would normally

@@ -1,17 +1,21 @@
+import { mdiAlertCircle } from "@mdi/js";
 import { HassEntity } from "home-assistant-js-websocket";
 import { css, CSSResultGroup, html, LitElement, nothing } from "lit";
 import { customElement, property, state } from "lit/decorators";
 import { classMap } from "lit/directives/class-map";
-import { ifDefined } from "lit/directives/if-defined";
 import { styleMap } from "lit/directives/style-map";
 import memoizeOne from "memoize-one";
 import { computeCssColor } from "../../../common/color/compute-color";
 import { hsv2rgb, rgb2hex, rgb2hsv } from "../../../common/color/convert-color";
 import { computeDomain } from "../../../common/entity/compute_domain";
+import { computeStateDomain } from "../../../common/entity/compute_state_domain";
 import { stateActive } from "../../../common/entity/state_active";
 import { stateColorCss } from "../../../common/entity/state_color";
+import "../../../components/ha-badge";
 import "../../../components/ha-ripple";
 import "../../../components/ha-state-icon";
+import "../../../components/ha-svg-icon";
+import { cameraUrlWithWidthHeight } from "../../../data/camera";
 import { ActionHandlerEvent } from "../../../data/lovelace/action_handler";
 import { HomeAssistant } from "../../../types";
 import { actionHandler } from "../common/directives/action-handler-directive";
@@ -20,14 +24,37 @@ import { handleAction } from "../common/handle-action";
 import { hasAction } from "../common/has-action";
 import { LovelaceBadge, LovelaceBadgeEditor } from "../types";
 import { EntityBadgeConfig } from "./types";
-import { computeStateDomain } from "../../../common/entity/compute_state_domain";
-import { cameraUrlWithWidthHeight } from "../../../data/camera";
 
 export const DISPLAY_TYPES = ["minimal", "standard", "complete"] as const;
-
 export type DisplayType = (typeof DISPLAY_TYPES)[number];
-
 export const DEFAULT_DISPLAY_TYPE: DisplayType = "standard";
+
+export const DEFAULT_CONFIG: EntityBadgeConfig = {
+  type: "entity",
+  show_name: false,
+  show_state: true,
+  show_icon: true,
+};
+
+export const migrateLegacyEntityBadgeConfig = (
+  config: EntityBadgeConfig
+): EntityBadgeConfig => {
+  const newConfig = { ...config };
+  if (config.display_type) {
+    if (config.show_name === undefined) {
+      if (config.display_type === "complete") {
+        newConfig.show_name = true;
+      }
+    }
+    if (config.show_state === undefined) {
+      if (config.display_type === "minimal") {
+        newConfig.show_state = false;
+      }
+    }
+    delete newConfig.display_type;
+  }
+  return newConfig;
+};
 
 @customElement("hui-entity-badge")
 export class HuiEntityBadge extends LitElement implements LovelaceBadge {
@@ -62,7 +89,10 @@ export class HuiEntityBadge extends LitElement implements LovelaceBadge {
   @state() protected _config?: EntityBadgeConfig;
 
   public setConfig(config: EntityBadgeConfig): void {
-    this._config = config;
+    this._config = {
+      ...DEFAULT_CONFIG,
+      ...migrateLegacyEntityBadgeConfig(config),
+    };
   }
 
   get hasAction() {
@@ -129,7 +159,16 @@ export class HuiEntityBadge extends LitElement implements LovelaceBadge {
     const stateObj = entityId ? this.hass.states[entityId] : undefined;
 
     if (!stateObj) {
-      return nothing;
+      return html`
+        <ha-badge .label=${entityId} class="error">
+          <ha-svg-icon
+            slot="icon"
+            .hass=${this.hass}
+            .path=${mdiAlertCircle}
+          ></ha-svg-icon>
+          ${this.hass.localize("ui.badge.entity.not_found")}
+        </ha-badge>
+      `;
     }
 
     const active = stateActive(stateObj);
@@ -151,48 +190,45 @@ export class HuiEntityBadge extends LitElement implements LovelaceBadge {
 
     const name = this._config.name || stateObj.attributes.friendly_name;
 
-    const displayType = this._config.display_type || DEFAULT_DISPLAY_TYPE;
+    const showState = this._config.show_state;
+    const showName = this._config.show_name;
+    const showIcon = this._config.show_icon;
+    const showEntityPicture = this._config.show_entity_picture;
 
-    const imageUrl = this._config.show_entity_picture
+    const imageUrl = showEntityPicture
       ? this._getImageUrl(stateObj)
       : undefined;
 
+    const label = showState && showName ? name : undefined;
+    const content = showState ? stateDisplay : showName ? name : undefined;
+
     return html`
-      <div
-        style=${styleMap(style)}
-        class="badge ${classMap({
-          active,
-          [displayType]: true,
-        })}"
+      <ha-badge
+        .type=${this.hasAction ? "button" : "badge"}
         @action=${this._handleAction}
         .actionHandler=${actionHandler({
           hasHold: hasAction(this._config!.hold_action),
           hasDoubleClick: hasAction(this._config!.double_tap_action),
         })}
-        role=${ifDefined(this.hasAction ? "button" : undefined)}
-        tabindex=${ifDefined(this.hasAction ? "0" : undefined)}
+        .label=${label}
+        .iconOnly=${!content}
+        style=${styleMap(style)}
+        class=${classMap({ active })}
       >
-        <ha-ripple .disabled=${!this.hasAction}></ha-ripple>
-        ${imageUrl
-          ? html`<img src=${imageUrl} aria-hidden />`
-          : html`
-              <ha-state-icon
-                .hass=${this.hass}
-                .stateObj=${stateObj}
-                .icon=${this._config.icon}
-              ></ha-state-icon>
-            `}
-        ${displayType !== "minimal"
-          ? html`
-              <span class="content">
-                ${displayType === "complete"
-                  ? html`<span class="name">${name}</span>`
-                  : nothing}
-                <span class="state">${stateDisplay}</span>
-              </span>
-            `
+        ${showIcon
+          ? imageUrl
+            ? html`<img slot="icon" src=${imageUrl} aria-hidden />`
+            : html`
+                <ha-state-icon
+                  slot="icon"
+                  .hass=${this.hass}
+                  .stateObj=${stateObj}
+                  .icon=${this._config.icon}
+                ></ha-state-icon>
+              `
           : nothing}
-      </div>
+        ${content}
+      </ha-badge>
     `;
   }
 
@@ -202,99 +238,14 @@ export class HuiEntityBadge extends LitElement implements LovelaceBadge {
 
   static get styles(): CSSResultGroup {
     return css`
-      :host {
+      ha-badge {
         --badge-color: var(--state-inactive-color);
-        -webkit-tap-highlight-color: transparent;
       }
-      .badge {
-        position: relative;
-        --ha-ripple-color: var(--badge-color);
-        --ha-ripple-hover-opacity: 0.04;
-        --ha-ripple-pressed-opacity: 0.12;
-        transition:
-          box-shadow 180ms ease-in-out,
-          border-color 180ms ease-in-out;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        height: 36px;
-        min-width: 36px;
-        padding: 0px 8px;
-        box-sizing: border-box;
-        width: auto;
-        border-radius: 18px;
-        background-color: var(--card-background-color, white);
-        border-width: var(--ha-card-border-width, 1px);
-        border-style: solid;
-        border-color: var(
-          --ha-card-border-color,
-          var(--divider-color, #e0e0e0)
-        );
-        --mdc-icon-size: 18px;
-        text-align: center;
-        font-family: Roboto;
+      ha-badge.error {
+        --badge-color: var(--red-color);
       }
-      .badge:focus-visible {
-        --shadow-default: var(--ha-card-box-shadow, 0 0 0 0 transparent);
-        --shadow-focus: 0 0 0 1px var(--badge-color);
-        border-color: var(--badge-color);
-        box-shadow: var(--shadow-default), var(--shadow-focus);
-      }
-      button,
-      [role="button"] {
-        cursor: pointer;
-      }
-      button:focus,
-      [role="button"]:focus {
-        outline: none;
-      }
-      .badge.active {
+      ha-badge.active {
         --badge-color: var(--primary-color);
-      }
-      .content {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        padding-right: 4px;
-        padding-inline-end: 4px;
-        padding-inline-start: initial;
-      }
-      .name {
-        font-size: 10px;
-        font-style: normal;
-        font-weight: 500;
-        line-height: 10px;
-        letter-spacing: 0.1px;
-        color: var(--secondary-text-color);
-      }
-      .state {
-        font-size: 12px;
-        font-style: normal;
-        font-weight: 500;
-        line-height: 16px;
-        letter-spacing: 0.1px;
-        color: var(--primary-text-color);
-      }
-      ha-state-icon {
-        color: var(--badge-color);
-        line-height: 0;
-      }
-      img {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        object-fit: cover;
-        overflow: hidden;
-      }
-      .badge.minimal {
-        padding: 0;
-      }
-      .badge:not(.minimal) img {
-        margin-left: -6px;
-        margin-inline-start: -6px;
-        margin-inline-end: initial;
       }
     `;
   }

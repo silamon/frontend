@@ -31,7 +31,7 @@ const LOAD_ELEMENTS = {
 };
 
 const getValue = (obj, item) =>
-  obj ? (!item.name ? obj : obj[item.name]) : null;
+  obj ? (!item.name || item.flatten ? obj : obj[item.name]) : null;
 
 const getError = (obj, item) => (obj && item.name ? obj[item.name] : null);
 
@@ -204,9 +204,10 @@ export class HaForm extends LitElement implements HaFormElement {
 
       if (ev.target === this) return;
 
-      const newValue = !schema.name
-        ? ev.detail.value
-        : { [schema.name]: ev.detail.value };
+      const newValue =
+        !schema.name || ("flatten" in schema && schema.flatten)
+          ? ev.detail.value
+          : { [schema.name]: ev.detail.value };
 
       this.data = {
         ...this.data,

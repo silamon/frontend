@@ -140,10 +140,12 @@ export class HaVoiceCommandDialog extends LitElement {
 
     const controlHA = !this._pipeline
       ? false
-      : supportsFeature(
-          this.hass.states[this._pipeline?.conversation_engine],
-          ConversationEntityFeature.CONTROL
-        );
+      : this.hass.states[this._pipeline?.conversation_engine]
+        ? supportsFeature(
+            this.hass.states[this._pipeline?.conversation_engine],
+            ConversationEntityFeature.CONTROL
+          )
+        : true;
     const supportsMicrophone = AudioRecorder.isSupported;
     const supportsSTT = this._pipeline?.stt_engine;
 
@@ -648,6 +650,7 @@ export class HaVoiceCommandDialog extends LitElement {
           margin-inline-end: -24px;
           margin-inline-start: initial;
           direction: var(--direction);
+          transform: scaleX(var(--scale-direction));
         }
 
         .listening-icon[active] {
