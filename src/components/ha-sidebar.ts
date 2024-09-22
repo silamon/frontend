@@ -456,6 +456,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
         @mouseleave=${this._itemMouseLeave}
         @click=${() => navigate(`/${urlPath}`)}
         graphic="icon"
+        hasMeta
       >
         ${iconPath
           ? html`<ha-svg-icon slot="graphic" .path=${iconPath}></ha-svg-icon>`
@@ -468,6 +469,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
               class="hide-panel"
               .panel=${urlPath}
               @click=${this._hidePanel}
+              slot="meta"
             ></ha-icon-button>`
           : ""}
       </ha-clickable-list-item>
@@ -518,6 +520,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
             class="hidden-panel"
             .panel=${url}
             graphic="icon"
+            hasMeta
           >
             ${panel.url_path === this.hass.defaultPanel && !panel.icon
               ? html`<ha-svg-icon
@@ -540,6 +543,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
               .label=${this.hass.localize("ui.sidebar.show_panel")}
               .path=${mdiPlus}
               class="show-panel"
+              slot="meta"
             ></ha-icon-button>
           </ha-clickable-list-item>`;
         })}
@@ -557,13 +561,13 @@ class HaSidebar extends SubscribeMixin(LitElement) {
 
   private _renderConfiguration(title: string | null) {
     return html`<ha-clickable-list-item
-      role="option"
       href="/config"
       data-panel="config"
       tabindex="-1"
       @mouseenter=${this._itemMouseEnter}
       @mouseleave=${this._itemMouseLeave}
       graphic="icon"
+      .activated=${this.hass.panelUrl === "config"}
     >
       <ha-svg-icon slot="graphic" .path=${mdiCog}></ha-svg-icon>
       ${!this.alwaysExpand && (this._updatesCount > 0 || this._issuesCount > 0)
@@ -621,7 +625,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
   private _renderUserItem() {
     return html`<ha-clickable-list-item
       class="profile"
-      .href=${"profile"}
+      href="/profile"
       data-panel="panel"
       tabindex="-1"
       aria-label=${this.hass.localize("panel.profile")}
@@ -789,7 +793,7 @@ class HaSidebar extends SubscribeMixin(LitElement) {
     if (listbox.contains(item)) {
       top -= listbox.scrollTop;
     }
-    tooltip.innerHTML = item.shadowRoot!.querySelector(".item-text")!.innerHTML;
+    tooltip.innerHTML = item.querySelector(".item-text")!.innerHTML;
     tooltip.style.display = "block";
     tooltip.style.position = "fixed";
     tooltip.style.top = `${top}px`;
@@ -863,8 +867,20 @@ class HaSidebar extends SubscribeMixin(LitElement) {
           margin: 2px;
           border-radius: 4px;
           height: 40px;
-          --mdc-list-side-padding: 12px;
           --mdc-theme-text-icon-on-background: var(--sidebar-icon-color);
+        }
+        :host .main-panels,
+        :host ha-clickable-list-item {
+          --mdc-list-side-padding: 8px;
+        }
+        :host([expanded]) .main-panels,
+        :host([expanded]) ha-clickable-list-item {
+          --mdc-list-side-padding: 12px;
+        }
+        :host .profile {
+          --mdc-list-item-graphic-margin: 16px;
+          --mdc-list-item-graphic-size: 36px;
+          --mdc-list-side-padding: 4px;
         }
         ha-clickable-list-item[activated] {
           --mdc-theme-text-icon-on-background: var(
@@ -950,12 +966,6 @@ class HaSidebar extends SubscribeMixin(LitElement) {
         .notifications .item-text,
         .configuration .item-text {
           flex: 1;
-        }
-
-        .profile {
-          --mdc-list-item-graphic-margin: 16px;
-          --mdc-list-item-graphic-size: 36px;
-          --mdc-list-side-padding: 4px;
         }
 
         .notification-badge,

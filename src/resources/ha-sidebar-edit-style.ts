@@ -1,7 +1,7 @@
 import { css } from "lit";
 
 export const sidebarEditStyle = css`
-  .reorder-list a:nth-of-type(2n) paper-icon-item {
+  .reorder-list ha-clickable-list-item:nth-of-type(2n) {
     animation-name: keyframes1;
     animation-iteration-count: infinite;
     transform-origin: 50% 10%;
@@ -9,7 +9,7 @@ export const sidebarEditStyle = css`
     animation-duration: 0.25s;
   }
 
-  .reorder-list a:nth-of-type(2n-1) paper-icon-item {
+  .reorder-list ha-clickable-list-item:nth-of-type(2n-1) {
     animation-name: keyframes2;
     animation-iteration-count: infinite;
     animation-direction: alternate;
@@ -82,9 +82,9 @@ export const sidebarEditStyle = css`
     display: inline-flex;
   }
 
-  paper-icon-item.hidden-panel,
-  paper-icon-item.hidden-panel span,
-  paper-icon-item.hidden-panel ha-icon[slot="item-icon"] {
+  ha-clickable-list-item.hidden-panel,
+  ha-clickable-list-item.hidden-panel span,
+  ha-clickable-list-item.hidden-panel ha-icon[slot="item-icon"] {
     color: var(--secondary-text-color);
     cursor: pointer;
   }
